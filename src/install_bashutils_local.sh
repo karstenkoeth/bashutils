@@ -42,5 +42,6 @@ ls -1 $SourceDir/*.sh > "$TmpFile"
 # TODO Hier weiter
 # For i=1 to EOF do if not install script
 # cp -i "$SourceDir/*.sh" "$DestDir"
+# chmod u+x 
 
 echo "[$PROG_NAME:STATUS] Done."
