@@ -2,6 +2,11 @@
 
 # #########################################
 #
+# Overview
+#
+
+# #########################################
+#
 # Versions
 #
 # 2020-12-17 0.01 kdk First Version
@@ -55,6 +60,21 @@ PROG_VERSION="0.01"
 #
 # Functions
 #
+
+
+# #########################################
+# showHelp()
+# Parameter
+#    -
+# Return Value
+#    -
+# Show help.
+function showHelp()
+{
+    echo "[$PROG_NAME:STATUS] Program Parameter:"
+    echo "    -V     : Show Program Version"
+    echo "    -h     : Show this help"
+}
 
 
 # #########################################
