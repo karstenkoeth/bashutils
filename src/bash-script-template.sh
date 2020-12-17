@@ -4,10 +4,16 @@
 #
 # Versions
 #
-# 2020-12-17 0.03 kdk First Version with version history
+# 2020-12-17 0.01 kdk First Version
 
-PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.03"
+PROG_NAME="My Script"
+PROG_VERSION="0.01"
+
+# #########################################
+#
+# TODOs
+#
+# Give a good name and place it on git.
 
 # #########################################
 #
@@ -33,7 +39,6 @@ PROG_VERSION="0.03"
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-
 # #########################################
 #
 # Constants
@@ -57,54 +62,21 @@ PROG_VERSION="0.03"
 # Main
 #
 
-echo "[$PROG_NAME:STATUS] Starting installer ..."
+echo "[$PROG_NAME:STATUS] Starting ..."
 
 # Check for program parameters:
 if [ $# -eq 1 ] ; then
-    if [ "$1" = "-V" ] ; then
+    if [ -f "$1" ] ; then
+        echo "[$PROG_NAME:STATUS] Input file exists."
+    elif [ "$1" = "-V" ] ; then
         echo "[$PROG_NAME:STATUS] Version $PROG_VERSION" ; exit;
     elif [ "$1" = "-h" ] ; then
         showHelp ; exit;
+    else
+        echo "[$PROG_NAME:ERROR] No input file. Exit." ; exit;
     fi
+else
+    echo "[$PROG_NAME:ERROR] Program needs one input file as parameter. Exit."; exit;
 fi
 
-# Check if we are in the source directory:
-SourceDir=$(dirname "$0")
-InstallScript="$SourceDir/install_bashutils_local.sh"
-if [ ! -f "$InstallScript" ] ; then
-    echo "[$PROG_NAME:ERROR] Source directory not found. Exit."
-    exit
-fi
-
-# Here, we need checkFolder or something else...
-DestDir="$HOME/bin/"
-if [ ! -d "$DestDir" ] ; then
-    echo "[$PROG_NAME:ERROR] Destination directoy not found. Exit."
-    exit
-fi
-
-TmpDir="$HOME/tmp/"
-if [ ! -d "$TmpDir" ] ; then
-    mkdir -p "$TmpDir"
-    if [ ! -d "$TmpDir" ] ; then
-        echo "[$PROG_NAME:ERROR] Can't create temporary directoy. Exit."
-        exit
-    fi
-fi
-
-Uuid=$(uuidgen)
-TmpFile="$TmpDir$Uuid.tmp"
-touch "$TmpFile"
-if [ ! -f "$TmpFile" ] ; then
-    echo "[$PROG_NAME:ERROR] Can't create temporary file. Exit."
-    exit
-fi
-
-ls -1 $SourceDir/*.sh > "$TmpFile"
-
-# TODO Hier weiter
-# For i=1 to EOF do if not install script
-# cp -i "$SourceDir/*.sh" "$DestDir"
-# chmod u+x 
-
-echo "[$PROG_NAME:STATUS] Done."
+echo "[$PROG_NAME] Done."
