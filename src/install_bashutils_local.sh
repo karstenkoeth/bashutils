@@ -51,6 +51,23 @@ PROG_VERSION="0.03"
 # Functions
 #
 
+# #########################################
+# showHelp()
+# Parameter
+#    -
+# Return Value
+#    -
+# Show help.
+function showHelp()
+{
+    echo "[$PROG_NAME:STATUS] Program Parameter:"
+    echo "    -V     : Show Program Version"
+    echo "    -h     : Show this help"
+    echo "Copy all script files from the source directoy"
+    echo "(typicalle created with git clone https://github.com/karstenkoeth/bashutils.git)"
+    echo "to the bin-directory of the user."
+}
+
 
 # #########################################
 #
@@ -76,20 +93,19 @@ if [ ! -f "$InstallScript" ] ; then
     exit
 fi
 
-# Here, we need checkFolder or something else...
+# Prepare destination directory:
 DestDir="$HOME/bin/"
+mkdir -p -v "$DestDir"
 if [ ! -d "$DestDir" ] ; then
     echo "[$PROG_NAME:ERROR] Destination directoy not found. Exit."
     exit
 fi
 
 TmpDir="$HOME/tmp/"
+mkdir -p -v "$TmpDir"
 if [ ! -d "$TmpDir" ] ; then
-    mkdir -p "$TmpDir"
-    if [ ! -d "$TmpDir" ] ; then
-        echo "[$PROG_NAME:ERROR] Can't create temporary directoy. Exit."
-        exit
-    fi
+    echo "[$PROG_NAME:ERROR] Can't create temporary directoy. Exit."
+    exit
 fi
 
 Uuid=$(uuidgen)
