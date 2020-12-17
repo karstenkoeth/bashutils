@@ -4,6 +4,8 @@
 #
 # Overview
 #
+# This template can be used for bash scripts.
+# See also the library with a lot of useful functions in: bashutils_common_functions.bash
 
 # #########################################
 #
@@ -44,6 +46,17 @@ PROG_VERSION="0.01"
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+
+# #########################################
+#
+# Includes
+#
+# TODO: Given in this way, the include file must be in same directory the 
+#       script is called from. We have to auto-detect the path to the binary.
+# source bashutils_common_functions.bash
+
+
+
 # #########################################
 #
 # Constants
@@ -55,6 +68,13 @@ PROG_VERSION="0.01"
 # Variables
 #
 
+# Handle output of the different verbose levels - in combination with the 
+# "echo?" functions inside "bashutils_common_functions.bash":
+ECHODEBUG="0"
+ECHOVERBOSE="0"
+ECHONORMAL="1"
+ECHOWARNING="1"
+ECHOERROR="1"
 
 # #########################################
 #
