@@ -15,6 +15,7 @@
 # 2018-04-06 0.01 kdk First version
 # 2018-05-21 0.10 kdk With license text.
 # 2020-12-17 0.20 kdk Renamed from image_viewer_common_func.bash to bashutils_common_functions.bash
+# 2020-12-20 0.21 kdk With is Number from http-echo.sh
 
 # #########################################
 #
@@ -108,4 +109,20 @@ function echoe()
   if [ "$ECHOERROR" = "1" ] ; then
     echo "[$PROG_NAME:$1] $2"
   fi
+}
+
+
+# #########################################
+# isNumber()
+# Parameter
+#  1  : String to check
+# Return Value
+#  1  : 0 = is number
+# Check, if the string contains only digits.
+function isNumber()
+{
+case $1 in
+    ''|*[!0-9]*) return 1 ;;
+    *) return 0 ;;
+esac
 }

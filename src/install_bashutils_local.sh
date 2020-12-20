@@ -2,12 +2,24 @@
 
 # #########################################
 #
+# Overview
+#
+# Check out with:
+# git clone https://github.com/karstenkoeth/bashutils.git
+#
+# This script installs the bashutils in the user directory
+
+# #########################################
+#
 # Versions
 #
 # 2020-12-17 0.03 kdk First Version with version history
+# 2020-12-20 0.04 kdk With getFunctionsFile
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.03"
+PROG_VERSION="0.04"
+PROG_SCRIPTNAME="install_bashutils_local.sh"
+PROG_LIBRARYNAME="bashutils_common_functions.bash"
 
 # #########################################
 #
@@ -45,6 +57,15 @@ PROG_VERSION="0.03"
 # Variables
 #
 
+actDateTime=$(date "+%Y-%m-%d +%H:%M:%S")
+
+# Handle output of the different verbose levels - in combination with the 
+# "echo?" functions inside "bashutils_common_functions.bash":
+ECHODEBUG="1"
+ECHOVERBOSE="1"
+ECHONORMAL="1"
+ECHOWARNING="1"
+ECHOERROR="1"
 
 # #########################################
 #
@@ -87,7 +108,7 @@ fi
 
 # Check if we are in the source directory:
 SourceDir=$(dirname "$0")
-InstallScript="$SourceDir/install_bashutils_local.sh"
+InstallScript="$SourceDir/$PROG_SCRIPTNAME"
 if [ ! -f "$InstallScript" ] ; then
     echo "[$PROG_NAME:ERROR] Source directory not found. Exit."
     exit
@@ -108,19 +129,49 @@ if [ ! -d "$TmpDir" ] ; then
     exit
 fi
 
+# At the moment not needed - but a good function - ?
 Uuid=$(uuidgen)
-TmpFile="$TmpDir$Uuid.tmp"
+TmpFile="$TmpDir$actDateTime_$Uuid.tmp"
 touch "$TmpFile"
 if [ ! -f "$TmpFile" ] ; then
     echo "[$PROG_NAME:ERROR] Can't create temporary file. Exit."
     exit
 fi
 
-ls -1 $SourceDir/*.sh > "$TmpFile"
+# At the moment not needed - but a good function:
+# getFunctionsFile()
+FunctionLibrary="$SourceDir/$PROG_LIBRARYNAME"
+if [ ! -f "$FunctionLibrary" ] ; then
+    echo "[$PROG_NAME:WARNING] Function Library not found. Working with reduced functionality."
+else
+    source "$FunctionLibrary"
+    echod "Main" "Function Library found."
+fi
 
-# TODO Hier weiter
-# For i=1 to EOF do if not install script
-# cp -i "$SourceDir/*.sh" "$DestDir"
-# chmod u+x 
+# Normally, it is save to go with a file to support file names with spaces inside the name.
+# But here, we only care about shell scripts - these we write without spaces in th name.
+# ls -1 $SourceDir/*.sh > "$TmpFile"
+lines=$(ls -1 $SourceDir/*.sh)
+
+for line in $lines
+do
+    pureLine=$(basename "$line")
+    case $pureLine in 
+        "install_bashutils_local.sh"|"bash-script-template.sh")
+            echo "[$PROG_NAME:STATUS] Exclude of copy '$pureLine' "
+        ;;
+        *)
+            #echo "[$PROG_NAME:STATUS] Line:        Copy '$line' "
+            # TODO Think about "Copy": It's ok to overwrite all files?
+            cp "$line" "$DestDir"
+            chmod u+x "$DestDir$pureLine"    
+        ;;
+    esac
+done
+
+# Cleaning up:
+if [ -f "$TmpFile" ] ; then
+    rm "$TmpFile"
+fi
 
 echo "[$PROG_NAME:STATUS] Done."

@@ -12,9 +12,13 @@
 # Versions
 #
 # 2020-12-17 0.01 kdk First Version
+# 2020-12-20 0.02 kdk With actDateTime
 
 PROG_NAME="My Script"
-PROG_VERSION="0.01"
+PROG_VERSION="0.02"
+PROG_CLASS="My Class of Scripts"
+PROG_SCRIPTNAME="my-script.sh"
+PROG_LIBRARYNAME="bashutils_common_functions.bash"
 
 # #########################################
 #
@@ -67,6 +71,9 @@ PROG_VERSION="0.01"
 #
 # Variables
 #
+
+# Typically, we need in a lot of scripts the start date and time of the script:
+actDateTime=$(date "+%Y-%m-%d +%H:%M:%S")
 
 # Handle output of the different verbose levels - in combination with the 
 # "echo?" functions inside "bashutils_common_functions.bash":
