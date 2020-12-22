@@ -12,9 +12,10 @@
 #
 # 2020-12-21 0.01 kdk First Version
 # 2020-12-22 0.02 kdk Version with api and data
+# 2020-12-22 0.03 kdk After writng the Readme.md: Added the handleDoc feature.
 
 PROG_NAME="http process text"
-PROG_VERSION="0.02"
+PROG_VERSION="0.03"
 PROG_SCRIPTNAME="http-text.sh"
 
 # #########################################
@@ -57,6 +58,9 @@ connectionType=""
 documentPath=""
 httpVersion=""
 
+# http Header Content:
+contentLength=""
+
 
 # #########################################
 #
@@ -69,7 +73,7 @@ httpVersion=""
 #   1: Text to log
 function log()
 {
-    echo "'$PROG_SCRIPTNAME:$$:$actDateTime' '$1'" >> "$logFile"
+    echo "[$PROG_SCRIPTNAME:$$:$actDateTime] $1" >> "$logFile"
 }
 
 # #########################################
@@ -93,7 +97,7 @@ function sendHeader()
 # sendGreetings()
 function sendGreetings()
 {
-    echo "Welcom to my plain text."
+    echo "Welcome to my plain text."
     echo "Nice to see you."
     echo ""
     echo ""
@@ -112,17 +116,23 @@ function receiveHeader()
 
     # Typically, the first word should be "GET":
     connectionType=$(echo "$variable" | cut -f 1 -d " " -)
-    echo "'$PROG_SCRIPTNAME:$$:$actDateTime' Connection Type: '$connectionType'" >> "$logFile"
+    log "Connection Type: '$connectionType'"
     documentPath=$(echo "$variable" | cut -f 2 -d " " -)
-    echo "'$PROG_SCRIPTNAME:$$:$actDateTime' Document Path:   '$documentPath'" >> "$logFile"
+    log "Document Path:   '$documentPath'"
     httpVersion=$(echo "$variable" | cut -f 3 -d " " -)
-    echo "'$PROG_SCRIPTNAME:$$:$actDateTime' HTTP Version:    '$httpVersion'" >> "$logFile"
+    log "HTTP Version:    '$httpVersion'"
 
     # Typically, the header ends with an empty line. Therefore, we break with the first empty line:
     while read -r header; do
 		header=${header%%$'\r'}
 		[ -z "$header" ] && break
-		echo "'$PROG_SCRIPTNAME:$$:$actDateTime' '$header'" >> "$logFile"
+		log "$header"
+        # For PUT, I need something like 'Content-Length: 9'
+        headerVariable=$(echo "$header" | cut -d ":" -f 1 - )
+        if [ "$headerVariable" = "Content-Length" ] ; then
+            contentLength=$(echo "$header" | cut -d ":" -f 2 - | sed 's/^[ ]* \(.*\)/\1/' )
+            log "Content-Length: '$contentLength'"
+        fi
 	done
 }
 
@@ -165,14 +175,23 @@ function handleData()
             sendString "$value"
             log "S->C: '$valueFile' : '$value' "
         elif [ "$connectionType" = "PUT" ] ; then
-            # Not yet tested!                                       # TODO
-            read -r variable 
+            variable=""
+            if [ $contentLength -gt 0 ] ; then
+                read -r -t 2 -n $contentLength variable 
+            fi
             # Remove newline, ...:
             variable=${variable%%$'\r'}
             echo "$variable" > "$valueFile"
             log "C->S: '$variable' -> '$valueFile'"
         fi
     fi
+}
+
+# #########################################
+# handleDoc()
+function handleDoc()
+{
+    sendString "Get source code at https://github.com/karstenkoeth/bashutils.git"
 }
 
 # #########################################
@@ -189,13 +208,15 @@ function handleGET()
         handleApi
     # doc - we show the documentation
     elif [ "$firstLevel" = "doc" ] ; then
-        log "handleGet - doc: Not yet supported."                   # TODO
+        handleDoc
     # info - we show information about the settings
     elif [ "$firstLevel" = "info" ] ; then
         log "handleGet - info: Not yet supported."                  # TODO
     # data - we show the data
     elif [ "$firstLevel" = "data" ] ; then
         handleData
+    else
+        handleDoc
     fi
 }
 

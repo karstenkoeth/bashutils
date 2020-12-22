@@ -154,16 +154,16 @@ function killProcesses()
 function killServer()
 {
     # Kill all processes with this batch script name:
-    killMe=$(ps x -o pid,command | grep http-echo.sh | sed 's/^ \(.*\)/\1/' | cut -f 1 -d " ")
+    killMe=$(ps x -o pid,command | grep http-echo.sh | sed 's/^[ ]* \(.*\)/\1/' | cut -f 1 -d " ")
     killProcesses "$killMe"
 
     # Kill all processes from socat with this program parameter inside the script:
     # serverSimple
-    killMe=$(ps x -o pid,command | grep socat | grep DocumentType | sed 's/^ \(.*\)/\1/' | cut -f 1 -d " ")
+    killMe=$(ps x -o pid,command | grep socat | grep DocumentType | sed 's/^[ ]* \(.*\)/\1/' | cut -f 1 -d " ")
     killProcesses "$killMe"
 
     # serverText
-    killMe=$(ps x -o pid,command | grep socat | grep http-text.sh | sed 's/^ \(.*\)/\1/' | cut -f 1 -d " ")
+    killMe=$(ps x -o pid,command | grep socat | grep http-text.sh | sed 's/^[ ]* \(.*\)/\1/' | cut -f 1 -d " ")
     killProcesses "$killMe"
 }
 
