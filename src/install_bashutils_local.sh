@@ -7,7 +7,11 @@
 # Check out with:
 # git clone https://github.com/karstenkoeth/bashutils.git
 #
-# This script installs the bashutils in the user directory
+# This script installs the bashutils in the user directory.
+#
+# Tested at:
+# - MAC OS X 10.13.6
+# - raspi
 
 # #########################################
 #
@@ -15,9 +19,10 @@
 #
 # 2020-12-17 0.03 kdk First Version with version history
 # 2020-12-20 0.04 kdk With getFunctionsFile
+# 2021-01-14 0.05 kdk apt-get added
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.04"
+PROG_VERSION="0.05"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
 
@@ -127,6 +132,12 @@ mkdir -p -v "$TmpDir"
 if [ ! -d "$TmpDir" ] ; then
     echo "[$PROG_NAME:ERROR] Can't create temporary directoy. Exit."
     exit
+fi
+
+# Make sure all necessary tools are present:
+uuidgenPresent=$(which uuidgen)
+if [ -z "$uuidgenPresent" ] ; then
+    sudo apt-get install uuid-runtime
 fi
 
 # At the moment not needed - but a good function - ?

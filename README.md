@@ -90,4 +90,4 @@ Get all program parameters with:
 
 
 # Connect to Servers
-These scripts (ssh2*, scp2*, scpF*) are only useful in combination with the private keys. Therefore, as a alien user of this repository they are useless.
+These scripts (ssh2*, scp2*, scpF*) are only useful in combination with the private keys. Therefore, as an alien user of this repository they are useless.

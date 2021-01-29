@@ -4,29 +4,26 @@
 #
 # Overview
 #
-# This template can be used for bash scripts.
-# See also the library with a lot of useful functions in: bashutils_common_functions.bash
+# This bash script permanently looks for commands inside a special directory and executes these.
 
 # #########################################
 #
 # Versions
 #
-# 2020-12-17 0.01 kdk First Version
-# 2020-12-20 0.02 kdk With actDateTime
-# 2021-01-29 0.03 kdk 2021 year ready, with PROG_DATE and Copyright in help, with showVersion()
+# 2021-01-29 0.01 kdk First Version
 
-PROG_NAME="My Script"
-PROG_VERSION="0.03"
+PROG_NAME="Executer"
+PROG_VERSION="0.01"
 PROG_DATE="2021-01-29"
-PROG_CLASS="My Class of Scripts"
-PROG_SCRIPTNAME="my-script.sh"
+PROG_CLASS="bashutils"
+PROG_SCRIPTNAME="executer.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
 
 # #########################################
 #
 # TODOs
 #
-# Give a good name and place it on git.
+# Write it and test it.
 
 # #########################################
 #
@@ -68,6 +65,7 @@ PROG_LIBRARYNAME="bashutils_common_functions.bash"
 # Constants
 #
 
+TRUSTED_DIR="~/executer"
 
 # #########################################
 #
@@ -85,10 +83,20 @@ ECHONORMAL="1"
 ECHOWARNING="1"
 ECHOERROR="1"
 
+# Standard Folders and Files
+
+MainFolder="_"
+RunFolder="_"
+
+RunFile="_"
+LogFile="_"
+
 # #########################################
 #
 # Functions
 #
+
+
 
 
 # #########################################
@@ -127,17 +135,15 @@ echo "[$PROG_NAME:STATUS] Starting ..."
 
 # Check for program parameters:
 if [ $# -eq 1 ] ; then
-    if [ -f "$1" ] ; then
-        echo "[$PROG_NAME:STATUS] Input file exists."
-    elif [ "$1" = "-V" ] ; then
+    if [ "$1" = "-V" ] ; then
         showVersion ; exit;
     elif [ "$1" = "-h" ] ; then
         showHelp ; exit;
     else
-        echo "[$PROG_NAME:ERROR] No input file. Exit." ; exit;
+        echo "[$PROG_NAME:WARNING] Unknown program parameter." ;
     fi
-else
-    echo "[$PROG_NAME:ERROR] Program needs one input file as parameter. Exit."; exit;
 fi
+
+# Start main loop
 
 echo "[$PROG_NAME] Done."

@@ -166,6 +166,8 @@ function handleData()
 {
     # Second level in data: We check, if the uuid is known:
     doubleHead=$(echo "$documentPath" | cut -d "/" -f 3 -)
+    # TODO: For GET and PUT we must care about a non evil content of "doubleHead". 
+    # Only allowed are numbers, letters and '-'.
     log "handleData - secondLevel: '$doubleHead'"
 
     valueFile="$ProcessDir/$doubleHead/value.txt"
