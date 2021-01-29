@@ -65,6 +65,12 @@ PROG_LIBRARYNAME="bashutils_common_functions.bash"
 # Constants
 #
 
+product="executer"
+
+MainLoopResponseTime="1s"
+MainLoopSleepFactor="1"
+
+
 TRUSTED_DIR="~/executer"
 
 # #########################################
@@ -86,7 +92,7 @@ ECHOERROR="1"
 # Standard Folders and Files
 
 MainFolder="_"
-RunFolder="_"
+ControlFolder="_"
 
 RunFile="_"
 LogFile="_"
@@ -96,7 +102,66 @@ LogFile="_"
 # Functions
 #
 
+# #########################################
+# adjustVariables()
+# Parameter
+# Sets the global variables 
+function adjustVariables()
+{
+    # Linux like we should install e.g. under /opt/ or /usr/local/ - but we complete act inside home directory:
+    MainFolder="$HOME/$product/"
 
+    ControlFolder="$MainFolder""_Control/"
+        RunFile="$ControlFolder""RUNNING"
+        LogFile="$ControlFolder""LOG"
+}
+
+# #########################################
+# updateLog()
+# Parameter
+# Write time stamp into log file.
+function updateLog()
+{
+    touch "$LogFile"
+}
+
+# #########################################
+# updateRun()
+# Parameter
+# Write time stamp into run file.
+function updateRun()
+{
+    touch "$RunFile"
+}
+
+# #########################################
+# delFile()
+# Parameter
+#   1: File name
+# Deletes a file, if it exists.
+function delFile()
+{
+    if [ -f "$1" ] ; then
+        rm "$1"
+    fi
+}
+
+# #########################################
+# checkExit()
+# Parameter
+# Checks if the script should be terminated.
+function checkExit()
+{
+    local counter=0
+    while [ $counter -lt $MainLoopSleepFactor ] 
+    do
+        counter=$(expr $counter + 1)
+        sleep "$MainLoopResponseTime"
+        # If someone or something deletes the RunFile, the program should break the MainLoop:
+        if [ ! -f "$RunFile" ] ; then counter=$MainLoopSleepFactor; fi
+        updateLog
+    done
+}
 
 
 # #########################################
@@ -143,6 +208,9 @@ if [ $# -eq 1 ] ; then
         echo "[$PROG_NAME:WARNING] Unknown program parameter." ;
     fi
 fi
+
+# Initialize ...
+adjustVariables
 
 # Start main loop
 
