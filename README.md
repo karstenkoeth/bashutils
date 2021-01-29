@@ -1,9 +1,9 @@
 # bashutils
+
 This repository contains some very small bash scripts helping me to have nearly same environment on all machines. Maybe, some scripts are also useful for other persons. Therefore, the repository is public.
 
 Check out with:
 git clone https://github.com/karstenkoeth/bashutils.git
-
 
 # REST API Server in bash
 
@@ -11,8 +11,8 @@ git clone https://github.com/karstenkoeth/bashutils.git
 
 The server consists of two files:
 
- - http-echo.sh
- - http-text.sh
+- http-echo.sh
+- http-text.sh
 
 ## Install
 
@@ -27,7 +27,7 @@ The server could be started with http-echo.sh:
 `http-echo.sh -p 3007 &`
 
 In this example, the server listens on tcp port 3007. For every connection to this port, a new process of http-text.sh will be started.
-The server is something like a cloud clipboard. With the command "addDoubleHead", a new clibboard instance will be created. 
+The server is something like a cloud clipboard. With the command "addDoubleHead", a new clibboard instance will be created.
 Connect to the server e.g. with curl:
 
 `curl http://127.0.0.1:3007/api/addDoubleHead`
@@ -70,24 +70,26 @@ With SICK Dashboar Builder, set following lines in configuration - REST Binding:
 
 `URL: http://127.0.0.1:3007/data/C58A2027-094E-4FDE-A460-F9BBFB564257/`
 
-`Path: `
+`Path:`
 
 `Interval: 500 ms`
 
-`Post processor function: `
+`Post processor function:`
 
 Play a little bit around with the Interval setting to reach the optimum for your system.
 
 There is no other shield to protect the data. All persons knowing the unique uuid can access the data.
 
 ## Prototype
+
 This server is in prototype state. Therefore, all data and all created clipboards are lost, if the main server process (http-echo.sh) is killed.
 
 ## Help
+
 Get all program parameters with:
 
 `http-echo.sh -h`
 
-
 # Connect to Servers
+
 These scripts (ssh2*, scp2*, scpF*) are only useful in combination with the private keys. Therefore, as an alien user of this repository they are useless.

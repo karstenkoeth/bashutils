@@ -16,12 +16,13 @@
 # 2018-05-21 0.10 kdk With license text.
 # 2020-12-17 0.20 kdk Renamed from image_viewer_common_func.bash to bashutils_common_functions.bash
 # 2020-12-20 0.21 kdk With is Number from http-echo.sh
+# 2021-01-29 0.22 kdk With updateLog, ... from swsCosts
 
 # #########################################
 #
 # MIT license (MIT)
 #
-# Copyright 2020 Karsten Köth
+# Copyright 2021 Karsten Köth
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -118,7 +119,7 @@ function echoe()
 #   1: folder name
 #   2: folder description
 # Return
-#   1: An error occured
+#   1: 1 = An error occured
 # This function checks if a folder exists. If not, it creates the folder.
 # Check return value e.g. with: if [ $? -eq 1 ] ; then echo "There was an error"; fi
 function checkOrCreateFolder()
@@ -134,11 +135,14 @@ function checkOrCreateFolder()
     fi        
 }
 
+
+# #########################################
 # isNumber()
 # Parameter
-#  1  : String to check
+#   1: String to check
 # Return Value
-#  1  : 0 = is number
+#   1: 0 = Is number
+#      1 = Is not number
 # Check, if the string contains only digits.
 function isNumber()
 {
@@ -146,4 +150,52 @@ case $1 in
     ''|*[!0-9]*) return 1 ;;
     *) return 0 ;;
 esac
+}
+
+
+# #########################################
+# updateLog()
+# Parameter
+# Write time stamp into log file.
+function updateLog()
+{
+    touch "$LogFile"
+}
+
+# #########################################
+# updateRun()
+# Parameter
+# Write time stamp into run file.
+function updateRun()
+{
+    touch "$RunFile"
+}
+
+# #########################################
+# delFile()
+# Parameter
+#   1: File name
+# Deletes a file, if it exists.
+function delFile()
+{
+    if [ -f "$1" ] ; then
+        rm "$1"
+    fi
+}
+
+# #########################################
+# checkExit()
+# Parameter
+# Checks if the script should be terminated.
+function checkExit()
+{
+    local counter=0
+    while [ $counter -lt $MainLoopSleepFactor ] 
+    do
+        counter=$(expr $counter + 1)
+        sleep "$MainLoopResponseTime"
+        # If someone or something deletes the RunFile, the program should break the MainLoop:
+        if [ ! -f "$RunFile" ] ; then counter=$MainLoopSleepFactor; fi
+        updateLog
+    done
 }
