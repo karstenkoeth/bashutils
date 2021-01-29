@@ -199,3 +199,15 @@ function checkExit()
         updateLog
     done
 }
+
+# #########################################
+# checkStart()
+# Parameter
+# Checks, if the shell script is running in another instance and exits if yes.
+function checkStart()
+{
+  if [ -e "$RunFile" ]  ; then
+    echo "[$PROG_NAME:ERROR] Maybe an older instance is running. If not: Delete '$RunFile' and start again. Exit."
+    exit 
+  fi
+}
