@@ -109,3 +109,27 @@ function echoe()
     echo "[$PROG_NAME:$1] $2"
   fi
 }
+
+
+# #########################################
+# checkOrCreateFolder()
+# Parameter
+#   1: folder name
+#   2: folder description
+# Return
+#   1: An error occured
+# This function checks if a folder exists. If not, it creates the folder.
+# Check return value e.g. with: if [ $? -eq 1 ] ; then echo "There was an error"; fi
+function checkOrCreateFolder()
+{
+    if [ ! -d "$1" ] ; then        
+        mkdir "$1"
+        if [ -d "$1" ] ; then
+            echo "[$PROG_NAME:DEBUG] $2 folder created."
+        else
+            echo "[$PROG_NAME:ERROR] $2 folder could not be created."
+            return 1
+        fi        
+    fi        
+}
+
