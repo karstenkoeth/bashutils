@@ -10,7 +10,7 @@
 #
 # Versions
 #
-# 2021-01-29 0.01 kdk First Version
+# 2021-01-29 0.01 kdk First Version - not tested and not started with main function.
 
 PROG_NAME="Executer"
 PROG_VERSION="0.01"
@@ -93,6 +93,7 @@ ECHOERROR="1"
 
 MainFolder="_"
 ControlFolder="_"
+ExecuteFolder="_"
 
 RunFile="_"
 LogFile="_"
@@ -114,6 +115,58 @@ function adjustVariables()
     ControlFolder="$MainFolder""_Control/"
         RunFile="$ControlFolder""RUNNING"
         LogFile="$ControlFolder""LOG"
+
+    ExecuteFolder="$MainFolder""_Execute/"
+}
+
+# #########################################
+# checkOrCreateFolder()
+# Parameter
+#   1: folder name
+#   2: folder description
+# Return
+#   1: 1 = An error occured
+# This function checks if a folder exists. If not, it creates the folder.
+# Check return value e.g. with: if [ $? -eq 1 ] ; then echo "There was an error"; fi
+function checkOrCreateFolder()
+{
+    if [ ! -d "$1" ] ; then        
+        mkdir "$1"
+        if [ -d "$1" ] ; then
+            echo "[$PROG_NAME:DEBUG] $2 folder created."
+        else
+            echo "[$PROG_NAME:ERROR] $2 folder could not be created."
+            return 1
+        fi        
+    fi        
+}
+
+# #########################################
+# checkFolders()
+# Parameter
+# Check, if all folders needed are present. If not, create the folders or exit.
+# With this function, we do our install at the first start ;-)
+function checkFolders()
+{
+    checkOrCreateFolder "$MainFolder" "Main Program"
+        if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Can't create main folder. Exit"; exit; fi
+    checkOrCreateFolder "$ControlFolder" "Control"
+        if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Can't create control folder. Exit"; exit; fi
+    checkOrCreateFolder "$ExecuteFolder" "Execute"
+        if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Can't create execute folder. Exit"; exit; fi
+}
+
+# #########################################
+# checkForExecution()
+# Parameter
+# This is the real main function: It look for tasks and executes other programs.
+# TODO
+function checkForExecution()
+{
+    # For every file in ExecuteFolder:
+    # Check if the file is valid and executable
+    # If yes: execute & and delete file in ExecuteFolder
+    # File in Executefolder has content: Path and name of the file to execute
 }
 
 # #########################################
@@ -165,6 +218,27 @@ function checkExit()
 
 
 # #########################################
+# checkStart()
+# Parameter
+# Checks, if the shell script is running in another instance and exits if yes.
+function checkStart()
+{
+  if [ -e "$RunFile" ]  ; then
+    echo "[$PROG_NAME:ERROR] Maybe an older instance is running. If not: Delete '$RunFile' and start again. Exit."
+    exit 
+  fi
+}
+
+# #########################################
+# removeRun()
+# Parameter
+# Removes the RunFile to show the program has finished.
+function removeRun()
+{
+    delFile "$RunFile"
+}
+
+# #########################################
 # showHelp()
 # Parameter
 #    -
@@ -211,7 +285,23 @@ fi
 
 # Initialize ...
 adjustVariables
+checkFolders
+checkStart
+updateRun
+
+echo "[$PROG_NAME] Enter main loop. Monitor script with ':> ls --full-time $LogFile'. Stop script by deleting '$RunFile'."
 
 # Start main loop
+
+while [ -f "$RunFile" ]
+do
+    updateLog
+    checkForExecution
+    updateLog
+    checkExit
+done
+
+# Done - clean up ...
+removeRun
 
 echo "[$PROG_NAME] Done."
