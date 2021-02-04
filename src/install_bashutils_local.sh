@@ -20,9 +20,10 @@
 # 2020-12-17 0.03 kdk First Version with version history
 # 2020-12-20 0.04 kdk With getFunctionsFile
 # 2021-01-14 0.05 kdk apt-get added
+# 2021-02-04 0.06 kdk apt-get for AWS CLI
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.05"
+PROG_VERSION="0.06"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
 
@@ -134,11 +135,17 @@ if [ ! -d "$TmpDir" ] ; then
     exit
 fi
 
+# Allways good idea to update the system:
+sudo apt-get -y update 
+
 # Make sure all necessary tools are present:
 uuidgenPresent=$(which uuidgen)
 if [ -z "$uuidgenPresent" ] ; then
-    sudo apt-get install uuid-runtime
+    sudo apt-get -y install uuid-runtime
 fi
+
+# Maybe we want to use AWS CLI:
+#sudo apt-get -y install awscli
 
 # At the moment not needed - but a good function - ?
 Uuid=$(uuidgen)
