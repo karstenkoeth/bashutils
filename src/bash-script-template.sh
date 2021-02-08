@@ -14,10 +14,11 @@
 # 2020-12-17 0.01 kdk First Version
 # 2020-12-20 0.02 kdk With actDateTime
 # 2021-01-29 0.03 kdk 2021 year ready, with PROG_DATE and Copyright in help, with showVersion()
+# 2021-02-08 0.04 kdk License text enhanced.
 
 PROG_NAME="My Script"
-PROG_VERSION="0.03"
-PROG_DATE="2021-01-29"
+PROG_VERSION="0.04"
+PROG_DATE="2021-02-08"
 PROG_CLASS="My Class of Scripts"
 PROG_SCRIPTNAME="my-script.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -29,6 +30,8 @@ PROG_LIBRARYNAME="bashutils_common_functions.bash"
 # Give a good name and place it on git.
 
 # #########################################
+#
+# This software is licensed under
 #
 # MIT license (MIT)
 #
