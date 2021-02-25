@@ -21,6 +21,7 @@
 # 2020-12-20 0.04 kdk With getFunctionsFile
 # 2021-01-14 0.05 kdk apt-get added
 # 2021-02-04 0.06 kdk apt-get for AWS CLI
+# 2021-02-25 0.07 kdk TODO comment added
 
 PROG_NAME="Bash Utils Installer (local)"
 PROG_VERSION="0.06"
@@ -135,6 +136,9 @@ if [ ! -d "$TmpDir" ] ; then
     exit
 fi
 
+# TODO
+# Here first to check if "sudo" is available!
+
 # Allways good idea to update the system:
 sudo apt-get -y update 
 
@@ -155,6 +159,9 @@ if [ ! -f "$TmpFile" ] ; then
     echo "[$PROG_NAME:ERROR] Can't create temporary file. Exit."
     exit
 fi
+
+# TODO
+# apt-get -y install mosquitto
 
 # At the moment not needed - but a good function:
 # getFunctionsFile()
