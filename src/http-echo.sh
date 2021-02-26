@@ -8,9 +8,10 @@
 # 2020-12-20 0.02 kdk With Port as parameter
 # 2020-12-21 0.03 kdk With CORS in http header
 # 2020-12-22 0.04 kdk Kill optimized to catch all
+# 2021-02-26 0.05 kdk Prepared for MQTT
 
 PROG_NAME="HTTP Echo"
-PROG_VERSION="0.04"
+PROG_VERSION="0.05"
 PROG_SCRIPTNAME="http-echo.sh"
 
 # #########################################
@@ -48,8 +49,8 @@ PROG_SCRIPTNAME="http-echo.sh"
 # Variables
 #
 
-PORT="10081"
-
+PORT="11883"
+MQTT="0"
 
 # #########################################
 #
@@ -66,11 +67,15 @@ PORT="10081"
 # Get directory for sharing.
 function getSharingDirectory()
 {
-    Uuid=$(uuidgen)
-    TmpDir="$HOME/tmp/http-echo_$Uuid"
+    if [ "$MQTT" = "1" ] ; then
+        TmpDir="$HOME/tmp/mqtt"
+    else
+        Uuid=$(uuidgen)
+        TmpDir="$HOME/tmp/http-echo_$Uuid"
+    fi
     mkdir -p -v "$TmpDir"
     if [ ! -d "$TmpDir" ] ; then
-        echo "[$PROG_NAME:ERROR] Can't create temporary directoy. Exit."
+        echo "[$PROG_NAME:ERROR] Can't create temporary directory. Exit."
         exit
     fi   
     echo "$TmpDir"
@@ -201,6 +206,7 @@ function showHelp()
     echo "    -V     : Show Program Version"
     echo "    -h     : Show this help"
     echo "    -k     : Kill all '$PROG_SCRIPTNAME' processes"
+    echo "    -m     : Support mqtt2rest program with fixed starting directory and port $PORT"
     echo "    -p 80  : Define the port listen at. (e.g. port 80)."
 }
 
@@ -224,6 +230,8 @@ if [ $# -ge 1 ] ; then
         fi
     elif [ "$1" = "-k" ] ; then
         killServer ; exit;
+    elif [ "$1" = "-m" ] ; then
+        MQTT="1"
     elif [ "$1" = "-V" ] ; then
         echo "[$PROG_NAME:STATUS] Version $PROG_VERSION" ; exit;
     elif [ "$1" = "-h" ] ; then

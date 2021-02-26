@@ -137,10 +137,19 @@ if [ ! -d "$TmpDir" ] ; then
 fi
 
 # TODO
-# Here first to check if "sudo" is available!
+# Here first to check if "sudo" is available:
+#tmp=$(which sudo)
+#if [ -z "$tmp" ] ; then
+#   appSudo=""
+#else
+#   appSudo="sudo"
+#fi
 
 # Allways good idea to update the system:
 sudo apt-get -y update 
+# TODO
+# Same on openSUSE:
+# sudo zypper --non-interactive refresh
 
 # Make sure all necessary tools are present:
 uuidgenPresent=$(which uuidgen)
@@ -148,6 +157,11 @@ if [ -z "$uuidgenPresent" ] ; then
     sudo apt-get -y install uuid-runtime
 fi
 
+# TODO
+# Old-Style Text Editor:
+# sudo apt-get -y install joe
+
+# TODO
 # Maybe we want to use AWS CLI:
 #sudo apt-get -y install awscli
 
@@ -161,7 +175,20 @@ if [ ! -f "$TmpFile" ] ; then
 fi
 
 # TODO
-# apt-get -y install mosquitto
+# Maybe we want to use MQTT:
+# The Broker:
+#sudo apt-get -y install mosquitto
+# The Command Line Clients:
+#sudo apt-get -y install mosquitto-clients
+#
+# Under openSUSE:
+#sudo zypper --non-interactive install mosquitto-clients
+#
+# Now, it would be cool to write a standard config file:
+# Only do it, if no one is present!
+#confMosquitto="~/.mosquitto.conf"
+#echo "listener 1883" >> "$confMosquitto"
+#echo "allow_anonymous true" >> "$confMosquitto"
 
 # At the moment not needed - but a good function:
 # getFunctionsFile()

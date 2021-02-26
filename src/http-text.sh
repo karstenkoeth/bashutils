@@ -13,16 +13,26 @@
 # 2020-12-21 0.01 kdk First Version
 # 2020-12-22 0.02 kdk Version with api and data
 # 2020-12-22 0.03 kdk After writng the Readme.md: Added the handleDoc feature.
+# 2021-02-26 0.04 kdk With comments
 
 PROG_NAME="http process text"
-PROG_VERSION="0.03"
+PROG_VERSION="0.04"
+PROG_DATE="2021-02-26"
+PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="http-text.sh"
+
+# #########################################
+#
+# TODO
+#
+# PUT is for "Update Element". POST is for "Create Element".
+# Therefore, the code should be changed.
 
 # #########################################
 #
 # MIT license (MIT)
 #
-# Copyright 2020 Karsten Köth
+# Copyright 2021 - 2020 Karsten Köth
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
