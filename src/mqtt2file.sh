@@ -155,7 +155,12 @@ do
     TmpDir="$HOME/tmp/mqtt"
     TmpUuid="1234"
     # The file must be in same tree as created with "http-text.sh"
-    echo "$variable" > "$TmpDir/$TmpUuid/value.txt"
+    # Only store non empty messages:
+    if [ -n "$variable" ] ; then
+        echo "$variable" > "$TmpDir/$TmpUuid/value.txt"
+    else
+        echo "[$PROG_NAME:DEBUG] Skip empty message ..."
+    fi
 done
 
 
