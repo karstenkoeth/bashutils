@@ -128,8 +128,10 @@ echo "[$PROG_NAME:STATUS] Starting ..."
 if [ $# -eq 1 ] ; then
     if [ "$1" = "-V" ] ; then
         showVersion ; exit;
-    else [ "$1" = "-h" ] ; then
+    elif [ "$1" = "-h" ] ; then
         showHelp ; exit;
+    else
+        echo "[$PROG_NAME:WARNING] Program parameter '$1' unknown."
     fi
 fi
 
@@ -137,7 +139,7 @@ fi
 
 endOfLoop=0
 
-echo "[$PROG_NAME:TATUS] Entering main loop..."
+echo "[$PROG_NAME:STATUS] Entering main loop..."
 
 while [ $endOfLoop -lt 1 ]
 do
