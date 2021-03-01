@@ -2,6 +2,11 @@
 
 # #########################################
 #
+# Overview
+#
+
+# #########################################
+#
 # Versions
 #
 # 2020-12-17 0.01 kdk First Version with version information
@@ -9,16 +14,19 @@
 # 2020-12-21 0.03 kdk With CORS in http header
 # 2020-12-22 0.04 kdk Kill optimized to catch all
 # 2021-02-26 0.05 kdk Prepared for MQTT
+# 2021-03-01 0.06 kdk Debugging ...
 
 PROG_NAME="HTTP Echo"
-PROG_VERSION="0.05"
+PROG_VERSION="0.06"
+PROG_DATE="2021-03-01"
+PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="http-echo.sh"
 
 # #########################################
 #
 # MIT license (MIT)
 #
-# Copyright 2020 Karsten Köth
+# Copyright 2021 - 2020 Karsten Köth
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -68,7 +76,7 @@ MQTT="0"
 function getSharingDirectory()
 {
     if [ "$MQTT" = "1" ] ; then
-        TmpDir="$HOME/tmp/mqtt"
+        TmpDir="$HOME/tmp/http-echo_mqtt"
     else
         Uuid=$(uuidgen)
         TmpDir="$HOME/tmp/http-echo_$Uuid"

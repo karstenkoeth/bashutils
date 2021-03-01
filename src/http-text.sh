@@ -5,7 +5,6 @@
 # Overview
 #
 
-
 # #########################################
 #
 # Versions
@@ -14,10 +13,11 @@
 # 2020-12-22 0.02 kdk Version with api and data
 # 2020-12-22 0.03 kdk After writng the Readme.md: Added the handleDoc feature.
 # 2021-02-26 0.04 kdk With comments
+# 2021-03-01 0.06 kdk Debugging ...
 
 PROG_NAME="http process text"
-PROG_VERSION="0.04"
-PROG_DATE="2021-02-26"
+PROG_VERSION="0.06"
+PROG_DATE="2021-03-01"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="http-text.sh"
 
@@ -163,10 +163,14 @@ function handleApi()
             touch "$doubleHeadDir/value.txt"
         fi
         if [ -f "$doubleHeadDir/value.txt" ] ; then
+            log "handleApi - addDoubleHead: Exchange point created."
             sendString "{ \"DoubleHead\": \"$Uuid\" }"
         else
+            log "handleApi - addDoubleHead: Error creating file."
             sendString "Error creating file."
         fi
+    else
+        log "handleApi: Error - Unknown Api Command."
     fi
 }
 

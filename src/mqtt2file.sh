@@ -11,11 +11,12 @@
 # Versions
 #
 # 2021-02-26 0.01 kdk First Version derived from bashutils/bash-script-template.sh
+# 2021-03-01 0.02 kdk With meaningful program parameter
 
 
 PROG_NAME="mqtt2file"
-PROG_VERSION="0.01"
-PROG_DATE="2021-02-26"
+PROG_VERSION="0.02"
+PROG_DATE="2021-03-01"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="mqtt2file.sh"
 
@@ -125,22 +126,18 @@ echo "[$PROG_NAME:STATUS] Starting ..."
 
 # Check for program parameters:
 if [ $# -eq 1 ] ; then
-    if [ -f "$1" ] ; then
-        echo "[$PROG_NAME:STATUS] Input file exists."
-    elif [ "$1" = "-V" ] ; then
+    if [ "$1" = "-V" ] ; then
         showVersion ; exit;
-    elif [ "$1" = "-h" ] ; then
+    else [ "$1" = "-h" ] ; then
         showHelp ; exit;
-    else
-        echo "[$PROG_NAME:ERROR] No input file. Exit." ; exit;
     fi
-else
-    echo "[$PROG_NAME:ERROR] Program needs one input file as parameter. Exit."; exit;
 fi
 
 # Main loop:
 
 endOfLoop=0
+
+echo "[$PROG_NAME:TATUS] Entering main loop..."
 
 while [ $endOfLoop -lt 1 ]
 do
@@ -152,8 +149,8 @@ do
     # Debug Output:
     echo "[$PROG_NAME:DEBUG] '$variable'"
     # Write to file:
-    TmpDir="$HOME/tmp/mqtt"
-    TmpUuid="1234"
+    TmpDir="$HOME/tmp/http-echo_mqtt"
+    TmpUuid="818c4143-11a0-4254-b22b-b0f2b9ddba55"
     # The file must be in same tree as created with "http-text.sh"
     # Only store non empty messages:
     if [ -n "$variable" ] ; then
@@ -164,4 +161,4 @@ do
 done
 
 
-echo "[$PROG_NAME] Done."
+echo "[$PROG_NAME:TATUS] Done."

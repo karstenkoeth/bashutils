@@ -20,10 +20,11 @@
 # Versions
 #
 # 2021-02-26 0.01 kdk First Version derived from bashutils/bash-script-template.sh
+# 2021-03-01 0.02 kdk Debugging ...
 
 PROG_NAME="mqtt2rest"
-PROG_VERSION="0.01"
-PROG_DATE="2021-02-26"
+PROG_VERSION="0.02"
+PROG_DATE="2021-03-01"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="mqtt2rest.sh"
 
@@ -133,17 +134,11 @@ echo "[$PROG_NAME:STATUS] Starting ..."
 
 # Check for program parameters:
 if [ $# -eq 1 ] ; then
-    if [ -f "$1" ] ; then
-        echo "[$PROG_NAME:STATUS] Input file exists."
-    elif [ "$1" = "-V" ] ; then
+    if [ "$1" = "-V" ] ; then
         showVersion ; exit;
-    elif [ "$1" = "-h" ] ; then
+    else [ "$1" = "-h" ] ; then
         showHelp ; exit;
-    else
-        echo "[$PROG_NAME:ERROR] No input file. Exit." ; exit;
     fi
-else
-    echo "[$PROG_NAME:ERROR] Program needs one input file as parameter. Exit."; exit;
 fi
 
 # Init ####################
