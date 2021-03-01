@@ -84,10 +84,99 @@ ECHONORMAL="1"
 ECHOWARNING="1"
 ECHOERROR="1"
 
+# Program parameter
+FLAT="0"
+
 # #########################################
 #
 # Functions
 #
+
+# #########################################
+# oneLevelMainLoop()
+# Parameter
+#    -
+# Return Value
+#    -
+# Converts top level of topics into REST-API.
+function oneLevelMainLoop()
+{
+  while [ $endOfLoop -lt 1 ]
+  do
+    # Read incoming MQTT message:
+    # To get this, this program is started with "mqtt2rest.sh" or "mosquitto_sub -h localhost -t prototype | mqtt2file.sh"
+    read -r variable 
+    # Remove newline, ...:
+    variable=${variable%%$'\r'}
+    # Debug Output:
+    echo "[$PROG_NAME:DEBUG] '$variable'"
+    # Write to file:
+    TmpDir="$HOME/tmp/http-echo_mqtt"
+    TmpUuid="818c4143-11a0-4254-b22b-b0f2b9ddba55"
+    # The file must be in same tree as created with "http-text.sh"
+    # Only store non empty messages:
+    if [ -n "$variable" ] ; then
+        echo "$variable" > "$TmpDir/$TmpUuid/value.txt"
+    else
+        echo "[$PROG_NAME:DEBUG] Skip empty message ..."
+    fi
+  done
+}
+
+ #########################################
+# multiLevelMainLoop()
+# Parameter
+#    -
+# Return Value
+#    -
+# Converts multiple levels of topics into REST-API structure.
+# Documentation
+# Example für communication (start with: "mosquitto_sub -h localhost -d -t "prototype/#" "):
+# Client mosqsub|3451-ip-172-31- sending CONNECT
+# Client mosqsub|3451-ip-172-31- received CONNACK
+# Client mosqsub|3451-ip-172-31- sending SUBSCRIBE (Mid: 1, Topic: #, QoS: 0)
+# Client mosqsub|3451-ip-172-31- received SUBACK
+# Subscribed (mid: 1): 0
+# Client mosqsub|3438-ip-172-31- sending PINGREQ
+# Client mosqsub|3438-ip-172-31- received PINGRESP
+# Client mosqsub|3438-ip-172-31- sending PINGREQ
+# Client mosqsub|3438-ip-172-31- received PINGRESP
+# Client mosqsub|3451-ip-172-31- received PUBLISH (d0, q0, r0, m0, 'prototype/under', ... (23 bytes))
+# A 4.under  data message
+function multiLevelMainLoop()
+{
+    # Preparation before entering main loop:
+    TmpDir="$HOME/tmp/http-echo_mqtt"
+    TmpUuid="818c4143-11a0-4254-b22b-b0f2b9ddba55"
+
+    # Main loop:
+    while [ $endOfLoop -lt 1 ]
+    do
+        read -r variable 
+        # Remove newline, ...:
+        variable=${variable%%$'\r'}
+        # Analyse content:
+        testClient=$(echo "$variable" | cut -d " " -f 1 - )
+        if [ "$testClient" = "Client" ] ; then
+            testDirection=$(echo "$variable" | cut -d " " -f 3 -)
+            testCommand=$(echo "$variable" | cut -d " " -f 4 -)
+            if [ "$testDirection" = "received" ] && [ "$testCommand" = "PUBLISH" ] ; then
+                testData=$(echo "$variable" | cut -d "(" -f 1 -)
+                testTopic=$(echo "$testData" | cut -d "'" -f 2 -)
+                echo "[$PROG_NAME:DEBUG] '$variable'"
+                echo "[$PROG_NAME:DEBUG] '$testTopic'"
+                # The next line contains the mqtt message:
+                read -r mqttData
+                # Remove newline, ...:
+                mqttData=${mqttData%%$'\r'}
+                echo "[$PROG_NAME:DEBUG] '$mqttData'"
+                # TODO Write into correct file into correct folder path. Therefore create folder(s) mkdir -p
+                # TODO: Do not accept "." as folder  / topic content. Document this.
+            fi
+        fi
+    done
+}
+
 
 
 # #########################################
@@ -102,6 +191,7 @@ function showHelp()
     echo "[$PROG_NAME:STATUS] Program Parameter:"
     echo "    -V     : Show Program Version"
     echo "    -h     : Show this help"
+    echo "    -f     : Support flat mqtt topic structure"
     echo "Copyright $PROG_DATE by Karsten Köth"
 }
 
@@ -130,6 +220,8 @@ if [ $# -eq 1 ] ; then
         showVersion ; exit;
     elif [ "$1" = "-h" ] ; then
         showHelp ; exit;
+    elif [ "$1" = "-f" ] ; then
+        FLAT="1"
     else
         echo "[$PROG_NAME:WARNING] Program parameter '$1' unknown."
     fi
@@ -141,26 +233,10 @@ endOfLoop=0
 
 echo "[$PROG_NAME:STATUS] Entering main loop..."
 
-while [ $endOfLoop -lt 1 ]
-do
-    # Read incoming MQTT message:
-    # To get this, this program is started with "mqtt2rest.sh" or "mosquitto_sub -h localhost -t prototype | mqtt2file.sh"
-    read -r variable 
-    # Remove newline, ...:
-    variable=${variable%%$'\r'}
-    # Debug Output:
-    echo "[$PROG_NAME:DEBUG] '$variable'"
-    # Write to file:
-    TmpDir="$HOME/tmp/http-echo_mqtt"
-    TmpUuid="818c4143-11a0-4254-b22b-b0f2b9ddba55"
-    # The file must be in same tree as created with "http-text.sh"
-    # Only store non empty messages:
-    if [ -n "$variable" ] ; then
-        echo "$variable" > "$TmpDir/$TmpUuid/value.txt"
-    else
-        echo "[$PROG_NAME:DEBUG] Skip empty message ..."
-    fi
-done
+if [ "$FLAT" = "1" ] ; then
+    oneLevelMainLoop
+else
+    multiLevelMainLoop
+fi
 
-
-echo "[$PROG_NAME:TATUS] Done."
+echo "[$PROG_NAME:STATUS] Done."
