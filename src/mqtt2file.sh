@@ -164,7 +164,7 @@ function multiLevelMainLoop()
             testCommand=$(echo "$variable" | cut -d " " -f 4 -)
             echo "[$PROG_NAME:DEBUG] '$testCommand' (command)"
             if [ "$testDirection" = "received" ] && [ "$testCommand" = "PUBLISH" ] ; then
-                testData=$(echo "$variable" | cut -d "(" -f 1 -)
+                testData=$(echo "$variable" | cut -d "(" -f 2 -)
                 testTopic=$(echo "$testData" | cut -d "'" -f 2 -)
                 echo "[$PROG_NAME:DEBUG] '$variable' (line)"
                 echo "[$PROG_NAME:DEBUG] '$testData' (data)"
