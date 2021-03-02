@@ -5,8 +5,8 @@ LOOP="1"
 
 while [ "$LOOP" = "1" ]
 do
-    mosquitto_pub -h localhost -t prototype -m "O"
+    mosquitto_pub -h localhost -t prototype/loadtest -m "O"
     sleep $SLEEP
-    mosquitto_pub -h localhost -t prototype -m "I"
+    mosquitto_pub -h localhost -t prototype/loadtest -m "I"
     sleep $SLEEP
 done

@@ -60,6 +60,35 @@ PROG_SCRIPTNAME="mqtt2rest.sh"
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+# #########################################
+#
+# Load Test
+#
+#
+# Running on ec2 t2.micro eu-central-1b Ubuntu 18.04.5 LTS (GNU/Linux 5.4.0-1032-aws x86_64):
+# 10 instances of mqtt-test.sh with 0.5 s delay
+# 10 instances of rest-test.sh with 0.5 s delay
+# 1 instance of mosquitto broker
+# 1 instance of mqtt2rest
+# 1 instance of top with 0.5 s delay
+# 1 instance of mosquitto_sub: mosquitto_sub -h localhost -t "#"
+# 8 ssh sessions open
+# 
+# Running on TDC-E IoT device
+# 1 instance of NodeRed with 1 s delay publishing 1 message 
+#
+# --> cpu load: 30 ... 50 / 50 ... 64 [us/sy]
+#
+#
+# Same setting but increased instances of test scripts:
+# 20 mqtt-tests + 10 rest-tests --> 40 ... 50 us
+#
+# Same setting but increased instances of test scripts:
+# 20 mqtt-tests + 20 rest-tests --> 40 ... 50 us, around 220 tasks total, around 140k Mem free
+#
+# Same setting but without instances of test scripts, without mqtt2rest, without mosquitto_sub:
+# --> 0.0 ... 2.0 / 0.0 ...2.0 [us/sy], 122 tasks total, around 188k Mem free
+
 
 # #########################################
 #
