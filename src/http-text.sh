@@ -14,10 +14,11 @@
 # 2020-12-22 0.03 kdk After writng the Readme.md: Added the handleDoc feature.
 # 2021-02-26 0.04 kdk With comments
 # 2021-03-01 0.06 kdk Debugging ...
+# 2021-03-02 0.07 kdk Debugging ...
 
 PROG_NAME="http process text"
-PROG_VERSION="0.06"
-PROG_DATE="2021-03-01"
+PROG_VERSION="0.07"
+PROG_DATE="2021-03-02"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="http-text.sh"
 
@@ -98,7 +99,7 @@ function sendString()
 function sendHeader()
 {
     echo "HTTP/1.0 200 OK"
-    echo "DocumentType: text/plain"
+    echo "DocumentType: text/plain"        # Maybe, we have to send: "application/json"
     echo "Access-Control-Allow-Origin: *"
     echo ""
 }
@@ -188,7 +189,7 @@ function handleData()
     if [ -f "$valueFile" ] ; then
         if   [ "$connectionType" = "GET" ] ; then
             value=$(cat $valueFile)
-            sendString "$value"
+            sendString "\"$value\""
             log "S->C: '$valueFile' : '$value' "
         elif [ "$connectionType" = "PUT" ] ; then
             variable=""

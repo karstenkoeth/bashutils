@@ -146,8 +146,9 @@ function oneLevelMainLoop()
 function multiLevelMainLoop()
 {
     # Preparation before entering main loop:
-    TmpDir="$HOME/tmp/http-echo_mqtt"
-    TmpUuid="818c4143-11a0-4254-b22b-b0f2b9ddba55"
+    TmpDir="$HOME/tmp/http-echo_mqtt"                # TODO: Set as global variable
+    TmpUuid="818c4143-11a0-4254-b22b-b0f2b9ddba55"   # TODO: Set as global variable
+    TmpRoot="prototype"                              # TODO: Set as global variable
 
     # Main loop:
     while [ $endOfLoop -lt 1 ]
@@ -171,8 +172,29 @@ function multiLevelMainLoop()
                 mqttData=${mqttData%%$'\r'}
                 echo "[$PROG_NAME:DEBUG] '$mqttData'"
                 # TODO Write into correct file into correct folder path. Therefore create folder(s) mkdir -p
-                # TODO: Do not accept "." as folder  / topic content. Document this.
-            fi
+                # Do not accept "." as folder or topic content. 
+                testChar=$(echo "$testTopic" | grep "\.")
+                if [ -n "$testChar" ] ; then
+                    # Topic contains minimum one point. Set to standard:
+                    testTopic="$TmpRoot/ignored"
+                    echo "[$PROG_NAME:DEBUG] '$testTopic' (corrected)"
+                fi
+                # Do not accept "\" as folder or topic content. 
+                testChar=$(echo "$testTopic" | grep "\\\\")
+                if [ -n "$testChar" ] ; then
+                    # Topic contains minimum one backslash. Set to standard:
+                    testTopic="$TmpRoot/ignored"
+                    echo "[$PROG_NAME:DEBUG] '$testTopic' (corrected)"
+                fi                
+                if [ -n "$mqttData" ] ; then
+                    if [ ! -d "$TmpDir/$TmpUuid/$testTopic/" ] ; then
+                        mkdir -p "$TmpDir/$TmpUuid/$testTopic/"
+                    fi
+                    echo "$mqttData" > "$TmpDir/$TmpUuid/$testTopic/value.txt"
+                else
+                    echo "[$PROG_NAME:DEBUG] Skip empty message ..."
+                fi
+            fi # END of Command=PUBLISH
         fi
     done
 }

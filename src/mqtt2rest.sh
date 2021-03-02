@@ -156,7 +156,7 @@ fi
 #http-echo.sh -m &                                          # TODO: Zeile freischalten nach Test.
 
 # Start mqtt part:
-mosquitto_sub -h localhost -t prototype | mqtt2file.sh -f # Flat topics
-# mosquitto_sub -h localhost -t "prototype/#" | mqtt2file.sh # Structured topics
+# mosquitto_sub -h localhost -t prototype | mqtt2file.sh -f # Flat topics
+mosquitto_sub -h localhost -t "prototype/#" | mqtt2file.sh # Structured topics
 
 echo "[$PROG_NAME] Done."
