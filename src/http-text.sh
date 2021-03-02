@@ -185,7 +185,26 @@ function handleData()
     # Only allowed are numbers, letters and '-'.
     log "handleData - secondLevel: '$doubleHead'"
 
-    valueFile="$ProcessDir/$doubleHead/value.txt"
+    # In documentPath, we have the correct path. E.g.:
+    # '/data/818c4143-11a0-4254-b22b-b0f2b9ddba55/prototype/' # With or without trailing slash!
+    # First Element is "data" and is checked in code before here.
+    # Second Element is UUID and is checked in code before here.
+    subFolder=${documentPath/\/data\/$doubleHead}
+    # Do not accept "." as folder or topic content. 
+    testChar=$(echo "$documentPath" | grep "\.")
+    if [ -n "$testChar" ] ; then
+        # Topic contains minimum one point. Set to standard:
+        subFolder=""
+    fi
+    # Do not accept "\" as folder or topic content. 
+    testChar=$(echo "$documentPath" | grep "\\\\")
+    if [ -n "$testChar" ] ; then
+        # Topic contains minimum one backslash. Set to standard:
+        subFolder=""
+    fi                
+    log "handleData - subFolder: '$subFolder'"
+    # Go on beyond security checks.
+    valueFile="$ProcessDir/$doubleHead/$subFolder/value.txt"
     if [ -f "$valueFile" ] ; then
         if   [ "$connectionType" = "GET" ] ; then
             value=$(cat $valueFile)
