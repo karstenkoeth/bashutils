@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SLEEP="500 ms"
+SLEEP=0.500
 LOOP="1"
 
 while [ "$LOOP" = "1" ]
