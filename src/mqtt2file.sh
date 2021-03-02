@@ -160,42 +160,46 @@ function multiLevelMainLoop()
         testClient=$(echo "$variable" | cut -d " " -f 1 - )
         if [ "$testClient" = "Client" ] ; then
             testDirection=$(echo "$variable" | cut -d " " -f 3 -)
+            echo "[$PROG_NAME:DEBUG] '$testDirection' (direction)"
             testCommand=$(echo "$variable" | cut -d " " -f 4 -)
+            echo "[$PROG_NAME:DEBUG] '$testCommand' (command)"
             if [ "$testDirection" = "received" ] && [ "$testCommand" = "PUBLISH" ] ; then
                 testData=$(echo "$variable" | cut -d "(" -f 1 -)
                 testTopic=$(echo "$testData" | cut -d "'" -f 2 -)
-                echo "[$PROG_NAME:DEBUG] '$variable'"
-                echo "[$PROG_NAME:DEBUG] '$testTopic'"
+                echo "[$PROG_NAME:DEBUG] '$variable' (line)"
+                echo "[$PROG_NAME:DEBUG] '$testData' (data)"
+                echo "[$PROG_NAME:DEBUG] '$testTopic' (topic)"
                 # The next line contains the mqtt message:
                 read -r mqttData
                 # Remove newline, ...:
                 mqttData=${mqttData%%$'\r'}
-                echo "[$PROG_NAME:DEBUG] '$mqttData'"
+                echo "[$PROG_NAME:DEBUG] '$mqttData' (message)"
                 # TODO Write into correct file into correct folder path. Therefore create folder(s) mkdir -p
                 # Do not accept "." as folder or topic content. 
                 testChar=$(echo "$testTopic" | grep "\.")
                 if [ -n "$testChar" ] ; then
                     # Topic contains minimum one point. Set to standard:
                     testTopic="$TmpRoot/ignored"
-                    echo "[$PROG_NAME:DEBUG] '$testTopic' (corrected)"
+                    echo "[$PROG_NAME:DEBUG] '$testTopic' (topic corrected)"
                 fi
                 # Do not accept "\" as folder or topic content. 
                 testChar=$(echo "$testTopic" | grep "\\\\")
                 if [ -n "$testChar" ] ; then
                     # Topic contains minimum one backslash. Set to standard:
                     testTopic="$TmpRoot/ignored"
-                    echo "[$PROG_NAME:DEBUG] '$testTopic' (corrected)"
+                    echo "[$PROG_NAME:DEBUG] '$testTopic' (topic corrected)"
                 fi                
                 if [ -n "$mqttData" ] ; then
                     if [ ! -d "$TmpDir/$TmpUuid/$testTopic/" ] ; then
                         mkdir -p "$TmpDir/$TmpUuid/$testTopic/"
                     fi
                     echo "$mqttData" > "$TmpDir/$TmpUuid/$testTopic/value.txt"
+                    echo "[$PROG_NAME:DEBUG] Message stored under '$TmpDir/$TmpUuid/$testTopic/value.txt'"
                 else
                     echo "[$PROG_NAME:DEBUG] Skip empty message ..."
                 fi
             fi # END of Command=PUBLISH
-        fi
+        fi # END of command line
     done
 }
 
