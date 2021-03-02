@@ -21,10 +21,11 @@
 #
 # 2021-02-26 0.01 kdk First Version derived from bashutils/bash-script-template.sh
 # 2021-03-01 0.02 kdk Debugging ...
+# 2021-03-02 0.08 kdk Prepared for continuous run
 
 PROG_NAME="mqtt2rest"
-PROG_VERSION="0.02"
-PROG_DATE="2021-03-01"
+PROG_VERSION="0.08"
+PROG_DATE="2021-03-02"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="mqtt2rest.sh"
 
@@ -153,7 +154,7 @@ fi
 # Main part ###############
 
 # Start rest part:
-#http-echo.sh -m &                                          # TODO: Zeile freischalten nach Test.
+http-echo.sh -m &                                          # TODO: Zeile freischalten nach Test.
 
 # Start mqtt part:
 # mosquitto_sub -h localhost -t prototype | mqtt2file.sh -f # Flat topics

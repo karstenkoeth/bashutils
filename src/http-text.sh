@@ -15,9 +15,10 @@
 # 2021-02-26 0.04 kdk With comments
 # 2021-03-01 0.06 kdk Debugging ...
 # 2021-03-02 0.07 kdk Debugging ...
+# 2021-03-02 0.08 kdk Prepared for continuous run
 
 PROG_NAME="http process text"
-PROG_VERSION="0.07"
+PROG_VERSION="0.08"
 PROG_DATE="2021-03-02"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="http-text.sh"
@@ -123,7 +124,7 @@ function receiveHeader()
     read -r variable 
     # Remove newline, ...:
     variable=${variable%%$'\r'}
-    echo "'$PROG_SCRIPTNAME:$$:$actDateTime' '$variable'" >> "$logFile"
+    log "'$variable'" 
 
     # Typically, the first word should be "GET":
     connectionType=$(echo "$variable" | cut -f 1 -d " " -)
@@ -153,7 +154,7 @@ function handleApi()
 {
     # Second level in api:
     apiCommand=$(echo "$documentPath" | cut -d "/" -f 3 -)
-    log "handleApi - secondLevel: '$apiCommand'"
+    #log "handleApi - secondLevel: '$apiCommand'"
 
     # addDoubleHead
     if   [ "$apiCommand" = "addDoubleHead" ] ; then
@@ -162,12 +163,15 @@ function handleApi()
         mkdir -p "$doubleHeadDir"
         if [ -d "$doubleHeadDir" ] ; then
             touch "$doubleHeadDir/value.txt"
+        else
+            log "handleApi - addDoubleHead: Error creating directory. ($doubleHeadDir)"
+            sendString "Error creating directory."
         fi
         if [ -f "$doubleHeadDir/value.txt" ] ; then
             log "handleApi - addDoubleHead: Exchange point created."
             sendString "{ \"DoubleHead\": \"$Uuid\" }"
         else
-            log "handleApi - addDoubleHead: Error creating file."
+            log "handleApi - addDoubleHead: Error creating file. ($doubleHeadDir)"
             sendString "Error creating file."
         fi
     else
@@ -183,7 +187,7 @@ function handleData()
     doubleHead=$(echo "$documentPath" | cut -d "/" -f 3 -)
     # TODO: For GET and PUT we must care about a non evil content of "doubleHead". 
     # Only allowed are numbers, letters and '-'.
-    log "handleData - secondLevel: '$doubleHead'"
+    #log "handleData - secondLevel: '$doubleHead'"
 
     # In documentPath, we have the correct path. E.g.:
     # '/data/818c4143-11a0-4254-b22b-b0f2b9ddba55/prototype/' # With or without trailing slash!
@@ -202,7 +206,7 @@ function handleData()
         # Topic contains minimum one backslash. Set to standard:
         subFolder=""
     fi                
-    log "handleData - subFolder: '$subFolder'"
+    #log "handleData - subFolder: '$subFolder'"
     # Go on beyond security checks.
     valueFile="$ProcessDir/$doubleHead/$subFolder/value.txt"
     if [ -f "$valueFile" ] ; then
@@ -237,7 +241,7 @@ function handleGET()
     # Look for the first level:
     # The first field is empty - we search for "/api/"
     firstLevel=$(echo "$documentPath" | cut -d "/" -f 2 -)
-    log "handleGet - firstLevel: '$firstLevel'"
+    #log "handleGet - firstLevel: '$firstLevel'"
 
     # api - we support different commands
     if   [ "$firstLevel" = "api" ] ; then
@@ -263,7 +267,7 @@ function handlePUT()
     # Look for the first level:
     # The first field is empty - we search for "/api/"
     firstLevel=$(echo "$documentPath" | cut -d "/" -f 2 -)
-    log "handlePut - firstLevel: '$firstLevel'"
+    #log "handlePut - firstLevel: '$firstLevel'"
 
     if [ "$firstLevel" = "data" ] ; then
         handleData
@@ -289,11 +293,13 @@ actDateTime=$(date "+%Y-%m-%d +%H:%M:%S")
 mkdir -p "$ServerDir"
 logFile="$ServerDir/http-text.log"
 
+log "Init..."
+
 if [ $# -ge 1 ] ; then
-    log "Searching Process Directory '$1'"
+    # log "Searching Process Directory '$1'"
     if [ -d "$1" ] ; then
         ProcessDir="$1"
-        log "Process Directory found."
+        # log "Process Directory found."
     else
         log "Directory not accessible."
     fi

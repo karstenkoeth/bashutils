@@ -15,10 +15,11 @@
 # 2020-12-22 0.04 kdk Kill optimized to catch all
 # 2021-02-26 0.05 kdk Prepared for MQTT
 # 2021-03-01 0.06 kdk Debugging ...
+# 2021-03-02 0.08 kdk Prepared for continuous run
 
 PROG_NAME="HTTP Echo"
-PROG_VERSION="0.06"
-PROG_DATE="2021-03-01"
+PROG_VERSION="0.08"
+PROG_DATE="2021-03-02"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="http-echo.sh"
 
@@ -112,7 +113,8 @@ function serverText()
     SharingDir=$(getSharingDirectory)
     #echo "[$PROG_NAME:serverText:DEBUG] '$SharingDir'"
 
-    socat -d -d TCP-L:$serverPort,fork EXEC:"$ServerScript $SharingDir"
+    socat TCP-L:$serverPort,fork EXEC:"$ServerScript $SharingDir"
+    # socat -d -d TCP-L:$serverPort,fork EXEC:"$ServerScript $SharingDir"
 }
 
 

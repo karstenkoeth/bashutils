@@ -12,11 +12,11 @@
 #
 # 2021-02-26 0.01 kdk First Version derived from bashutils/bash-script-template.sh
 # 2021-03-01 0.02 kdk With meaningful program parameter
-
+# 2021-03-02 0.08 kdk Prepared for continuous run
 
 PROG_NAME="mqtt2file"
-PROG_VERSION="0.02"
-PROG_DATE="2021-03-01"
+PROG_VERSION="0.08"
+PROG_DATE="2021-03-02"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="mqtt2file.sh"
 
@@ -24,6 +24,7 @@ PROG_SCRIPTNAME="mqtt2file.sh"
 #
 # TODOs
 #
+# Change echo-STATUS and DEBUG into Log File.
 
 # #########################################
 #
@@ -160,34 +161,34 @@ function multiLevelMainLoop()
         testClient=$(echo "$variable" | cut -d " " -f 1 - )
         if [ "$testClient" = "Client" ] ; then
             testDirection=$(echo "$variable" | cut -d " " -f 3 -)
-            echo "[$PROG_NAME:DEBUG] '$testDirection' (direction)"
+            #echo "[$PROG_NAME:DEBUG] '$testDirection' (direction)"
             testCommand=$(echo "$variable" | cut -d " " -f 4 -)
-            echo "[$PROG_NAME:DEBUG] '$testCommand' (command)"
+            #echo "[$PROG_NAME:DEBUG] '$testCommand' (command)"
             if [ "$testDirection" = "received" ] && [ "$testCommand" = "PUBLISH" ] ; then
                 testData=$(echo "$variable" | cut -d "(" -f 2 -)
                 testTopic=$(echo "$testData" | cut -d "'" -f 2 -)
-                echo "[$PROG_NAME:DEBUG] '$variable' (line)"
-                echo "[$PROG_NAME:DEBUG] '$testData' (data)"
-                echo "[$PROG_NAME:DEBUG] '$testTopic' (topic)"
+                #echo "[$PROG_NAME:DEBUG] '$variable' (line)"
+                #echo "[$PROG_NAME:DEBUG] '$testData' (data)"
+                #echo "[$PROG_NAME:DEBUG] '$testTopic' (topic)"
                 # The next line contains the mqtt message:
                 read -r mqttData
                 # Remove newline, ...:
                 mqttData=${mqttData%%$'\r'}
-                echo "[$PROG_NAME:DEBUG] '$mqttData' (message)"
+                #echo "[$PROG_NAME:DEBUG] '$mqttData' (message)"
                 # TODO Write into correct file into correct folder path. Therefore create folder(s) mkdir -p
                 # Do not accept "." as folder or topic content. 
                 testChar=$(echo "$testTopic" | grep "\.")
                 if [ -n "$testChar" ] ; then
                     # Topic contains minimum one point. Set to standard:
                     testTopic="$TmpRoot/ignored"
-                    echo "[$PROG_NAME:DEBUG] '$testTopic' (topic corrected)"
+                    #echo "[$PROG_NAME:STATUS] '$testTopic' (topic corrected)"
                 fi
                 # Do not accept "\" as folder or topic content. 
                 testChar=$(echo "$testTopic" | grep "\\\\")
                 if [ -n "$testChar" ] ; then
                     # Topic contains minimum one backslash. Set to standard:
                     testTopic="$TmpRoot/ignored"
-                    echo "[$PROG_NAME:DEBUG] '$testTopic' (topic corrected)"
+                    #echo "[$PROG_NAME:STATUS] '$testTopic' (topic corrected)"
                 fi                
                 if [ -n "$mqttData" ] ; then
                     if [ ! -d "$TmpDir/$TmpUuid/$testTopic/" ] ; then
