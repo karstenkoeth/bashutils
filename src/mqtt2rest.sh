@@ -22,10 +22,11 @@
 # 2021-02-26 0.01 kdk First Version derived from bashutils/bash-script-template.sh
 # 2021-03-01 0.02 kdk Debugging ...
 # 2021-03-02 0.08 kdk Prepared for continuous run
+# 2021-03-03 0.09 kdk TODO added
 
 PROG_NAME="mqtt2rest"
-PROG_VERSION="0.08"
-PROG_DATE="2021-03-02"
+PROG_VERSION="0.09"
+PROG_DATE="2021-03-03"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="mqtt2rest.sh"
 
@@ -177,8 +178,8 @@ fi
 
 # TODO
 # Check, if mqtt cli is accessable
-# Check if mqtt broker is running on localhost:
-# If not: try to start or exit.
+# Check if mqtt broker is running on localhost: Publish something and subscribe to it
+# If not: try to start or exit. Maybe create standard configuration file. Or do it in install script.
 
 # Main part ###############
 

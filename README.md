@@ -66,7 +66,7 @@ With a browser, put in the following line as URL to get data:
 
 `http://127.0.0.1:3007/data/C58A2027-094E-4FDE-A460-F9BBFB564257/`
 
-With SICK Dashboar Builder, set following lines in configuration - REST Binding:
+With SICK Dashboard Builder (https:/sd3.cloud.sick.com), set following lines in configuration - REST Binding:
 
 `URL: http://127.0.0.1:3007/data/C58A2027-094E-4FDE-A460-F9BBFB564257/`
 
@@ -82,13 +82,43 @@ There is no other shield to protect the data. All persons knowing the unique uui
 
 ## Prototype
 
-This server is in prototype state. Therefore, all data and all created clipboards are lost, if the main server process (http-echo.sh) is killed.
+This server is in prototype state. Therefore, all data and all created clipboards could be lost, if the main server process (http-echo.sh) is killed. 
 
 ## Help
 
 Get all program parameters with:
 
 `http-echo.sh -h`
+
+# MQTT 2 REST Server
+
+This server accepts MQTT messages and offers these over REST-API.
+Under the hood, mosquitto CLI and the REST API Server is used.
+
+## Content
+
+The server consists of these files:
+
+- mqtt2rest.sh
+- mqtt2file.sh
+- http-echo.sh
+- http-text.sh
+
+## Install
+
+Install all files as normal user with:
+
+`./install_bashutils_local.sh`
+
+## Run
+
+The server could be started with:
+
+`mqtt2rest.sh &`
+
+## Connect to Server
+
+MQTT2REST works under mqtt topic *prototype* on port *1883*. The REST API is reachable under port *11883*.
 
 # Connect to Servers
 
