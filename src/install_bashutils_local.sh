@@ -22,9 +22,10 @@
 # 2021-01-14 0.05 kdk apt-get added
 # 2021-02-04 0.06 kdk apt-get for AWS CLI
 # 2021-02-25 0.07 kdk TODO comment added
+# 2021-03-15 0.08 kdk TODO comment added
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.06"
+PROG_VERSION="0.08"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
 
@@ -150,6 +151,9 @@ sudo apt-get -y update
 # TODO
 # Same on openSUSE:
 # sudo zypper --non-interactive refresh
+# Same on MAC OS X (here, sudo brew is no more supported)
+# brew update
+# brew upgrade
 
 # Make sure all necessary tools are present:
 uuidgenPresent=$(which uuidgen)
@@ -189,6 +193,15 @@ fi
 #confMosquitto="~/.mosquitto.conf"
 #echo "listener 1883" >> "$confMosquitto"
 #echo "allow_anonymous true" >> "$confMosquitto"
+
+# TODO
+# Maybe we want to test speed to internet:
+# sudo apt-get -y install speedtest-cli
+# Runs on EC2 with Ubuntu 18.04.5 LTS
+# Not available on OpenSUSE Linux Enterprise Server 15 SP1
+# --> ubuntu is better maintained as SUSE
+# Runs on MAC OS X:
+# brew install speedtest-cli
 
 # At the moment not needed - but a good function:
 # getFunctionsFile()
