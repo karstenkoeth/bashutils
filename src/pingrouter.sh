@@ -4,20 +4,18 @@
 #
 # Versions
 #
-# 2020-12-17 0.02 kdk First Version with version information
-# 2021-03-22 0.03 kdk CLASS changed
+# 2021-03-22 0.01 kdk First Version derived from pinggoogle.sh
 
-
-PROG_NAME="Ping Google"
-PROG_VERSION="0.03"
+PROG_NAME="Ping Router"
+PROG_VERSION="0.01"
 PROG_CLASS="bashutils"
-PROG_SCRIPTNAME="pinggoogle.sh"
+PROG_SCRIPTNAME="pingrouter.sh"
 
 # #########################################
 #
 # MIT license (MIT)
 #
-# Copyright 2021 - 2020 Karsten Köth
+# Copyright 2021 Karsten Köth
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -42,4 +40,4 @@ PROG_SCRIPTNAME="pinggoogle.sh"
 # Main
 #
 
-ping 8.8.8.8
+ping 192.168.0.1
