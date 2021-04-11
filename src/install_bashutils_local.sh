@@ -23,9 +23,11 @@
 # 2021-02-04 0.06 kdk apt-get for AWS CLI
 # 2021-02-25 0.07 kdk TODO comment added
 # 2021-03-15 0.08 kdk TODO comment added
+# 2021-04-11 0.09 kdk PROG_CLASS added
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.08"
+PROG_VERSION="0.09"
+PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
 
@@ -33,7 +35,7 @@ PROG_LIBRARYNAME="bashutils_common_functions.bash"
 #
 # MIT license (MIT)
 #
-# Copyright 2020 Karsten Köth
+# Copyright 2021 - 2020 Karsten Köth
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal

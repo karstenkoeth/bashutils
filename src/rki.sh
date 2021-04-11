@@ -9,13 +9,25 @@
 
 # #########################################
 #
+# Uses:
+#
+# cut
+# curl
+# echo
+# grep
+# jq
+# sed
+
+# #########################################
+#
 # Versions
 #
 # 2021-04-09 0.01 kdk First Version
+# 2021-04-11 0.02 kdk Automatic print out the "Bezirk"
 
 PROG_NAME="rki"
-PROG_VERSION="0.01"
-PROG_DATE="2021-04-08"
+PROG_VERSION="0.02"
+PROG_DATE="2021-04-11"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="rki.sh"
 
@@ -57,8 +69,32 @@ BEREICH="193" # Stadtkreis Karlsruhe
 #BEREICH="121" # Landkreis Bergstraße
 #BEREICH="199" # Landkreis Rhein-Neckar-Kreis
 
+# #########################################
+#
+# Functions
+#
+
+# #########################################
+# deleteQuotationMark()
+# Parameter
+#    1: String to remove the quotation marks from
+# Return
+#    1: Input string without quotation marks
+# All quotation marks will be removed.
+function deleteQuotationMark()
+{
+    s=$(echo "$1" | sed -- "s/\"//g")
+    echo "$s"
+}
+
+# #########################################
+#
+# Main
+#
+
 STR=$(curl --no-progress-meter "https://services7.arcgis.com/mOBPykOjAyBO2ZKk/arcgis/rest/services/RKI_Landkreisdaten/FeatureServer/0/query?where=OBJECTID=$BEREICH&outFields=cases,deaths,cases_per_100k,cases7_per_100k,GEN,BEZ&outSR=4326&f=json")
 
-RKI=$(echo "$STR" | jq ".features" | grep "cases7" | cut -d ":" -f 2 - | cut -d "," -f 1 - )
+RKI=$(echo "$STR" | jq ".features" | grep "cases7_per_100k" | cut -d ":" -f 2 - | cut -d "," -f 1 - )
+GEN=$(echo "$STR" | jq ".features" | grep "GEN" | cut -d ":" -f 2 - | cut -d "," -f 1 - )
 
-echo "Stadt Karlsruhe: $RKI"
+echo "$(deleteQuotationMark "$GEN"): $RKI"

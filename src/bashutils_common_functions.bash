@@ -17,6 +17,7 @@
 # 2020-12-17 0.20 kdk Renamed from image_viewer_common_func.bash to bashutils_common_functions.bash
 # 2020-12-20 0.21 kdk With is Number from http-echo.sh
 # 2021-01-29 0.22 kdk With updateLog, ... from swsCosts
+# 2021-04-11 0.23 kdk With function deleteQuotationMark()
 
 # #########################################
 #
@@ -152,6 +153,18 @@ case $1 in
 esac
 }
 
+# #########################################
+# deleteQuotationMark()
+# Parameter
+#    1: String to remove the quotation marks from
+# Return
+#    1: Input string without quotation marks
+# All quotation marks will be removed.
+function deleteQuotationMark()
+{
+    s=$(echo "$1" | sed -- "s/\"//g")
+    echo "$s"
+}
 
 # #########################################
 # updateLog()
