@@ -4,8 +4,12 @@
 #
 # Overview
 #
-# This template can be used for bash scripts.
-# See also the library with a lot of useful functions in: bashutils_common_functions.bash
+# On the RKI Dashboard, the mapping between regions and the regien number is shown: In the map,
+# select a region. On the appearing popup, the region number is mentioned.
+#
+# Links
+#
+# https://experience.arcgis.com/experience/478220a4c454480e823b17327b2bf1d4 - RKI Dashboard
 
 # #########################################
 #
@@ -24,10 +28,11 @@
 #
 # 2021-04-09 0.01 kdk First Version
 # 2021-04-11 0.02 kdk Automatic print out the "Bezirk"
+# 2021-04-22 0.03 kdk With Links
 
 PROG_NAME="rki"
-PROG_VERSION="0.02"
-PROG_DATE="2021-04-11"
+PROG_VERSION="0.03"
+PROG_DATE="2021-04-22"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="rki.sh"
 
@@ -62,6 +67,7 @@ PROG_SCRIPTNAME="rki.sh"
 # Variables
 #
 
+# Region Numbers:
 #BEREICH="60"
 #BEREICH="27" # Hannover
 BEREICH="193" # Stadtkreis Karlsruhe
