@@ -3,7 +3,8 @@
 This repository contains some very small bash scripts helping me to have nearly same environment on all machines. Maybe, some scripts are also useful for other persons. Therefore, the repository is public.
 
 Check out with:
-git clone https://github.com/karstenkoeth/bashutils.git
+
+`git clone` https://github.com/karstenkoeth/bashutils.git
 
 # REST API Server in bash
 
