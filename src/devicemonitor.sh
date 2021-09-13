@@ -19,10 +19,11 @@
 # 2021-01-29 0.03 kdk 2021 year ready, with PROG_DATE and Copyright in help, with showVersion()
 # 2021-02-08 0.04 kdk License text enhanced.
 # 2021-08-10 0.05 kdk Device Monitor started.
+# 2021-09-13 0.06 kdk Doing some tests and write comments
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.01"
-PROG_DATE="2021-08-10"
+PROG_VERSION="0.06"
+PROG_DATE="2021-09-13"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -82,6 +83,12 @@ PROG_SCRIPTNAME="devicemonitor.sh"
 # Typically, we need in a lot of scripts the start date and time of the script:
 actDateTime=$(date "+%Y-%m-%d +%H:%M:%S")
 DISKSPACE="0%"
+SYSTEM="unknown"
+    # Allowed values:
+    # - MACOSX
+    # - WIN
+    # - LINUX
+    # - SUSE
 
 # Handle output of the different verbose levels - in combination with the 
 # "echo?" functions inside "bashutils_common_functions.bash":
@@ -96,6 +103,34 @@ ECHOERROR="1"
 # Functions
 #
 
+# #########################################
+# getSystem()
+# Parameter
+#    -
+# Return Value
+#    -
+# Global Variable
+#    SystemType - Change this global variable
+function getSystem()
+{
+    # Check, if program is available:
+    unamePresent=$(which uname)
+    if [ -z "$unamePresent" ] ; then
+        echo "[$PROG_NAME:ERROR] 'uname' not available. Exit"
+        exit
+    else
+        sSYSTEM=$(uname -s) 
+        # Detect System:
+        echo "$sSYSTEM" # ########################################### DEBUG
+        if [ "$sSYSTEM" == "Darwin" ] ; then
+            SYSTEM="MACOSX"
+        elif [ "$sSYSTEM" == "Linux" ] ; then
+            SYSTEM="LINUX"
+        else
+            SYSTEM="Unknown"
+        fi
+    fi
+}
 
 # #########################################
 # getDiskSpace()
@@ -105,7 +140,14 @@ ECHOERROR="1"
 #    -
 function getDiskSpace()
 {
-    DISKSPACE=$(df -h / --output=pcent | tail -n 1)
+    if [ "$SYSTEM" == "LINUX" ] ; then
+        # Runs on Ubuntu 18.04.5:
+        DISKSPACE=$(df -h / --output=pcent | tail -n 1)
+    elif [ "$SYSTEM" == "MACOSX" ] ; then
+        echo "TODO MACOSX"
+    else
+        echo "TODO"
+    fi
 }
 
 # #########################################
@@ -150,6 +192,9 @@ if [ $# -eq 1 ] ; then
         showHelp ; exit;
     fi
 fi
+
+# Check, on which system we are running:
+getSystem
 
 # Do something ...
 getDiskSpace
