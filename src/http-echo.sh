@@ -16,10 +16,11 @@
 # 2021-02-26 0.05 kdk Prepared for MQTT
 # 2021-03-01 0.06 kdk Debugging ...
 # 2021-03-02 0.08 kdk Prepared for continuous run
+# 2021-11-09 0.09 kdk Demo mode
 
 PROG_NAME="HTTP Echo"
-PROG_VERSION="0.08"
-PROG_DATE="2021-03-02"
+PROG_VERSION="0.09"
+PROG_DATE="2021-11-09"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="http-echo.sh"
 
@@ -59,7 +60,9 @@ PROG_SCRIPTNAME="http-echo.sh"
 #
 
 PORT="11883"
+DEMOPORT="8089"
 MQTT="0"
+DEMO="0"
 
 # #########################################
 #
@@ -78,6 +81,8 @@ function getSharingDirectory()
 {
     if [ "$MQTT" = "1" ] ; then
         TmpDir="$HOME/tmp/http-echo_mqtt"
+    elif [ "$DEMO" = "1" ] ; then
+        TmpDir="$HOME/tmp/http-echo_demo"
     else
         Uuid=$(uuidgen)
         TmpDir="$HOME/tmp/http-echo_$Uuid"
@@ -216,6 +221,7 @@ function showHelp()
     echo "    -V     : Show Program Version"
     echo "    -h     : Show this help"
     echo "    -k     : Kill all '$PROG_SCRIPTNAME' processes"
+    echo "    -d     : Support demo mode with fixed starting directory and port $DEMOPORT"
     echo "    -m     : Support mqtt2rest program with fixed starting directory and port $PORT"
     echo "    -p 80  : Define the port listen at. (e.g. port 80)."
 }
@@ -242,6 +248,9 @@ if [ $# -ge 1 ] ; then
         killServer ; exit;
     elif [ "$1" = "-m" ] ; then
         MQTT="1"
+    elif [ "$1" = "-d" ] ; then
+        DEMO="1"
+        PORT="$DEMOPORT"
     elif [ "$1" = "-V" ] ; then
         echo "[$PROG_NAME:STATUS] Version $PROG_VERSION" ; exit;
     elif [ "$1" = "-h" ] ; then
