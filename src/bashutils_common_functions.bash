@@ -18,6 +18,7 @@
 # 2020-12-20 0.21 kdk With is Number from http-echo.sh
 # 2021-01-29 0.22 kdk With updateLog, ... from swsCosts
 # 2021-04-11 0.23 kdk With function deleteQuotationMark()
+# 2021-11-17 0.24 kdk With checkOrCreateFile()
 
 # #########################################
 #
@@ -131,6 +132,29 @@ function checkOrCreateFolder()
             echo "[$PROG_NAME:DEBUG] $2 folder created."
         else
             echo "[$PROG_NAME:ERROR] $2 folder could not be created."
+            return 1
+        fi        
+    fi        
+}
+
+
+# #########################################
+# checkOrCreateFile()
+# Parameter
+#   1: file name
+#   2: file description
+# Return
+#   1: 1 = An error occured
+# This function checks if a file exists. If not, it creates the file.
+# Check return value e.g. with: if [ $? -eq 1 ] ; then echo "There was an error"; fi
+function checkOrCreateFile()
+{
+    if [ ! -f "$1" ] ; then        
+        touch "$1"
+        if [ -f "$1" ] ; then
+            echo "[$PROG_NAME:DEBUG] $2 file created."
+        else
+            echo "[$PROG_NAME:ERROR] $2 file could not be created."
             return 1
         fi        
     fi        
