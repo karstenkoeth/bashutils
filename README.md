@@ -91,6 +91,14 @@ Get all program parameters with:
 
 `http-echo.sh -h`
 
+## Hints
+
+Chosing the correct port to run a server is essential. Therefore, before starting a server, it is a good task to check the actua used ports.
+This could be done with:
+
+`lsof -i -P -n | grep LISTEN`
+
+
 # MQTT 2 REST Server
 
 This server accepts MQTT messages and offers these over REST-API.
