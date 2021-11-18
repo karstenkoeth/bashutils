@@ -6,7 +6,7 @@
 # This file is used by:
 #  - image_viewer_server.sh as image_viewer_common_func.bash
 #  - html_collect_pictures.sh as image_viewer_common_func.bash
-#  - bash-script-template.sh as bashutils_common_functions.bash
+#  - bash-script-template.sh as bashutils_common_functions.bash 
 
 # #########################################
 #
@@ -19,6 +19,7 @@
 # 2021-01-29 0.22 kdk With updateLog, ... from swsCosts
 # 2021-04-11 0.23 kdk With function deleteQuotationMark()
 # 2021-11-17 0.24 kdk With checkOrCreateFile()
+# 2021-11-18 0.25 kdk With random()
 
 # #########################################
 #
@@ -175,6 +176,19 @@ case $1 in
     ''|*[!0-9]*) return 1 ;;
     *) return 0 ;;
 esac
+}
+
+# #########################################
+# random()
+# Parameter
+#   1: Maximum Number
+# Return
+#   Random number between 1 and "Maximum Number"
+# Generates a random number (positive integer) between 1 and maximum 32759
+# See: https://stackoverflow.com/questions/8988824/generating-random-number-between-1-and-10-in-bash-shell-script/23093194
+function random()
+{
+    while :; do ran=$RANDOM; ((ran < 32760)) && echo $(((ran%$1)+1)) && break; done
 }
 
 # #########################################
