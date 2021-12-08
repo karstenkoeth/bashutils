@@ -24,9 +24,10 @@
 # 2021-02-25 0.07 kdk TODO comment added
 # 2021-03-15 0.08 kdk TODO comment added
 # 2021-04-11 0.09 kdk PROG_CLASS added
+# 2021-12-08 0.10 kdk Comments added
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.09"
+PROG_VERSION="0.10"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -132,6 +133,7 @@ if [ ! -d "$DestDir" ] ; then
     exit
 fi
 
+# Most scripts inside bashutils need this directory:
 TmpDir="$HOME/tmp/"
 mkdir -p -v "$TmpDir"
 if [ ! -d "$TmpDir" ] ; then
@@ -148,6 +150,18 @@ fi
 #   appSudo="sudo"
 #fi
 
+# On SUSE, the program cnf could answer in which software package a program is included.
+
+# Before update the system: detect the system we are running on:
+# TODO: Use function:
+# TODO: If Linux, which linux?
+# to detect, we need some programs - have to install:
+# Das Programm 'lsb_release' kann im folgenden Paket gefunden werden:
+#  * lsb-release [ Pfad: /usr/bin/lsb_release, Repository: zypp (Basesystem_Module_x86_64:SLE-Module-Basesystem15-SP1-Pool) ]
+# Zum Installieren versuchen Sie:
+#    sudo zypper install lsb-release
+
+
 # Allways good idea to update the system:
 sudo apt-get -y update 
 # TODO
@@ -156,6 +170,17 @@ sudo apt-get -y update
 # Same on MAC OS X (here, sudo brew is no more supported)
 # brew update
 # brew upgrade
+
+# iPad-von-Kasa:~# rki.sh # Diese Fehler liefert das Programm:
+# /root/bin/rki.sh: line 101: curl: command not found
+# /root/bin/rki.sh: line 103: jq: command not found
+
+# Minimal "Bash rc" erzeugen, falls nicht vorhanden.
+#
+# ___
+# .bashrc
+# export PATH=$PATH:/root/bin
+
 
 # Make sure all necessary tools are present:
 uuidgenPresent=$(which uuidgen)
@@ -197,6 +222,11 @@ fi
 #echo "allow_anonymous true" >> "$confMosquitto"
 
 # TODO
+# Maybe we want to test internet connection:
+# ping -c 1 -w 1 -W 1 8.8.8.8
+# ping -c 1 8.8.8.8 | head -n 2 | tail -n 1 | cut -f 7 -d " "
+
+# TODO
 # Maybe we want to test speed to internet:
 # sudo apt-get -y install speedtest-cli
 # Runs on EC2 with Ubuntu 18.04.5 LTS
@@ -204,6 +234,11 @@ fi
 # --> ubuntu is better maintained as SUSE
 # Runs on MAC OS X:
 # brew install speedtest-cli
+
+# TODO
+# Maybe we want to know other MAC addresses in the network:
+# sudo apt-get -y install arping
+# sudo apt-get -y install nmap
 
 # At the moment not needed - but a good function:
 # getFunctionsFile()

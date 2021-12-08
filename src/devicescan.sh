@@ -4,11 +4,7 @@
 #
 # Overview
 #
-# This script looks for the specific values of a device:
-# - Used disk Space
-# - CPU Usage
-# - Memory Usage
-# - Last Update 
+# This script scans ip addresses in the local network
 
 # #########################################
 #
@@ -18,15 +14,13 @@
 # 2020-12-20 0.02 kdk With actDateTime
 # 2021-01-29 0.03 kdk 2021 year ready, with PROG_DATE and Copyright in help, with showVersion()
 # 2021-02-08 0.04 kdk License text enhanced.
-# 2021-08-10 0.05 kdk Device Monitor started.
-# 2021-09-13 0.06 kdk Doing some tests and write comments
-# 2021-12-08 0.07 kdk Comments added
+# 2021-12-08 0.01 kdk First version of devicescan.sh
 
-PROG_NAME="Device Monitor"
-PROG_VERSION="0.07"
+PROG_NAME="Device Scan"
+PROG_VERSION="0.01"
 PROG_DATE="2021-12-08"
 PROG_CLASS="bashutils"
-PROG_SCRIPTNAME="devicemonitor.sh"
+PROG_SCRIPTNAME="devicescan.sh"
 
 # #########################################
 #
@@ -82,15 +76,7 @@ PROG_SCRIPTNAME="devicemonitor.sh"
 #
 
 # Typically, we need in a lot of scripts the start date and time of the script:
-actDateTime=$(date "+%Y-%m-%d +%H:%M:%S")
-DISKSPACE="0%"
-SYSTEM="unknown"
-    # Allowed values:
-    # - MACOSX
-    # - WIN
-    # - LINUX
-    # - SUSE
-MACADDRESS="00:00:00:00:00:00"
+actDateTime=$(date "+%Y-%m-%d_%H:%M:%S")
 
 # Handle output of the different verbose levels - in combination with the 
 # "echo?" functions inside "bashutils_common_functions.bash":
@@ -100,89 +86,97 @@ ECHONORMAL="1"
 ECHOWARNING="1"
 ECHOERROR="1"
 
+TmpDir="$HOME/tmp/"
+TmpFile="devicescan_nmap_$actDateTime.txt"
+ScanFile="devicescan_devices_$actDateTime.txt"
+
 # #########################################
 #
 # Functions
 #
 
 # #########################################
-# getSystem()
+# checkOrCreateFolder()
 # Parameter
-#    -
-# Return Value
-#    -
-# Global Variable
-#    SystemType - Change the global variable SYSTEM
-function getSystem()
+#   1: folder name
+#   2: folder description
+# Return
+#   1: 1 = An error occured
+# This function checks if a folder exists. If not, it creates the folder.
+# Check return value e.g. with: if [ $? -eq 1 ] ; then echo "There was an error"; fi
+function checkOrCreateFolder()
 {
-    # Check, if program is available:
-    unamePresent=$(which uname)
-    if [ -z "$unamePresent" ] ; then
-        echo "[$PROG_NAME:ERROR] 'uname' not available. Exit"
-        exit
-    else
-        sSYSTEM=$(uname -s) 
-        # Detect System:
-        echo "$sSYSTEM" # ########################################### DEBUG
-        if [ "$sSYSTEM" == "Darwin" ] ; then
-            SYSTEM="MACOSX"
-            # More specific: 
-            # The variable $OSTYPE contains more precisely the system version, e.g. "darwin17"
-        elif [ "$sSYSTEM" == "Linux" ] ; then
-            SYSTEM="LINUX"
-            # More specific: 
-            #
-            # The variable $OSTYPE contains more precisely the system version.
-            # But at the tested systems it contains only "linux"
-            #
-            # Works: lsb_release -d
-            # e.g. "Description:    openSUSE Leap 15.2"
-            # e.g. "Description:	SUSE Linux Enterprise Server 15 SP1"
-            #
-            # Works also: cat /etc/os-release
-            #
-            # Maybe we have a Linux running on Windows with WSL:
-            # uname -r   +   if the kernel version => 4.19, it's WSL Version 2
+    if [ ! -d "$1" ] ; then        
+        mkdir "$1"
+        if [ -d "$1" ] ; then
+            echo "[$PROG_NAME:DEBUG] $2 folder created."
         else
-            SYSTEM="Unknown"
-        fi
-    fi
+            echo "[$PROG_NAME:ERROR] $2 folder could not be created."
+            return 1
+        fi        
+    fi        
 }
 
 # #########################################
-# getDiskSpace()
+# checkOrCreateFile()
+# Parameter
+#   1: file name
+#   2: file description
+# Return
+#   1: 1 = An error occured
+# This function checks if a file exists. If not, it creates the file.
+# Check return value e.g. with: if [ $? -eq 1 ] ; then echo "There was an error"; fi
+function checkOrCreateFile()
+{
+    if [ ! -f "$1" ] ; then        
+        touch "$1"
+        if [ -f "$1" ] ; then
+            echo "[$PROG_NAME:DEBUG] $2 file created."
+        else
+            echo "[$PROG_NAME:ERROR] $2 file could not be created."
+            return 1
+        fi        
+    fi        
+}
+
+# #########################################
+# checkEnvironment()
 # Parameter
 #    -
 # Return Value
 #    -
-# Get disk space from root file system - Change the global variable DISKSPACE
-function getDiskSpace()
+# Check for necessary programs and folders.
+function checkEnvironment()
 {
-    if [ "$SYSTEM" == "LINUX" ] ; then
-        # Runs on "Ubuntu 18.04.5":
-        # Runs on "SUSE Linux Enterprise Server 15 SP1":
-        # Runs on "openSUSE Leap 15.2":
-        DISKSPACE=$(df -h / --output=pcent | tail -n 1)
-    elif [ "$SYSTEM" == "MACOSX" ] ; then
-        echo "TODO MACOSX"
-    else
-        echo "TODO"
-    fi
+    checkOrCreateFolder "$TmpDir" "Temporary"
+    if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Temporary folder '$TmpDir' not usable. Exit"; exit; fi
+
+    checkOrCreateFile "$TmpDir$TmpFile" "Temporary"
+    if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Temporary file '$TmpDir$TmpFile' not usable. Exit"; exit; fi
+
+    nmapProgram=$(which nmap)
+    if [ -z "$nmapProgram" ] ; then echo "[$PROG_NAME:ERROR] Necessary program 'nmap' not found. Exit"; exit; fi
+
 }
 
 # #########################################
-# getMacAddress()
+# scanNetwork()
 # Parameter
-#    -
+#    1: network part to scan, e.g. "192.168.0.*"
 # Return Value
 #    -
-# Get MAC address from ... ethernet interface - Change the global variable MACADDRESS
-function getMacAddress()
+# The result will be written down in the tmp file
+function scanNetwork()
 {
-    # With 'ip addr show' we see all mac addresses and the corresponding ip addresses.
-    # Works under: WSL - Linux - SuSE
     echo "TODO"
+    nmap -sn "$1" -oG "$TmpDir$TmpFile"
+    # Typical output line: 
+    # Host: 192.168.0.1 (kabelbox.local)	Status: Up
+    cat "$TmpDir$TmpFile" | grep "Host" | cut -f 2 -d " " > "$TmpDir$ScanFile"
 }
+
+# #########################################
+
 
 # #########################################
 # showHelp()
@@ -220,21 +214,18 @@ echo "[$PROG_NAME:STATUS] Starting ..."
 
 # Check for program parameters:
 if [ $# -eq 1 ] ; then
-    if [ "$1" = "-V" ] ; then
+    if [ -f "$1" ] ; then
+        echo "[$PROG_NAME:STATUS] Input file exists."
+    elif [ "$1" = "-V" ] ; then
         showVersion ; exit;
     elif [ "$1" = "-h" ] ; then
         showHelp ; exit;
     fi
 fi
 
-# Check, on which system we are running:
-getSystem
 
-# Do something ...
-getDiskSpace
+checkEnvironment
 
-# Show Info:
-echo "[$PROG_NAME:STATUS] Usage Disk Space : $DISKSPACE" 
+scanNetwork "192.168.0.*" # TODO: Automatically detect which network we should scan.
 
-# End:
 echo "[$PROG_NAME] Done."
