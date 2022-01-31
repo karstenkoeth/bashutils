@@ -11,10 +11,11 @@
 # Versions
 #
 # 2021-01-29 0.01 kdk First Version - not tested and not started with main function.
+# 2022-01-31 0.02 kdk TODOs added
 
 PROG_NAME="Executer"
-PROG_VERSION="0.01"
-PROG_DATE="2021-01-29"
+PROG_VERSION="0.02"
+PROG_DATE="2022-01-31"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="executer.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -24,6 +25,8 @@ PROG_LIBRARYNAME="bashutils_common_functions.bash"
 # TODOs
 #
 # Write it and test it.
+#
+# For execute Installer: before start installer do: chmod u+x installer.sh
 
 # #########################################
 #

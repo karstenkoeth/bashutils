@@ -21,10 +21,11 @@
 # 2021-08-10 0.05 kdk Device Monitor started.
 # 2021-09-13 0.06 kdk Doing some tests and write comments
 # 2021-12-08 0.07 kdk Comments added
+# 2022-01-31 0.08 kdk System check enhanced and getDiskSpace adapted to MAC OS X
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.07"
-PROG_DATE="2021-12-08"
+PROG_VERSION="0.08"
+PROG_DATE="2022-01-31"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -90,6 +91,8 @@ SYSTEM="unknown"
     # - WIN
     # - LINUX
     # - SUSE
+SYSTEMDescription="" # Will be filled if possible
+SYSTEMTested="0" # If we detect a system, the script was tested on, we switch to "1"
 MACADDRESS="00:00:00:00:00:00"
 
 # Handle output of the different verbose levels - in combination with the 
@@ -99,6 +102,7 @@ ECHOVERBOSE="0"
 ECHONORMAL="1"
 ECHOWARNING="1"
 ECHOERROR="1"
+
 
 # #########################################
 #
@@ -123,11 +127,27 @@ function getSystem()
     else
         sSYSTEM=$(uname -s) 
         # Detect System:
-        echo "$sSYSTEM" # ########################################### DEBUG
+        #echo "$sSYSTEM" # ########################################### DEBUG
         if [ "$sSYSTEM" == "Darwin" ] ; then
             SYSTEM="MACOSX"
             # More specific: 
             # The variable $OSTYPE contains more precisely the system version, e.g. "darwin17"
+            # Or use uname -r for e.g. "17.7.0" = MAC OS X High Sierra 10.13.6
+            #                     e.g. "4.20.69-ish" = iPhone SE 14.5.1 with ish-App
+            #                     e.g. "4.20.69-ish" = iPad Air 2 14.7.1 with ish-App
+            # https://de.wikipedia.org/wiki/Darwin_(Betriebssystem)
+            SYSTEMDescription=$(uname -r)
+            SYSTEMTested="0"
+            if [ ! -z "$SYSTEMDescription" ] ;  then
+                if [ "$SYSTEMDescription" = "17.7.0" ] ; then
+                    SYSTEMTested="1"
+                fi
+                # ... Add more known and tested systems.
+            fi
+            # Be paranoid: If nothing found, be sure the string is clean:
+            if [ "$SYSTEMTested" = "0" ] ; then
+                SYSTEMDescription=""
+            fi
         elif [ "$sSYSTEM" == "Linux" ] ; then
             SYSTEM="LINUX"
             # More specific: 
@@ -135,9 +155,27 @@ function getSystem()
             # The variable $OSTYPE contains more precisely the system version.
             # But at the tested systems it contains only "linux"
             #
-            # Works: lsb_release -d
+            lsbPresent=$(which lsb_release)
+            # Works:    lsb_release -d
+            # Alias is: lsb-release -d
             # e.g. "Description:    openSUSE Leap 15.2"
-            # e.g. "Description:	SUSE Linux Enterprise Server 15 SP1"
+            # e.g. "Description:	SUSE Linux Enterprise Server 15 SP1"    # Tested on AWS
+            if [ ! -z "$lsbPresent" ] ; then
+                # We could get more information:
+                SYSTEMDescription=$(lsb_release -d)
+                SYSTEMTested="0"
+                if [ ! -z "$SYSTEMDescription" ] ; then
+                    if [ "$SYSTEMDescription" = "Description:	SUSE Linux Enterprise Server 15 SP1" ] ; then 
+                        # The Script collection was tested on this system:
+                        SYSTEMTested="1"
+                    fi
+                    # ... Add more known and tested systems.
+                fi
+                # Be paranoid: If nothing found, be sure the string is clean:
+                if [ "$SYSTEMTested" = "0" ] ; then
+                    SYSTEMDescription=""
+                fi
+            fi
             #
             # Works also: cat /etc/os-release
             #
@@ -162,9 +200,14 @@ function getDiskSpace()
         # Runs on "Ubuntu 18.04.5":
         # Runs on "SUSE Linux Enterprise Server 15 SP1":
         # Runs on "openSUSE Leap 15.2":
-        DISKSPACE=$(df -h / --output=pcent | tail -n 1)
+        DISKSPACE=$(df -h / --output=pcent | tail -n 1 | xargs)
     elif [ "$SYSTEM" == "MACOSX" ] ; then
-        echo "TODO MACOSX"
+        # Example:
+        # Filesystem     Size   Used  Avail Capacity iused               ifree %iused  Mounted on
+        # /dev/disk1s1   500G   431G    58G    89% 2908579 9223372036851867228    0%   /
+        #sStringZ=$(df -H / | tail -n 1 | cut -d "%" -f 1)
+        #DISKSPACE=$(echo ${sStringZ: -3}"%")
+        DISKSPACE=$(df -H / | tail -n 1 | xargs | cut -d " " -f 5)
     else
         echo "TODO"
     fi
@@ -182,6 +225,22 @@ function getMacAddress()
     # With 'ip addr show' we see all mac addresses and the corresponding ip addresses.
     # Works under: WSL - Linux - SuSE
     echo "TODO"
+}
+
+# #########################################
+# showInfo()
+# Parameter
+#    -
+# Return Value
+#    -
+# Shows the collection information
+function showInfo()
+{
+    echo "[$PROG_NAME:STATUS] System Type      : $SYSTEM"
+    if [ "$SYSTEMTested" = "1" ] ; then
+    echo "[$PROG_NAME:STATUS] System Version   : $SYSTEMDescription"
+    fi
+    echo "[$PROG_NAME:STATUS] Usage Disk Space : $DISKSPACE" 
 }
 
 # #########################################
@@ -232,9 +291,10 @@ getSystem
 
 # Do something ...
 getDiskSpace
+#getMacAddress
 
 # Show Info:
-echo "[$PROG_NAME:STATUS] Usage Disk Space : $DISKSPACE" 
+showInfo
 
 # End:
 echo "[$PROG_NAME] Done."
