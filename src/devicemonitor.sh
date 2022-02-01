@@ -22,10 +22,11 @@
 # 2021-09-13 0.06 kdk Doing some tests and write comments
 # 2021-12-08 0.07 kdk Comments added
 # 2022-01-31 0.08 kdk System check enhanced and getDiskSpace adapted to MAC OS X
+# 2022-02-01 0.09 kdk Change from "==" to "="
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.08"
-PROG_DATE="2022-01-31"
+PROG_VERSION="0.09"
+PROG_DATE="2022-02-01"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -128,7 +129,7 @@ function getSystem()
         sSYSTEM=$(uname -s) 
         # Detect System:
         #echo "$sSYSTEM" # ########################################### DEBUG
-        if [ "$sSYSTEM" == "Darwin" ] ; then
+        if [ "$sSYSTEM" = "Darwin" ] ; then
             SYSTEM="MACOSX"
             # More specific: 
             # The variable $OSTYPE contains more precisely the system version, e.g. "darwin17"
@@ -148,7 +149,7 @@ function getSystem()
             if [ "$SYSTEMTested" = "0" ] ; then
                 SYSTEMDescription=""
             fi
-        elif [ "$sSYSTEM" == "Linux" ] ; then
+        elif [ "$sSYSTEM" = "Linux" ] ; then
             SYSTEM="LINUX"
             # More specific: 
             #
@@ -196,12 +197,12 @@ function getSystem()
 # Get disk space from root file system - Change the global variable DISKSPACE
 function getDiskSpace()
 {
-    if [ "$SYSTEM" == "LINUX" ] ; then
+    if [ "$SYSTEM" = "LINUX" ] ; then
         # Runs on "Ubuntu 18.04.5":
         # Runs on "SUSE Linux Enterprise Server 15 SP1":
         # Runs on "openSUSE Leap 15.2":
         DISKSPACE=$(df -h / --output=pcent | tail -n 1 | xargs)
-    elif [ "$SYSTEM" == "MACOSX" ] ; then
+    elif [ "$SYSTEM" = "MACOSX" ] ; then
         # Example:
         # Filesystem     Size   Used  Avail Capacity iused               ifree %iused  Mounted on
         # /dev/disk1s1   500G   431G    58G    89% 2908579 9223372036851867228    0%   /
