@@ -20,6 +20,7 @@
 # 2021-04-11 0.23 kdk With function deleteQuotationMark()
 # 2021-11-17 0.24 kdk With checkOrCreateFile()
 # 2021-11-18 0.25 kdk With random()
+# 2022-02-04 0.26 kdk With filesize()
 
 # #########################################
 #
@@ -113,6 +114,28 @@ function echoe()
   if [ "$ECHOERROR" = "1" ] ; then
     echo "[$PROG_NAME:$1] $2"
   fi
+}
+
+
+# #########################################
+# fileSize()
+# Parameter
+#   1: file name
+# Return
+#   File size in Bytes
+# Function first used inside AssetHub Usage Scripts (MIT License)
+# Tested at:
+# "17.7.0" = MAC OS X High Sierra 10.13.6
+# SUSE Linux Enterprise Server 15 SP1
+function fileSize()
+{
+    if [ -f "$1" ] ; then
+        # Get file size
+        # tSize=$(wc -c "$1" | cut -d " " -f 1 -) # Too unsecure, sometimes more " " before the first value.
+        # tSize=$(ls -l "$1" | cut -d " " -f 5 -)  # Too unsecure, sometimes more " " between values.
+        tSize=$(wc -c "$1" | awk '{print $1}')
+        echo $tSize
+    fi
 }
 
 
