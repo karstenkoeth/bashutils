@@ -2,9 +2,37 @@
 
 # #########################################
 #
-# Overview
+# ########### Overview ###########
 #
 # This bash script permanently looks for commands inside a special directory and executes these.
+# This script could be started somewhere, but the main folder is always the same. Only one
+# instance of the script is able to run at the same time.
+#
+# ########### Folder structure ###########
+#
+# _Control
+#    In this folder, some files show the status of the program an control the program
+#
+# _Execute
+#    Files in this folder will be executed.
+#    If a process terminets but the executable is listed inside this folder, the process will
+#    be started again.
+#
+# ########### Installer ###########
+#
+# The installer runs as an own process to be able to be restarted by this executer.
+#
+# _Install
+#    Typically, this folder is empty. If inside the folder a file with 
+#    execution rights will be found 
+#    (typically a file and a subfolder was
+#    copied into to folder. After having finished the copy process, the
+#    installer will be changed with 'chmod u+x')
+#    the file would be executed.
+#
+# _Done
+#    If an installer was executed, it will be moved into this folder and 
+#    the filename will be enhanced with Date and Time
 
 # #########################################
 #
@@ -12,10 +40,11 @@
 #
 # 2021-01-29 0.01 kdk First Version - not tested and not started with main function.
 # 2022-01-31 0.02 kdk TODOs added
+# 2022-02-04 0.03 kdk Cleaned up
 
 PROG_NAME="Executer"
-PROG_VERSION="0.02"
-PROG_DATE="2022-01-31"
+PROG_VERSION="0.03"
+PROG_DATE="2022-02-04"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="executer.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -73,8 +102,6 @@ product="executer"
 MainLoopResponseTime="1s"
 MainLoopSleepFactor="1"
 
-
-TRUSTED_DIR="~/executer"
 
 # #########################################
 #
@@ -167,9 +194,8 @@ function checkFolders()
 function checkForExecution()
 {
     # For every file in ExecuteFolder:
-    # Check if the file is valid and executable
-    # If yes: execute & and delete file in ExecuteFolder
-    # File in Executefolder has content: Path and name of the file to execute
+    #   Check if the file is valid and executable
+    #   Check if the process from this file is running
 }
 
 # #########################################
@@ -292,7 +318,7 @@ checkFolders
 checkStart
 updateRun
 
-echo "[$PROG_NAME] Enter main loop. Monitor script with ':> ls --full-time $LogFile'. Stop script by deleting '$RunFile'."
+echo "[$PROG_NAME:STATUS] Enter main loop. Monitor script with ':> ls --full-time $LogFile'. Stop script by deleting '$RunFile'."
 
 # Start main loop
 
@@ -307,4 +333,4 @@ done
 # Done - clean up ...
 removeRun
 
-echo "[$PROG_NAME] Done."
+echo "[$PROG_NAME:STATUS] Done."
