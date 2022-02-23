@@ -25,12 +25,21 @@
 # 2021-03-15 0.08 kdk TODO comment added
 # 2021-04-11 0.09 kdk PROG_CLASS added
 # 2021-12-08 0.10 kdk Comments added
+# 2022-02-07 0.11 kdk TODO added
+# 2022-02-23 0.12 kdk ShellCheck optimized
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.10"
+PROG_VERSION="0.12"
+PROG_DATE="2022-02-23"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
+
+# #########################################
+#
+# TODO
+#
+# https://trello.com/c/5bsK792K/409-bashutils-ish
 
 # #########################################
 #
@@ -98,6 +107,19 @@ function showHelp()
     echo "Copy all script files from the source directoy"
     echo "(typicalle created with git clone https://github.com/karstenkoeth/bashutils.git)"
     echo "to the bin-directory of the user."
+    echo "Copyright $PROG_DATE by Karsten Köth"
+}
+
+# #########################################
+# showVersion()
+# Parameter
+#    -
+# Return Value
+#    -
+# Show version information.
+function showVersion()
+{
+    echo "$PROG_NAME ($PROG_CLASS) $PROG_VERSION"
 }
 
 
@@ -111,7 +133,7 @@ echo "[$PROG_NAME:STATUS] Starting installer ..."
 # Check for program parameters:
 if [ $# -eq 1 ] ; then
     if [ "$1" = "-V" ] ; then
-        echo "[$PROG_NAME:STATUS] Version $PROG_VERSION" ; exit;
+        showVersion ; exit;
     elif [ "$1" = "-h" ] ; then
         showHelp ; exit;
     fi

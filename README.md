@@ -132,3 +132,8 @@ MQTT2REST works under mqtt topic *prototype* on port *1883*. The REST API is rea
 # Connect to Servers
 
 These scripts (ssh2*, scp2*, scpF*) are only useful in combination with the private keys. Therefore, as an alien user of this repository they are useless.
+
+# TODO
+
+Write little script similar to devicemonitor-getDiskSpace() with one program parameter "Mount Point" to get
+file size of disk in MByte (1 GByte = 1024 MByte).
