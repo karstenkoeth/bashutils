@@ -27,9 +27,10 @@
 # 2021-12-08 0.10 kdk Comments added
 # 2022-02-07 0.11 kdk TODO added
 # 2022-02-23 0.12 kdk ShellCheck optimized
+# 2022-02-23 0.13 kdk DateTime adapted to standard format for file names
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.12"
+PROG_VERSION="0.13"
 PROG_DATE="2022-02-23"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
@@ -45,7 +46,7 @@ PROG_LIBRARYNAME="bashutils_common_functions.bash"
 #
 # MIT license (MIT)
 #
-# Copyright 2021 - 2020 Karsten Köth
+# Copyright 2022 - 2020 Karsten Köth
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -77,7 +78,8 @@ PROG_LIBRARYNAME="bashutils_common_functions.bash"
 # Variables
 #
 
-actDateTime=$(date "+%Y-%m-%d +%H:%M:%S")
+#actDateTime=$(date "+%Y-%m-%d +%H:%M:%S")
+actDateTime=$(date "+%Y-%m-%d.%H_%M_%S")
 
 # Handle output of the different verbose levels - in combination with the 
 # "echo?" functions inside "bashutils_common_functions.bash":
@@ -220,7 +222,7 @@ fi
 
 # At the moment not needed - but a good function - ?
 Uuid=$(uuidgen)
-TmpFile="$TmpDir$actDateTime_$Uuid.tmp"
+TmpFile="$TmpDir$actDateTime.$Uuid.tmp"
 touch "$TmpFile"
 if [ ! -f "$TmpFile" ] ; then
     echo "[$PROG_NAME:ERROR] Can't create temporary file. Exit."
