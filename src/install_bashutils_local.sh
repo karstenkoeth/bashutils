@@ -242,6 +242,10 @@ if [ -z "$lsbreleasePresent" ] ; then
 fi
 # Check, if we are successful:
 lsbreleasePresent=$(which lsb-release)
+if [ -z "$lsbreleasePresent" ] ; then
+    # Sometimes a little bit different spelling:
+    lsbreleasePresent=$(which lsb_release)
+fi
 if [ -z "$lsbreleasePresent" ] && [ -z "$brewPresent" ] ; then
     echo "[$PROG_NAME:ERROR] Can't find 'lsb-release' or 'brew'. Exit."
     exit
