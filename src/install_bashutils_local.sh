@@ -232,6 +232,10 @@ fi
 # 'lsb-release' is needed to detect on which Linux version we are running.
 lsbreleasePresent=$(which lsb-release)
 if [ -z "$lsbreleasePresent" ] ; then
+    # Sometimes a little bit different spelling:
+    lsbreleasePresent=$(which lsb_release)
+fi
+if [ -z "$lsbreleasePresent" ] ; then
     if [ -x "$aptgetPresent" ] ; then
         # We could use apt-get:
         $appSudo apt-get -y install lsb-release
