@@ -30,9 +30,10 @@
 # 2022-02-23 0.13 kdk DateTime adapted to standard format for file names
 # 2022-02-28 0.14 kdk Comments added
 # 2022-03-01 0.15 kdk Comments added and sudo depends on user != root
+# 2022-03-01 0.16 kdk Package Manager check added
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.15"
+PROG_VERSION="0.16"
 PROG_DATE="2022-03-01"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
@@ -170,7 +171,8 @@ if [ ! -d "$TmpDir" ] ; then
     exit
 fi
 
-# First, we have to look, if we are running as "root" or not:
+# On ubuntu 18.04 in docker: Here we are acting as root and therefore "sudo" is unknown.
+#   --> First, we have to look, if we are running as "root" or not:
 appUser=$(whoami)
 if [ "$appUser" = "root" ] ; then
     appSudo=""
@@ -188,26 +190,75 @@ fi
 #fi
 
 # On SUSE, the program cnf could answer in which software package a program is included.
+# On Ubuntu, the website https://packages.ubuntu.com/ could answer in which software package a program is included.
 
 # Before update the system: detect the system we are running on:
 # TODO: Use function:
 # TODO: If Linux, which linux?
+# See also: bashutils - devicemonitor.sh - getSystem()
 # to detect, we need some programs - have to install:
+#
+# SuSE:
 # Das Programm 'lsb_release' kann im folgenden Paket gefunden werden:
 #  * lsb-release [ Pfad: /usr/bin/lsb_release, Repository: zypp (Basesystem_Module_x86_64:SLE-Module-Basesystem15-SP1-Pool) ]
 # Zum Installieren versuchen Sie:
 #    sudo zypper install lsb-release
+#
+# Ubuntu
+# Das Programm 'lsb-release' kann im folgenden Paket gefunden werden:
+#  * lsb-release 
+# Zum Installieren versuchen Sie:
+#    sudo apt-get -y install lsb-release
 
+# No idea on which system we are - but we could check which package manager we could use:
+aptgetPresent=$(which apt-get)
+zypperPresent=$(which zypper)
+brewPresent=$(which brew)
 
-# Allways good idea to update the system:
-$appSudo apt-get -y update 
-# TODO
+# Allways good idea to update the system, here on Ubuntu:
+if [ -x "$aptgetPresent" ] ; then
+    $appSudo apt-get -y update 
+fi
 # Same on openSUSE:
-# sudo zypper --non-interactive refresh
-# Same on MAC OS X (here, sudo brew is no more supported)
-# brew update
-# brew upgrade
-# Not same on ubuntu 18.04 in docker: Here we are acting as root and therefore "sudo" is unknown.
+if [ -x "$zypperPresent" ] ; then
+    $appSudo zypper --non-interactive refresh
+fi
+# Same on MAC OS X (here, sudo brew is no more supported):
+if [ -x "$brewPresent" ] ; then
+    $appSudo brew update
+    $appSudo brew upgrade
+fi
+
+# 'lsb-release' is needed to detect on which Linux version we are running.
+lsbreleasePresent=$(which lsb-release)
+if [ -z "$lsbreleasePresent" ] ; then
+    if [ -x "$aptgetPresent" ] ; then
+        # We could use apt-get:
+        $appSudo apt-get -y install lsb-release
+    fi
+    if [ -x "$zypperPresent" ] ; then
+        $appSudo zypper --non-interactive install lsb-release  # NOT TESTED
+    fi
+fi
+# Check, if we are successful:
+lsbreleasePresent=$(which lsb-release)
+if [ -z "$lsbreleasePresent" ] && [ -z "$brewPresent" ] ; then
+    echo "[$PROG_NAME:ERROR] Can't find 'lsb-release' or 'brew'. Exit."
+    exit
+fi
+
+# 'file' is not standard --> Install it:
+filePresent=$(which file)
+if [ -z "$filePresent" ] ; then
+    if [ -x "$aptgetPresent" ] ; then
+        # We could use apt-get:
+        $appSudo apt-get -y install file
+    fi
+    if [ -x "$zypperPresent" ] ; then
+        $appSudo zypper --non-interactive install file  # NOT TESTED
+    fi
+fi
+
 
 # iPad-von-Kasa:~# rki.sh # Diese Fehler liefert das Programm:
 # /root/bin/rki.sh: line 101: curl: command not found
@@ -223,7 +274,12 @@ $appSudo apt-get -y update
 # Make sure all necessary tools are present:
 uuidgenPresent=$(which uuidgen)
 if [ -z "$uuidgenPresent" ] ; then
-    sudo apt-get -y install uuid-runtime
+    if [ -x "$aptgetPresent" ] ;  then
+        $appSudo apt-get -y install uuid-runtime
+    fi
+    if [ -x "$zypperPresent" ] ; then
+        $appSudo zypper --non-interactive install uuid  # NOT TESTED
+    fi
 fi
 
 # TODO
