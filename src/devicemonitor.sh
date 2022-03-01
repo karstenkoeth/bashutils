@@ -23,9 +23,10 @@
 # 2021-12-08 0.07 kdk Comments added
 # 2022-01-31 0.08 kdk System check enhanced and getDiskSpace adapted to MAC OS X
 # 2022-02-01 0.09 kdk Change from "==" to "="
+# 2022-03-01 0.10 kdk Ubuntu tested
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.09"
+PROG_VERSION="0.10"
 PROG_DATE="2022-02-01"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
@@ -168,6 +169,9 @@ function getSystem()
                 if [ ! -z "$SYSTEMDescription" ] ; then
                     if [ "$SYSTEMDescription" = "Description:	SUSE Linux Enterprise Server 15 SP1" ] ; then 
                         # The Script collection was tested on this system:
+                        SYSTEMTested="1"
+                    fi
+                    if [ "$SYSTEMDescription" = "Description:	Ubuntu 18.04.6 LTS" ] ; then
                         SYSTEMTested="1"
                     fi
                     # ... Add more known and tested systems.
