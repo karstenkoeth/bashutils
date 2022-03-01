@@ -31,9 +31,10 @@
 # 2022-02-28 0.14 kdk Comments added
 # 2022-03-01 0.15 kdk Comments added and sudo depends on user != root
 # 2022-03-01 0.16 kdk Package Manager check added
+# 2022-03-01 0.17 kdk with snapd package manager
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.16"
+PROG_VERSION="0.17"
 PROG_DATE="2022-03-01"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
@@ -228,6 +229,24 @@ if [ -x "$brewPresent" ] ; then
     $appSudo brew update
     $appSudo brew upgrade
 fi
+
+# Sometimes we should use an alternative package manager: snap
+#snapPresent=$(which snap)
+#if [ -z "$snapPresent" ] ; then
+#    if [ -x "$aptgetPresent" ] ; then
+#        $appSudo apt-get -y install snapd
+#    fi
+#    # TODO SuSE
+#    # TODO MAC OS X
+#fi
+# ########################## ATTENTION ########################################
+#
+# snap is very ugly: To use snap, a re-login is needed. Therefore, in the same 
+# script, snap can't installed and used.
+# This means: we normally must do an logout now. Uaah.
+#
+# snap didn't work in docker: "System has not been booted with systemd as init system (PID 1). Can't operate."
+# https://snapcraft.io/docs/troubleshooting
 
 # 'lsb-release' is needed to detect on which Linux version we are running.
 lsbreleasePresent=$(which lsb-release)
