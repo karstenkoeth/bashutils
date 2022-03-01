@@ -28,10 +28,12 @@
 # 2022-02-07 0.11 kdk TODO added
 # 2022-02-23 0.12 kdk ShellCheck optimized
 # 2022-02-23 0.13 kdk DateTime adapted to standard format for file names
+# 2022-02-28 0.14 kdk Comments added
+# 2022-03-01 0.15 kdk Comments added and sudo depends on user != root
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.13"
-PROG_DATE="2022-02-23"
+PROG_VERSION="0.15"
+PROG_DATE="2022-03-01"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -88,6 +90,9 @@ ECHOVERBOSE="1"
 ECHONORMAL="1"
 ECHOWARNING="1"
 ECHOERROR="1"
+
+# Script specific Apps:
+appSudo="sudo"
 
 # #########################################
 #
@@ -165,7 +170,15 @@ if [ ! -d "$TmpDir" ] ; then
     exit
 fi
 
+# First, we have to look, if we are running as "root" or not:
+appUser=$(whoami)
+if [ "$appUser" = "root" ] ; then
+    appSudo=""
+fi
+
 # TODO
+#
+#
 # Here first to check if "sudo" is available:
 #tmp=$(which sudo)
 #if [ -z "$tmp" ] ; then
@@ -187,13 +200,14 @@ fi
 
 
 # Allways good idea to update the system:
-sudo apt-get -y update 
+$appSudo apt-get -y update 
 # TODO
 # Same on openSUSE:
 # sudo zypper --non-interactive refresh
 # Same on MAC OS X (here, sudo brew is no more supported)
 # brew update
 # brew upgrade
+# Not same on ubuntu 18.04 in docker: Here we are acting as root and therefore "sudo" is unknown.
 
 # iPad-von-Kasa:~# rki.sh # Diese Fehler liefert das Programm:
 # /root/bin/rki.sh: line 101: curl: command not found
