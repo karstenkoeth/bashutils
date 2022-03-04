@@ -10,8 +10,10 @@
 # This script installs the bashutils in the user directory.
 #
 # Tested at:
-# - MAC OS X 10.13.6
+# - MacBook - MAC OS X 10.13.6
 # - raspi
+# - EC2 - Ubuntu
+# - iPhone - ish
 
 # #########################################
 #
@@ -32,10 +34,11 @@
 # 2022-03-01 0.15 kdk Comments added and sudo depends on user != root
 # 2022-03-01 0.16 kdk Package Manager check added
 # 2022-03-01 0.17 kdk with snapd package manager
+# 2022-03-04 0.18 kdk With ish
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.17"
-PROG_DATE="2022-03-01"
+PROG_VERSION="0.18"
+PROG_DATE="2022-03-04"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -190,8 +193,9 @@ fi
 #   appSudo="sudo"
 #fi
 
-# On SUSE, the program cnf could answer in which software package a program is included.
+# On SUSE, the program 'cnf' could answer in which software package a program is included.
 # On Ubuntu, the website https://packages.ubuntu.com/ could answer in which software package a program is included.
+# On Alpine Linux, the program 'apk search -v --description' could answer in which software package a program is included.
 
 # Before update the system: detect the system we are running on:
 # TODO: Use function:
@@ -215,8 +219,11 @@ fi
 aptgetPresent=$(which apt-get)
 zypperPresent=$(which zypper)
 brewPresent=$(which brew)
+apkPresent=$(which apk)
 
-# Allways good idea to update the system, here on Ubuntu:
+# Allways good idea to update the system, update typically updates the 
+# package manager caches.
+# Here on Ubuntu:
 if [ -x "$aptgetPresent" ] ; then
     $appSudo apt-get -y update 
 fi
@@ -229,6 +236,23 @@ if [ -x "$brewPresent" ] ; then
     $appSudo brew update
     $appSudo brew upgrade
 fi
+# Same on iPads inside th 'ish' program, an Alpine Linux Version.
+# See help e.g. at: https://wiki.alpinelinux.org/wiki/Package_management
+if [ -x "$apkPresent" ] ; then
+    $appSudo apk update
+fi
+
+# Allways a good idea to update all installed packages. This is typically 
+# called 'upgrade'.
+# Here on Ubuntu:
+if [ -x "$aptgetPresent" ] ; then
+    $appSudo apt-get -y upgrade 
+fi
+# Same on iPads etc:
+if [ -x "$apkPresent" ] ; then
+    $appSudo apk upgrade
+fi
+
 
 # Sometimes we should use an alternative package manager: snap
 #snapPresent=$(which snap)
@@ -270,20 +294,22 @@ if [ -z "$lsbreleasePresent" ] ; then
     lsbreleasePresent=$(which lsb_release)
 fi
 if [ -z "$lsbreleasePresent" ] && [ -z "$brewPresent" ] ; then
-    echo "[$PROG_NAME:ERROR] Can't find 'lsb-release' or 'brew'. Exit."
-    exit
+    echo "[$PROG_NAME:WARNING] Can't find 'lsb-release' or 'brew'."
 fi
 
 # 'file' is not standard --> Install it:
 filePresent=$(which file)
 if [ -z "$filePresent" ] ; then
     if [ -x "$aptgetPresent" ] ; then
-        # We could use apt-get:
         $appSudo apt-get -y install file
     fi
     if [ -x "$zypperPresent" ] ; then
         $appSudo zypper --non-interactive install file  # NOT TESTED
     fi
+    # Installation was not working on iPhone - must be something different...
+    #if [ -x "$apkPresent" ] ; then
+    #    $appSudo apk add coreinfo # NOT TESTED
+    #fi
 fi
 
 

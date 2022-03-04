@@ -147,6 +147,7 @@ function getSystem()
                 if [ "$SYSTEMDescription" = "17.7.0" ] ; then
                     SYSTEMTested="1"
                 fi
+                # Normally, it is found under Linux, but maybe ... try it:
                 if [ "$SYSTEMDescription" = "4.20.69-ish" ] ; then
                     SYSTEMTested="1"
                 fi
@@ -158,6 +159,8 @@ function getSystem()
             fi
         elif [ "$sSYSTEM" = "Linux" ] ; then
             SYSTEM="LINUX"
+            # Set to Default:
+            SYSTEMDescription=""
             # More specific: 
             #
             # The variable $OSTYPE contains more precisely the system version.
@@ -188,6 +191,17 @@ function getSystem()
                 # Be paranoid: If nothing found, be sure the string is clean:
                 if [ "$SYSTEMTested" = "0" ] ; then
                     SYSTEMDescription=""
+                fi
+            fi
+            # If we have no info with lsb-release:
+            if [ -z "$SYSTEMDescription" ] ; then
+                SYSTEMDescription=$(uname -r)
+                SYSTEMTested="0"
+                if [ ! -z "$SYSTEMDescription" ] ;  then
+                    if [ "$SYSTEMDescription" = "4.20.69-ish" ] ; then
+                        SYSTEMTested="1"
+                    fi
+                    # ... Add more known and tested systems.
                 fi
             fi
             #
