@@ -24,10 +24,11 @@
 # 2022-01-31 0.08 kdk System check enhanced and getDiskSpace adapted to MAC OS X
 # 2022-02-01 0.09 kdk Change from "==" to "="
 # 2022-03-01 0.10 kdk Ubuntu tested
+# 2022-03-04 0.11 kdk Last echo adapted
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.10"
-PROG_DATE="2022-02-01"
+PROG_VERSION="0.11"
+PROG_DATE="2022-03-04"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -302,4 +303,4 @@ getDiskSpace
 showInfo
 
 # End:
-echo "[$PROG_NAME] Done."
+echo "[$PROG_NAME:STATUS] Done."
