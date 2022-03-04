@@ -35,10 +35,11 @@
 # 2022-03-01 0.16 kdk Package Manager check added
 # 2022-03-01 0.17 kdk with snapd package manager
 # 2022-03-04 0.18 kdk With ish
+# 2022-03-05 0.19 kdk Create .bashrc 
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.18"
-PROG_DATE="2022-03-04"
+PROG_VERSION="0.19"
+PROG_DATE="2022-03-05"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -322,7 +323,10 @@ fi
 # ___
 # .bashrc
 # export PATH=$PATH:/root/bin
-
+if [ ! -f "$HOME/.bashrc" ] ; then
+    tmpHome="$HOME"
+    echo "export PATH=\$PATH:/$tmpHome/bin" > "$HOME/.bashrc.test"
+fi
 
 # Make sure all necessary tools are present:
 uuidgenPresent=$(which uuidgen)
