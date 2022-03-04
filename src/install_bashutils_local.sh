@@ -333,6 +333,14 @@ if [ -z "$uuidgenPresent" ] ; then
     if [ -x "$zypperPresent" ] ; then
         $appSudo zypper --non-interactive install uuid  # NOT TESTED
     fi
+    if [ -x "$apkPresent" ] ; then
+        $appSudo apk add uuidgen
+    fi
+fi
+uuidgenPresent=$(which uuidgen)
+if [ -z "$uuidgenPresent" ] ; then
+    echo "[$PROG_NAME:ERROR] 'uuidgen' not installable. Exit."
+    exit
 fi
 
 # TODO
