@@ -325,7 +325,7 @@ fi
 # export PATH=$PATH:/root/bin
 if [ ! -f "$HOME/.bashrc" ] ; then
     tmpHome="$HOME"
-    echo "export PATH=\$PATH:/$tmpHome/bin" > "$HOME/.bashrc.test"
+    echo "export PATH=\$PATH:$tmpHome/bin" > "$HOME/.bashrc"
 fi
 
 # Make sure all necessary tools are present:
