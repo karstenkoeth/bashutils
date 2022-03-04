@@ -225,10 +225,15 @@ function getSystem()
 function getDiskSpace()
 {
     if [ "$SYSTEM" = "LINUX" ] ; then
-        # Runs on "Ubuntu 18.04.5":
-        # Runs on "SUSE Linux Enterprise Server 15 SP1":
-        # Runs on "openSUSE Leap 15.2":
-        DISKSPACE=$(df -h / --output=pcent | tail -n 1 | xargs)
+        if [ "$SYSTEMDescription" = "4.20.69-ish" ] ; then
+            # Alpine Linux with BusyBox
+            DISKSPACE=$(df -h / | tail -n 1 | xargs | cut -d " " -f 4)
+        else
+            # Runs on "Ubuntu 18.04.5":
+            # Runs on "SUSE Linux Enterprise Server 15 SP1":
+            # Runs on "openSUSE Leap 15.2":
+            DISKSPACE=$(df -h / --output=pcent | tail -n 1 | xargs)
+        fi
     elif [ "$SYSTEM" = "MACOSX" ] ; then
         # Example:
         # Filesystem     Size   Used  Avail Capacity iused               ifree %iused  Mounted on
