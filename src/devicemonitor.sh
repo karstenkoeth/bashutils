@@ -25,9 +25,10 @@
 # 2022-02-01 0.09 kdk Change from "==" to "="
 # 2022-03-01 0.10 kdk Ubuntu tested
 # 2022-03-04 0.11 kdk Last echo adapted
+# 2022-03-04 0.12 kdk Description:	Ubuntu 20.04.3 LTS tested
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.11"
+PROG_VERSION="0.12"
 PROG_DATE="2022-03-04"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
@@ -173,6 +174,9 @@ function getSystem()
                         SYSTEMTested="1"
                     fi
                     if [ "$SYSTEMDescription" = "Description:	Ubuntu 18.04.6 LTS" ] ; then
+                        SYSTEMTested="1"
+                    fi
+                    if [ "$SYSTEMDescription" = "Description:	Ubuntu 20.04.3 LTS" ] ; then
                         SYSTEMTested="1"
                     fi
                     # ... Add more known and tested systems.
