@@ -26,9 +26,10 @@
 # 2022-03-01 0.10 kdk Ubuntu tested
 # 2022-03-04 0.11 kdk Last echo adapted
 # 2022-03-04 0.12 kdk Description:	Ubuntu 20.04.3 LTS tested
+# 2022-03-04 0.13 kdk Description: With ish
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.12"
+PROG_VERSION="0.13"
 PROG_DATE="2022-03-04"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
@@ -144,6 +145,9 @@ function getSystem()
             SYSTEMTested="0"
             if [ ! -z "$SYSTEMDescription" ] ;  then
                 if [ "$SYSTEMDescription" = "17.7.0" ] ; then
+                    SYSTEMTested="1"
+                fi
+                if [ "$SYSTEMDescription" = "4.20.69-ish" ] ; then
                     SYSTEMTested="1"
                 fi
                 # ... Add more known and tested systems.
