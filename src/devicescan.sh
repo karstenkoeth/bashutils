@@ -15,10 +15,11 @@
 # 2021-01-29 0.03 kdk 2021 year ready, with PROG_DATE and Copyright in help, with showVersion()
 # 2021-02-08 0.04 kdk License text enhanced.
 # 2021-12-08 0.01 kdk First version of devicescan.sh
+# 2022-03-23 0.02 kdk With scanDevice()
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.01"
-PROG_DATE="2021-12-08"
+PROG_VERSION="0.02"
+PROG_DATE="2022-03-23"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -33,7 +34,7 @@ PROG_SCRIPTNAME="devicescan.sh"
 #
 # MIT license (MIT)
 #
-# Copyright 2021 Karsten Köth
+# Copyright 2022 - 2021 Karsten Köth
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -89,6 +90,7 @@ ECHOERROR="1"
 TmpDir="$HOME/tmp/"
 TmpFile="devicescan_nmap_$actDateTime.txt"
 ScanFile="devicescan_devices_$actDateTime.txt"
+MacFile="devicescan_mac_$actDateTime.txt"
 
 # #########################################
 #
@@ -160,6 +162,55 @@ function checkEnvironment()
 }
 
 # #########################################
+# scanDevice()
+# Parameter
+#    1: ip address to scan, e.g. "192.168.0.2"
+# Return Value
+#    -
+# The result will be shown on stdout
+function scanDevice()
+{
+    sudo nmap -R -T Normal "$1" 
+}
+
+# #########################################
+# getHostname()
+# Parameter
+#    MAC Address (in upper Case)
+# Return Value
+#    -
+# The result will be written to stdout
+function getHostname()
+{
+    # TODO Name abstrahieren
+    cat ~/Documents/Infrastruktur/Netzwerk.txt | grep ";" | grep "$1" | cut -d ";" -f 2
+}
+
+# #########################################
+# listMacAddresses()
+# Parameter
+#    -
+# Return Value
+#    -
+# The scanNetwork() must be called first!
+# The result will be written down in the tmp file
+function listMacAddresses()
+{
+    # If first the network was scanned, the arp cache is filled.
+    arp -a > "$TmpDir$MacFile.tmp"
+    # Filter the output to have only a list of MAC addresses:
+    cat "$TmpDir$MacFile.tmp" | cut -f 4 -d " " | grep ":" > "$TmpDir$MacFile.mac"
+    # Make clean:
+    # Enhance at the beginning from 1 char to 2 chars:   sed "s/^\(.\):/0\1:/g"
+    # Enhance in the middle from 1 char to 2 chars:      sed "s/:\(.\):/:0\1:/g"
+    # Enhance at the end from 1 char to 2 chars:         sed "s/:\(.\)$/:0\1/g"
+    cat "$TmpDir$MacFile.mac" | sed "s/^\(.\):/0\1:/g" | sed "s/:\(.\)$/:0\1/g" | sed "s/:\(.\):/:0\1:/g" | sed "s/:\(.\):/:0\1:/g" | mac_converter.sh -L -x > "$TmpDir$MacFile"
+    # Clean up:
+    #rm "$TmpDir$MacFile.tmp"
+    #rm "$TmpDir$MacFile.mac"
+}
+
+# #########################################
 # scanNetwork()
 # Parameter
 #    1: network part to scan, e.g. "192.168.0.*"
@@ -168,11 +219,15 @@ function checkEnvironment()
 # The result will be written down in the tmp file
 function scanNetwork()
 {
-    echo "TODO"
+    # Lists all devices (which could be pinged) into file:
     nmap -sn "$1" -oG "$TmpDir$TmpFile"
-    # Typical output line: 
+    # Typical line in file: 
     # Host: 192.168.0.1 (kabelbox.local)	Status: Up
+    # Extract ip addresses into next file:
     cat "$TmpDir$TmpFile" | grep "Host" | cut -f 2 -d " " > "$TmpDir$ScanFile"
+    # Scan each device exactly
+    # for ...
+    echo "[$PROG_NAME:DEBUG] TODO"
 }
 
 # #########################################
@@ -223,9 +278,13 @@ if [ $# -eq 1 ] ; then
     fi
 fi
 
-
+echo "[$PROG_NAME:STATUS] Check folders ..."
 checkEnvironment
 
+echo "[$PROG_NAME:STATUS] Scan network ..."
 scanNetwork "192.168.0.*" # TODO: Automatically detect which network we should scan.
+
+echo "[$PROG_NAME:STATUS] Get MAC addresses ..."
+listMacAddresses
 
 echo "[$PROG_NAME] Done."
