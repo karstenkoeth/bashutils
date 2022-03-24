@@ -16,10 +16,11 @@
 # 2021-02-08 0.04 kdk License text enhanced.
 # 2021-12-08 0.01 kdk First version of devicescan.sh
 # 2022-03-23 0.02 kdk With scanDevice()
+# 2022-03-24 0.03 kdk With more comments
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.02"
-PROG_DATE="2022-03-23"
+PROG_VERSION="0.03"
+PROG_DATE="2022-03-24"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -27,6 +28,26 @@ PROG_SCRIPTNAME="devicescan.sh"
 #
 # TODOs
 #
+
+# #########################################
+#
+# Uses
+#
+# tr
+# nmap
+# arp
+# ip
+# sed
+# date
+# mkdir
+# touch
+# which
+# sudo
+# cat
+# cut
+# grep
+# echo
+# mac_converter.sh
 
 # #########################################
 #
@@ -196,6 +217,20 @@ function getHostname()
 # The result will be written down in the tmp file
 function listMacAddresses()
 {
+    # #####################################
+    # ip - Version
+
+    # ip -4 neigh : Shows the ip and mac addresses in one line, e.g.:
+    # 192.168.0.176 dev eth0 lladdr 68:5b:35:be:43:49 REACHABLE
+    # 192.168.0.220 dev eth0  FAILED
+    # Show only lines with MAC Addresses and show with uppercase letters:
+    # ip -4 neigh | grep ":" | tr "[:lower:]" "[:upper:]"
+    # IP  Address: cut -d " " -f 1
+    # MAC Address: cut -d " " -f 5   <-- Could be non present, check for "contains 5 : ", see above
+
+    # #####################################
+    # arp - Version
+
     # If first the network was scanned, the arp cache is filled.
     arp -a > "$TmpDir$MacFile.tmp"
     # Filter the output to have only a list of MAC addresses:
@@ -205,6 +240,8 @@ function listMacAddresses()
     # Enhance in the middle from 1 char to 2 chars:      sed "s/:\(.\):/:0\1:/g"
     # Enhance at the end from 1 char to 2 chars:         sed "s/:\(.\)$/:0\1/g"
     cat "$TmpDir$MacFile.mac" | sed "s/^\(.\):/0\1:/g" | sed "s/:\(.\)$/:0\1/g" | sed "s/:\(.\):/:0\1:/g" | sed "s/:\(.\):/:0\1:/g" | mac_converter.sh -L -x > "$TmpDir$MacFile"
+    
+    # TODO: Remove "#"
     # Clean up:
     #rm "$TmpDir$MacFile.tmp"
     #rm "$TmpDir$MacFile.mac"

@@ -36,10 +36,11 @@
 # 2022-03-01 0.17 kdk with snapd package manager
 # 2022-03-04 0.18 kdk With ish
 # 2022-03-05 0.19 kdk Create .bashrc 
+# 2022-03-24 0.20 kdk Comments added
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.19"
-PROG_DATE="2022-03-05"
+PROG_VERSION="0.20"
+PROG_DATE="2022-03-24"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -398,6 +399,11 @@ fi
 # Maybe we want to know other MAC addresses in the network:
 # sudo apt-get -y install arping
 # sudo apt-get -y install nmap
+
+# TODO
+# network scan with nmap and arp OR with ip
+# SuSE: arp is in package "net-tools-deprecated"
+# MAC: ip like:  brew install iproute2mac --> See: https://github.com/brona/iproute2mac
 
 # At the moment not needed - but a good function:
 # getFunctionsFile()
