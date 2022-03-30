@@ -416,7 +416,7 @@ else
 fi
 
 # Normally, it is save to go with a file to support file names with spaces inside the name.
-# But here, we only care about shell scripts - these we write without spaces in th name.
+# But here, we only care about shell scripts - these we write without spaces in the name.
 # ls -1 $SourceDir/*.sh > "$TmpFile"
 lines=$(ls -1 $SourceDir/*.sh)
 
