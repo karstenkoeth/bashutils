@@ -37,10 +37,12 @@
 # 2022-03-04 0.18 kdk With ish
 # 2022-03-05 0.19 kdk Create .bashrc 
 # 2022-03-24 0.20 kdk Comments added
+# 2022-04-01 0.21 kdk Export Path with $HOME/bin
+# 2022-04-08 0.22 kdk Comments added
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.20"
-PROG_DATE="2022-03-24"
+PROG_VERSION="0.22"
+PROG_DATE="2022-04-08"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -222,6 +224,7 @@ aptgetPresent=$(which apt-get)
 zypperPresent=$(which zypper)
 brewPresent=$(which brew)
 apkPresent=$(which apk)
+# TODO: Which package manager for debian on chrome book?
 
 # Allways good idea to update the system, update typically updates the 
 # package manager caches.
@@ -328,6 +331,8 @@ if [ ! -f "$HOME/.bashrc" ] ; then
     tmpHome="$HOME"
     echo "export PATH=\$PATH:$tmpHome/bin" > "$HOME/.bashrc"
 fi
+# Set path to directly work with:
+export PATH="$PATH:$HOME/bin"
 
 # Make sure all necessary tools are present:
 uuidgenPresent=$(which uuidgen)
@@ -399,6 +404,13 @@ fi
 # Maybe we want to know other MAC addresses in the network:
 # sudo apt-get -y install arping
 # sudo apt-get -y install nmap
+nmapPresent=$(which nmap)
+if [ -z "$nmapPresent" ] ; then
+    if [ -x "$aptgetPresent" ] ;  then
+        # nmap is in: impish (21.10) - but did not work, package nmap works.
+        $appSudo apt-get -y install nmap
+    fi
+fi
 
 # TODO
 # network scan with nmap and arp OR with ip

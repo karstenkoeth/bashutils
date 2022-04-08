@@ -19,7 +19,7 @@ The server consists of two files:
 
 Install all files as normal user with:
 
-`./install_bashutils_local.sh`
+`./bashutils/src/install_bashutils_local.sh`
 
 ## Run
 
@@ -117,7 +117,7 @@ The server consists of these files:
 
 Install all files as normal user with:
 
-`./install_bashutils_local.sh`
+`./bashutils/src/install_bashutils_local.sh`
 
 ## Run
 

@@ -25,12 +25,14 @@
 # 2022-02-01 0.09 kdk Change from "==" to "="
 # 2022-03-01 0.10 kdk Ubuntu tested
 # 2022-03-04 0.11 kdk Last echo adapted
-# 2022-03-04 0.12 kdk Description:	Ubuntu 20.04.3 LTS tested
+# 2022-03-04 0.12 kdk Description: Ubuntu 20.04.3 LTS tested
 # 2022-03-04 0.13 kdk Description: With ish
+# 2022-04-01 0.14 kdk Description: Ubuntu 20.04.4 LTS
+# 2022-04-08 0.15 kdk Description:    Debian GNU/Linux 10 (buster)
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.13"
-PROG_DATE="2022-03-04"
+PROG_VERSION="0.15"
+PROG_DATE="2022-04-08"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -186,6 +188,16 @@ function getSystem()
                     if [ "$SYSTEMDescription" = "Description:	Ubuntu 20.04.3 LTS" ] ; then
                         SYSTEMTested="1"
                     fi
+                    if [ "$SYSTEMDescription" = "Description:    Debian GNU/Linux 10 (buster)" ] ; then
+                        # Chromebook
+                        # Tested at 2022-04-08
+                        SYSTEMTested="1"
+                    fi
+                    if [ "$SYSTEMDescription" = "Description:    Ubuntu 20.04.4 LTS" ] ; then
+                        # Inside Citrix Dedicated Desktop the "* Base WSL"
+                        # Tested at 2022-04-01
+                        SYSTEMTested="1"
+                    fi
                     # ... Add more known and tested systems.
                 fi
                 # Be paranoid: If nothing found, be sure the string is clean:
@@ -232,6 +244,7 @@ function getDiskSpace()
             # Runs on "Ubuntu 18.04.5":
             # Runs on "SUSE Linux Enterprise Server 15 SP1":
             # Runs on "openSUSE Leap 15.2":
+            # Runs on "Ubuntu 20.04.4 LTS"
             DISKSPACE=$(df -h / --output=pcent | tail -n 1 | xargs)
         fi
     elif [ "$SYSTEM" = "MACOSX" ] ; then
