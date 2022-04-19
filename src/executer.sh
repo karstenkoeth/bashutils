@@ -14,8 +14,10 @@
 #    In this folder, some files show the status of the program an control the program
 #
 # _Execute
-#    Files in this folder will be executed.
-#    If a process terminets but the executable is listed inside this folder, the process will
+#    Programs mentioned in this folder will be executed.
+#    The program executable (or the script) is installed in the $PATH. 
+#    We check this with "which program".
+#    If a process terminates but the program is listed inside this folder, the process will
 #    be started again.
 #
 # ########### Installer ###########
@@ -41,13 +43,13 @@
 # 2021-01-29 0.01 kdk First Version - not tested and not started with main function.
 # 2022-01-31 0.02 kdk TODOs added
 # 2022-02-04 0.03 kdk Cleaned up
+# 2022-04-19 0.04 kdk Executer for loop added
 
 PROG_NAME="Executer"
-PROG_VERSION="0.03"
-PROG_DATE="2022-02-04"
+PROG_VERSION="0.04"
+PROG_DATE="2022-04-19"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="executer.sh"
-PROG_LIBRARYNAME="bashutils_common_functions.bash"
 
 # #########################################
 #
@@ -61,7 +63,7 @@ PROG_LIBRARYNAME="bashutils_common_functions.bash"
 #
 # MIT license (MIT)
 #
-# Copyright 2021 Karsten Köth
+# Copyright 2022 - 2021 Karsten Köth
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -196,6 +198,26 @@ function checkForExecution()
     # For every file in ExecuteFolder:
     #   Check if the file is valid and executable
     #   Check if the process from this file is running
+    
+    # Normally, it is save to go with a file to support file names with spaces inside the name.
+    # But here, we only care about program executables and shell scripts, 
+    # these we write without spaces in the name.
+    # ls -1 $SourceDir/*.sh > "$TmpFile"
+    lines=$(ls -1 $ExecuteFolder*.sh)
+
+    for line in $lines
+    do
+        pureLine=$(basename "$line")
+        case $pureLine in 
+            "$PROG_SCRIPTNAME")
+                echo "[$PROG_NAME:STATUS] Own program '$pureLine'"
+            ;;
+            *)
+                echo "[$PROG_NAME:STATUS] Program     '$pureLine'"
+                # TODO: Was soll nun passieren?
+            ;;
+        esac
+    done
 }
 
 # #########################################
@@ -316,6 +338,7 @@ fi
 adjustVariables
 checkFolders
 checkStart
+touch "$ExecuteFolder$PROG_SCRIPTNAME" # Minimum this script itself should run.
 updateRun
 
 echo "[$PROG_NAME:STATUS] Enter main loop. Monitor script with ':> ls --full-time $LogFile'. Stop script by deleting '$RunFile'."
