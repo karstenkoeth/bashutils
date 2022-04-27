@@ -11,7 +11,7 @@
 # ########### Folder structure ###########
 #
 # _Control
-#    In this folder, some files show the status of the program an control the program
+#    In this folder, some files show the status of the program and control the program
 #
 # _Execute
 #    Programs mentioned in this folder will be executed.
@@ -44,18 +44,17 @@
 # 2022-01-31 0.02 kdk TODOs added
 # 2022-02-04 0.03 kdk Cleaned up
 # 2022-04-19 0.04 kdk Executer for loop added
+# 2022-04-27 0.05 kdk checkForPresence() added, tested on MAC-OS-X
 
 PROG_NAME="Executer"
-PROG_VERSION="0.04"
-PROG_DATE="2022-04-19"
+PROG_VERSION="0.05"
+PROG_DATE="2022-04-27"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="executer.sh"
 
 # #########################################
 #
 # TODOs
-#
-# Write it and test it.
 #
 # For execute Installer: before start installer do: chmod u+x installer.sh
 
@@ -82,15 +81,6 @@ PROG_SCRIPTNAME="executer.sh"
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-
-
-# #########################################
-#
-# Includes
-#
-# TODO: Given in this way, the include file must be in same directory the 
-#       script is called from. We have to auto-detect the path to the binary.
-# source bashutils_common_functions.bash
 
 
 
@@ -189,6 +179,54 @@ function checkFolders()
 }
 
 # #########################################
+# checkForPresence()
+# Parameter
+#   1) executable name, e.g. ping
+# Return
+#   0 : ok
+#   1 : not found
+#   2 : not executable
+# This function checks, if a program is present and executable
+function checkForPresence()
+{
+    local sTmp
+    sTmp=$(which "$1")
+    if [ -z "$sTmp" ] ; then
+        echo "[$PROG_NAME:WARNING] Program '$sTmp' not found."
+        return 1
+    else
+        if [ -x "$sTmp" ] ; then
+            #echo "[$PROG_NAME:DEBUG] Program '$sTmp' is executable."
+            return 0
+        else
+            echo "[$PROG_NAME:WARNING] Program '$sTmp' found but not executable."
+            return 2
+        fi
+    fi
+}
+
+# #########################################
+# checkForRunning()
+# Parameter
+#   1) executable name, e.g. ping
+# Return
+#   0 : ok = is running
+#   1 : error
+# This function checks, if a specific program is running at the moment
+function checkForRunning()
+{
+    local sTmp
+    sTmp=$(ps xo command | grep "$1" | sed '/^grep/d')
+    if [ -z "$sTmp" ] ; then
+        #echo "[$PROG_NAME:DEBUG] program '$1' down"
+        return 1
+    else
+        #echo "[$PROG_NAME:DEBUG] program '$1' is running"
+        return 0
+    fi
+}
+
+# #########################################
 # checkForExecution()
 # Parameter
 # This is the real main function: It look for tasks and executes other programs.
@@ -210,11 +248,20 @@ function checkForExecution()
         pureLine=$(basename "$line")
         case $pureLine in 
             "$PROG_SCRIPTNAME")
-                echo "[$PROG_NAME:STATUS] Own program '$pureLine'"
+                #echo "[$PROG_NAME:DEBUG] Own program '$pureLine'"
             ;;
             *)
-                echo "[$PROG_NAME:STATUS] Program     '$pureLine'"
-                # TODO: Was soll nun passieren?
+                #echo "[$PROG_NAME:DEBUG] Program     '$pureLine'"
+                checkForPresence "$pureLine"
+                if [ $? -eq 0 ] ; then 
+                    # find in ps ...
+                    checkForRunning "$pureLine"
+                    if [ $? -gt 0 ] ; then 
+                        #echo "[$PROG_NAME:DEBUG] Try to restart program '$pureLine' ..."
+                        "$pureLine" & 
+                    fi
+                fi
+
             ;;
         esac
     done
