@@ -39,10 +39,11 @@
 # 2022-03-24 0.20 kdk Comments added
 # 2022-04-01 0.21 kdk Export Path with $HOME/bin
 # 2022-04-08 0.22 kdk Comments added
+# 2022-05-02 0.23 kdk TODO added
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.22"
-PROG_DATE="2022-04-08"
+PROG_VERSION="0.23"
+PROG_DATE="2022-05-02"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -447,6 +448,9 @@ do
         ;;
     esac
 done
+
+# TODO
+# Maybe we want to inform a server to have all necessary things installed?
 
 # Cleaning up:
 if [ -f "$TmpFile" ] ; then

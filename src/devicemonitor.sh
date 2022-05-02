@@ -29,10 +29,11 @@
 # 2022-03-04 0.13 kdk Description: With ish
 # 2022-04-01 0.14 kdk Description: Ubuntu 20.04.4 LTS
 # 2022-04-08 0.15 kdk Description:    Debian GNU/Linux 10 (buster)
+# 2022-05-02 0.16 kdk TODO and comments added, sendInfo(), writeInfo()
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.15"
-PROG_DATE="2022-04-08"
+PROG_VERSION="0.16"
+PROG_DATE="2022-05-02"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -72,10 +73,6 @@ PROG_SCRIPTNAME="devicemonitor.sh"
 #
 # Includes
 #
-# TODO: Given in this way, the include file must be in same directory the 
-#       script is called from. We have to auto-detect the path to the binary.
-# source bashutils_common_functions.bash
-
 
 
 # #########################################
@@ -83,6 +80,7 @@ PROG_SCRIPTNAME="devicemonitor.sh"
 # Constants
 #
 
+product="devicemonitor"
 
 # #########################################
 #
@@ -109,12 +107,157 @@ ECHOVERBOSE="0"
 ECHONORMAL="1"
 ECHOWARNING="1"
 ECHOERROR="1"
+RUNONCE="1"
 
+# Standard Folders and Files
+
+MainFolder="_"
+ControlFolder="_"
+ProcessFolder="_"
+
+RunFile="_"
+LogFile="_"
+
+ConfigFile="$HOME/.devicemonitor.ini"
+ConfServer=""
+ConfInfoFile="" # Set in adjustVariables()
 
 # #########################################
 #
 # Functions
 #
+
+# #########################################
+# adjustVariables()
+# Parameter
+# Sets the global variables 
+function adjustVariables()
+{
+    # Linux like we should install e.g. under /opt/ or /usr/local/ - but we complete act inside home directory:
+    MainFolder="$HOME/$product/"
+
+    ControlFolder="$MainFolder""_Control/"
+        RunFile="$ControlFolder""RUNNING"
+        LogFile="$ControlFolder""LOG"
+
+    ProcessFolder="$MainFolder""_Process/"
+        ConfInfoFile="$ProcessFolder""devicestatus.json"
+}
+
+# #########################################
+# checkOrCreateFile()
+# Parameter
+#   1: file name
+#   2: file description
+# Return
+#   1: 1 = An error occured
+# This function checks if a file exists. If not, it creates the file.
+# Check return value e.g. with: if [ $? -eq 1 ] ; then echo "There was an error"; fi
+function checkOrCreateFile()
+{
+    if [ ! -f "$1" ] ; then        
+        touch "$1"
+        if [ -f "$1" ] ; then
+            echo "[$PROG_NAME:DEBUG] $2 file created."
+        else
+            echo "[$PROG_NAME:ERROR] $2 file could not be created."
+            return 1
+        fi        
+    fi        
+}
+
+# #########################################
+# checkOrCreateFolder()
+# Parameter
+#   1: folder name
+#   2: folder description
+# Return
+#   1: 1 = An error occured
+# This function checks if a folder exists. If not, it creates the folder.
+# Check return value e.g. with: if [ $? -eq 1 ] ; then echo "There was an error"; fi
+function checkOrCreateFolder()
+{
+    if [ ! -d "$1" ] ; then        
+        mkdir "$1"
+        if [ -d "$1" ] ; then
+            echo "[$PROG_NAME:DEBUG] $2 folder created."
+        else
+            echo "[$PROG_NAME:ERROR] $2 folder could not be created."
+            return 1
+        fi        
+    fi        
+}
+
+# #########################################
+# updateLog()
+# Parameter
+# Write time stamp into log file.
+function updateLog()
+{
+    touch "$LogFile"
+}
+
+# #########################################
+# updateRun()
+# Parameter
+# Write time stamp into run file.
+function updateRun()
+{
+    touch "$RunFile"
+}
+
+# #########################################
+# delFile()
+# Parameter
+#   1: File name
+# Deletes a file, if it exists.
+function delFile()
+{
+    if [ -f "$1" ] ; then
+        rm "$1"
+    fi
+}
+
+# #########################################
+# removeRun()
+# Parameter
+# Removes the RunFile to show the program has finished.
+function removeRun()
+{
+    delFile "$RunFile"
+}
+
+# #########################################
+# checkEnvironment()
+# Parameter
+#    -
+# Return Value
+#    -
+# Check for necessary programs and folders.
+function checkEnvironment()
+{
+    checkOrCreateFile "$ConfigFile" "Configuration"
+    if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Configuration file '$ConfigFile' not usable. Exit"; exit; fi
+
+    checkOrCreateFolder "$MainFolder" "Main Program"
+        if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Can't create main folder. Exit"; exit; fi
+    checkOrCreateFolder "$ControlFolder" "Control"
+        if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Can't create control folder. Exit"; exit; fi
+    checkOrCreateFolder "$ProcessFolder" "Process"
+        if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Can't create process folder. Exit"; exit; fi
+}
+
+# #########################################
+# getConfig()
+# Parameter
+#    -
+# Return Value
+#    -
+# Read out the variables from the config file.
+function getConfig()
+{
+    ConfServer=$(cat "$ConfigFile" | grep "Server" | cut -d "=" -f 2)
+}
 
 # #########################################
 # getSystem()
@@ -255,7 +398,7 @@ function getDiskSpace()
         #DISKSPACE=$(echo ${sStringZ: -3}"%")
         DISKSPACE=$(df -H / | tail -n 1 | xargs | cut -d " " -f 5)
     else
-        echo "TODO"
+        echo "[$PROG_NAME:getDiskSpace:WARNING] System type unknown. Can't get disk space."
     fi
 }
 
@@ -270,7 +413,19 @@ function getMacAddress()
 {
     # With 'ip addr show' we see all mac addresses and the corresponding ip addresses.
     # Works under: WSL - Linux - SuSE
-    echo "TODO"
+    echo "[$PROG_NAME:getMacAddress:WARNING] Not yet implemented."
+}
+
+# #########################################
+# getSystemID()
+# Parameter
+#    -
+# Return Value
+#    -
+# Get the individual ID we use to identify this system in an asset management system.
+function getSystemID()
+{
+    echo "[$PROG_NAME:getSystemID:WARNING] Not yet implemented."
 }
 
 # #########################################
@@ -284,9 +439,45 @@ function showInfo()
 {
     echo "[$PROG_NAME:STATUS] System Type      : $SYSTEM"
     if [ "$SYSTEMTested" = "1" ] ; then
-    echo "[$PROG_NAME:STATUS] System Version   : $SYSTEMDescription"
+        echo "[$PROG_NAME:STATUS] System Version   : $SYSTEMDescription"
     fi
     echo "[$PROG_NAME:STATUS] Usage Disk Space : $DISKSPACE" 
+}
+
+# #########################################
+# createJSON()
+# Parameter
+#    -
+# Return Value
+#    JSON string
+# Creates a JSON string for sendInfo() and writeInfo()
+# TODO
+
+# #########################################
+# sendInfo()
+# Parameter
+#    -
+# Return Value
+#    -
+# Send the status information to an asset management system or to a monitoring solution
+function sendInfo()
+{
+    echo "[$PROG_NAME:sendInfo:WARNING] Not yet implemented. Send to '$ConfServer'"
+}
+
+# #########################################
+# writeInfo()
+# Parameter
+#    -
+# Return Value
+#    -
+# Write the status information in JSON format to file.
+function writeInfo()
+{
+    echo "{\"Date and Time\":\"$actDateTime\"," > "$ConfInfoFile"
+    echo " \"System Type\":\"$SYSTEM\"," >> "$ConfInfoFile"
+    echo " \"System Version\":\"$SYSTEMDescription\"," >> "$ConfInfoFile"
+    echo " \"Disk Space used\":\"$DISKSPACE\"}" >> "$ConfInfoFile"
 }
 
 # #########################################
@@ -332,15 +523,46 @@ if [ $# -eq 1 ] ; then
     fi
 fi
 
+# Init
+adjustVariables
+checkEnvironment
 # Check, on which system we are running:
 getSystem
+# 
+getConfig
+
+updateRun
 
 # Do something ...
+actDateTime=$(date "+%Y-%m-%d +%H:%M:%S")
 getDiskSpace
 #getMacAddress
+#getSystemID
 
 # Show Info:
 showInfo
+writeInfo
+sendInfo
+
+if [ "$RUNONCE" = "1" ] ; then
+    removeRun
+    echo "[$PROG_NAME:STATUS] Done."
+    exit
+fi
+
+
+# Start main loop
+
+while [ -f "$RunFile" ]
+do
+    updateLog
+    # Do something
+    updateLog
+    checkExit
+done
+
+# Done - clean up ...
+removeRun
 
 # End:
 echo "[$PROG_NAME:STATUS] Done."

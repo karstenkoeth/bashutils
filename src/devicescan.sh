@@ -18,10 +18,11 @@
 # 2022-03-23 0.02 kdk With scanDevice()
 # 2022-03-24 0.03 kdk With more comments
 # 2022-03-30 0.04 kdk With more comments and ip
+# 2022-05-02 0.05 kdk Error with error message fixed
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.04"
-PROG_DATE="2022-03-30"
+PROG_VERSION="0.05"
+PROG_DATE="2022-05-02"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -197,7 +198,7 @@ function checkEnvironment()
     if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Temporary file '$TmpDir$TmpFile' not usable. Exit"; exit; fi
 
     checkOrCreateFile "$ConfigFile" "Configuration"
-    if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Configuration file '$TmpDir$TmpFile' not usable. Exit"; exit; fi
+    if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Configuration file '$ConfigFile' not usable. Exit"; exit; fi
 
     nmapProgram=$(which nmap)
     if [ -z "$nmapProgram" ] ; then echo "[$PROG_NAME:ERROR] Necessary program 'nmap' not found. Exit"; exit; fi
