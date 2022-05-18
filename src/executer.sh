@@ -45,10 +45,11 @@
 # 2022-02-04 0.03 kdk Cleaned up
 # 2022-04-19 0.04 kdk Executer for loop added
 # 2022-04-27 0.05 kdk checkForPresence() added, tested on MAC-OS-X
+# 2022-05-18 0.06 kdk Comments added
 
 PROG_NAME="Executer"
-PROG_VERSION="0.05"
-PROG_DATE="2022-04-27"
+PROG_VERSION="0.06"
+PROG_DATE="2022-05-18"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="executer.sh"
 
@@ -57,6 +58,21 @@ PROG_SCRIPTNAME="executer.sh"
 # TODOs
 #
 # For execute Installer: before start installer do: chmod u+x installer.sh
+
+# #########################################
+#
+# Compatible programs and scripts
+#
+# Every program should be compatible which is installed normally in the path.
+# The program name should not contains spaces in the name.
+# At the moment (Version 0.06) no program parameters are supported. If the 
+# program needs parameters, maybe the program must be wrapped by a script
+# containing the parameters.
+#
+# To test the functionality, see the scripts:
+# - exec_test_a.sh  Runs 10 seconds and exits
+# - exec_test_b.sh  Runs 7 seconds and exits 
+# - exec_test_l.sh  Runs in a never ending loop
 
 # #########################################
 #

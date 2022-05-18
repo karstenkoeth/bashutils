@@ -5,10 +5,26 @@
 # Overview
 #
 # This script looks for the specific values of a device:
+# - OS System Type
 # - Used disk Space
 # - CPU Usage
 # - Memory Usage
 # - Last Update 
+#
+# The values could be:
+# - printed on stdout
+# - written to the file '$ConfInfoFile' which is by default '$HOME/devicemonitor/_Process/devicestatus.json'
+#           Every time a new set of values is created, the old content of the file will be overwritten to
+#           not use increasing disk space
+# - send to a server defined in the configuration file
+#
+# The value sets written to file and send to server are the same json content with a time stamp for every set.
+#
+#
+# Configuration
+# 
+# In the configuration file '.devicemonitor.ini' there are defined:
+# - Server = Defines the server the values are send to as json
 
 # #########################################
 #
@@ -30,10 +46,12 @@
 # 2022-04-01 0.14 kdk Description: Ubuntu 20.04.4 LTS
 # 2022-04-08 0.15 kdk Description:    Debian GNU/Linux 10 (buster)
 # 2022-05-02 0.16 kdk TODO and comments added, sendInfo(), writeInfo()
+# 2022-05-13 0.17 kdk getCpuUsage() added
+# 2022-05-18 0.18 kdk getSystem() enhanced to have text without "Description:   " prefix
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.16"
-PROG_DATE="2022-05-02"
+PROG_VERSION="0.18"
+PROG_DATE="2022-05-18"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -90,6 +108,7 @@ product="devicemonitor"
 # Typically, we need in a lot of scripts the start date and time of the script:
 actDateTime=$(date "+%Y-%m-%d +%H:%M:%S")
 DISKSPACE="0%"
+CPUUSAGE="0%"
 SYSTEM="unknown"
     # Allowed values:
     # - MACOSX
@@ -107,7 +126,7 @@ ECHOVERBOSE="0"
 ECHONORMAL="1"
 ECHOWARNING="1"
 ECHOERROR="1"
-RUNONCE="1"
+RUNONCE="0"
 
 # Standard Folders and Files
 
@@ -117,6 +136,8 @@ ProcessFolder="_"
 
 RunFile="_"
 LogFile="_"
+MainLoopSleepFactor="10"  # Do the main task around every 10 seconds.
+MainLoopResponseTime="1s" # Reaction time of around 1 second to the "shut down" command given over file the system ('RunFile')
 
 ConfigFile="$HOME/.devicemonitor.ini"
 ConfServer=""
@@ -172,7 +193,8 @@ function checkOrCreateFile()
 #   1: folder name
 #   2: folder description
 # Return
-#   1: 1 = An error occured
+#    0 = All ok
+#    1 = An error occured
 # This function checks if a folder exists. If not, it creates the folder.
 # Check return value e.g. with: if [ $? -eq 1 ] ; then echo "There was an error"; fi
 function checkOrCreateFolder()
@@ -181,16 +203,21 @@ function checkOrCreateFolder()
         mkdir "$1"
         if [ -d "$1" ] ; then
             echo "[$PROG_NAME:DEBUG] $2 folder created."
+            return 0
         else
             echo "[$PROG_NAME:ERROR] $2 folder could not be created."
             return 1
         fi        
-    fi        
+    fi  
+    return 0      
 }
 
 # #########################################
 # updateLog()
 # Parameter
+#    -
+# Return Value
+#    -
 # Write time stamp into log file.
 function updateLog()
 {
@@ -200,6 +227,9 @@ function updateLog()
 # #########################################
 # updateRun()
 # Parameter
+#    -
+# Return Value
+#    -
 # Write time stamp into run file.
 function updateRun()
 {
@@ -210,6 +240,8 @@ function updateRun()
 # delFile()
 # Parameter
 #   1: File name
+# Return Value
+#    -
 # Deletes a file, if it exists.
 function delFile()
 {
@@ -221,10 +253,48 @@ function delFile()
 # #########################################
 # removeRun()
 # Parameter
+#    -
+# Return Value
+#    -
 # Removes the RunFile to show the program has finished.
 function removeRun()
 {
     delFile "$RunFile"
+}
+
+# #########################################
+# checkExit()
+# Parameter
+#    - 
+# Return Value
+#    -
+# Checks if the script should be terminated.
+function checkExit()
+{
+    local counter=0
+    while [ $counter -lt $MainLoopSleepFactor ] 
+    do
+        counter=$(expr $counter + 1)
+        sleep "$MainLoopResponseTime"
+        # If someone or something deletes the RunFile, the program should break the MainLoop:
+        if [ ! -f "$RunFile" ] ; then counter=$MainLoopSleepFactor; fi
+        updateLog
+    done
+}
+
+# #########################################
+# checkStart()
+# Parameter
+#    -
+# Return Value
+#    -
+# Checks, if the shell script is running in another instance and exits if yes.
+function checkStart()
+{
+  if [ -e "$RunFile" ]  ; then
+    echo "[$PROG_NAME:ERROR] Maybe an older instance is running. If not: Delete '$RunFile' and start again. Exit."
+    exit 
+  fi
 }
 
 # #########################################
@@ -265,8 +335,7 @@ function getConfig()
 #    -
 # Return Value
 #    -
-# Global Variable
-#    SystemType - Change the global variable SYSTEM
+# Identifies the system tape and changes the global variables: SYSTEM + SYSTEMDescription + SYSTEMTested
 function getSystem()
 {
     # Check, if program is available:
@@ -323,24 +392,35 @@ function getSystem()
                 if [ ! -z "$SYSTEMDescription" ] ; then
                     if [ "$SYSTEMDescription" = "Description:	SUSE Linux Enterprise Server 15 SP1" ] ; then 
                         # The Script collection was tested on this system:
+                        SYSTEMDescription="SUSE Linux Enterprise Server 15 SP1"
                         SYSTEMTested="1"
                     fi
                     if [ "$SYSTEMDescription" = "Description:	Ubuntu 18.04.6 LTS" ] ; then
+                        SYSTEMDescription="Ubuntu 18.04.6 LTS"
                         SYSTEMTested="1"
                     fi
                     if [ "$SYSTEMDescription" = "Description:	Ubuntu 20.04.3 LTS" ] ; then
+                        SYSTEMDescription="Ubuntu 20.04.3 LTS"
                         SYSTEMTested="1"
                     fi
                     if [ "$SYSTEMDescription" = "Description:    Debian GNU/Linux 10 (buster)" ] ; then
                         # Chromebook
                         # Tested at 2022-04-08
+                        SYSTEMDescription="Debian GNU/Linux 10 (buster)"
                         SYSTEMTested="1"
                     fi
                     if [ "$SYSTEMDescription" = "Description:    Ubuntu 20.04.4 LTS" ] ; then
                         # Inside Citrix Dedicated Desktop the "* Base WSL"
                         # Tested at 2022-04-01
+                        SYSTEMDescription="Ubuntu 20.04.4 LTS"
                         SYSTEMTested="1"
                     fi
+                    if [ "$SYSTEMDescription" = "Description:	Raspbian GNU/Linux 9.13 (stretch)" ] ; then
+                        # Tested at 2022-05-13
+                        SYSTEMDescription="Raspbian GNU/Linux 9.13 (stretch)"
+                        SYSTEMTested="1"
+                    fi
+
                     # ... Add more known and tested systems.
                 fi
                 # Be paranoid: If nothing found, be sure the string is clean:
@@ -377,6 +457,9 @@ function getSystem()
 # Return Value
 #    -
 # Get disk space from root file system - Change the global variable DISKSPACE
+# Tested on:
+#     System Type : MACOSX   +   System Version : 17.7.0
+#     System Type : LINUX    +   System Version : Raspbian GNU/Linux 9.13 (stretch)
 function getDiskSpace()
 {
     if [ "$SYSTEM" = "LINUX" ] ; then
@@ -400,6 +483,45 @@ function getDiskSpace()
     else
         echo "[$PROG_NAME:getDiskSpace:WARNING] System type unknown. Can't get disk space."
     fi
+}
+
+# #########################################
+# getCpuUsage()
+# Parameter
+#    -
+# Return Value
+#    -
+# Get the cpu usage. Runs a minimum 1 second! - Change the global variable CPUUSAGE
+# Tested on:
+#     System Type : MACOSX   +   System Version : 17.7.0
+#     System Type : LINUX    +   System Version : Raspbian GNU/Linux 9.13 (stretch)
+function getCpuUsage()
+{
+    local cputmp
+
+    if [ "$SYSTEM" = "LINUX" ] ; then
+        # cpuline=$(head -n 1 /proc/stat)
+        # /proc/stat contains usage and more
+        # First line shows summary for all CPUs
+        # Data fields explained e.g. here: https://www.idnt.net/en-US/kb/941772
+        # 1 Text String "cpu"
+        # 2	user	Time spent with normal processing in user mode
+        # 3	nice	Time spent with niced processing in user mode
+        # 4	system	Time spent running in kernel mode
+        # 5	idle	Time spent doing nothing
+        cputmp=$(awk '{u=$2+$4; t=$2+$4+$5; if (NR==1){u1=u; t1=t;} else print ($2+$4-u1) * 100 / (t-t1) ; }' <(grep 'cpu ' /proc/stat) <(sleep 1;grep 'cpu ' /proc/stat))
+        #echo "[$PROG_NAME:getCpuUsage:WARNING] Not yet implemented."
+    elif [ "$SYSTEM" = "MACOSX" ] ; then
+        # top shows the actual cpu usage. 
+        # top line with cpu shows e.g.:
+        # CPU usage: 13.7% user, 15.39% sys, 71.53% idle 
+        # CPU usage: 9.62% user, 5.90% sys, 84.47% idle 
+        cputmp=$(top -l  2 | grep -E "^CPU" | tail -1 | awk '{ print $3 + $5 }') 
+    else
+        echo "[$PROG_NAME:getDiskSpace:WARNING] System type unknown. Can't get disk space."
+        cputmp=0
+    fi
+    CPUUSAGE=$(LANG=C printf "%.0f%%" $cputmp)
 }
 
 # #########################################
@@ -442,6 +564,7 @@ function showInfo()
         echo "[$PROG_NAME:STATUS] System Version   : $SYSTEMDescription"
     fi
     echo "[$PROG_NAME:STATUS] Usage Disk Space : $DISKSPACE" 
+    echo "[$PROG_NAME:STATUS] Usage CPU Time   : $CPUUSAGE"
 }
 
 # #########################################
@@ -450,8 +573,21 @@ function showInfo()
 #    -
 # Return Value
 #    JSON string
-# Creates a JSON string for sendInfo() and writeInfo()
-# TODO
+# Creates a JSON string for sendInfo() and writeInfo() on base of the global variables
+function createJSON()
+{
+    local jstr
+    jstr="{\"Date and Time\":\"$actDateTime\","                 # First line contains actual Date and Time
+    jstr="$jstr""\"System Type\":\"$SYSTEM\","
+    jstr="$jstr""\"System Version\":\"$SYSTEMDescription\","
+    jstr="$jstr""\"Disk Space used\":\"$DISKSPACE\","
+    jstr="$jstr""\"CPU Time Usage\":\"$CPUUSAGE\","
+                                                                # Here some values from plugins could be integrated
+    local vstr
+    vstr=$(showVersion)                                                               
+    jstr="$jstr""\"Generator\":\"$vstr\"}"           # Last line with program version string
+    echo "$jstr"
+}
 
 # #########################################
 # sendInfo()
@@ -463,6 +599,9 @@ function showInfo()
 function sendInfo()
 {
     echo "[$PROG_NAME:sendInfo:WARNING] Not yet implemented. Send to '$ConfServer'"
+    # TODO
+    # 1.) Develop a server process listen to the value set.
+    # 2.) Send data from here with curl or wget
 }
 
 # #########################################
@@ -474,10 +613,7 @@ function sendInfo()
 # Write the status information in JSON format to file.
 function writeInfo()
 {
-    echo "{\"Date and Time\":\"$actDateTime\"," > "$ConfInfoFile"
-    echo " \"System Type\":\"$SYSTEM\"," >> "$ConfInfoFile"
-    echo " \"System Version\":\"$SYSTEMDescription\"," >> "$ConfInfoFile"
-    echo " \"Disk Space used\":\"$DISKSPACE\"}" >> "$ConfInfoFile"
+    createJSON  > "$ConfInfoFile"
 }
 
 # #########################################
@@ -490,6 +626,7 @@ function writeInfo()
 function showHelp()
 {
     echo "[$PROG_NAME:STATUS] Program Parameter:"
+    echo "    -1     : Run script only once, not ongoing"
     echo "    -V     : Show Program Version"
     echo "    -h     : Show this help"
     echo "Copyright $PROG_DATE by Karsten Köth"
@@ -516,7 +653,9 @@ echo "[$PROG_NAME:STATUS] Starting ..."
 
 # Check for program parameters:
 if [ $# -eq 1 ] ; then
-    if [ "$1" = "-V" ] ; then
+    if [ "$1" = "-1" ] ; then
+        RUNONCE="1"
+    elif [ "$1" = "-V" ] ; then
         showVersion ; exit;
     elif [ "$1" = "-h" ] ; then
         showHelp ; exit;
@@ -531,11 +670,13 @@ getSystem
 # 
 getConfig
 
+checkStart
 updateRun
 
 # Do something ...
 actDateTime=$(date "+%Y-%m-%d +%H:%M:%S")
 getDiskSpace
+getCpuUsage
 #getMacAddress
 #getSystemID
 
@@ -551,12 +692,23 @@ if [ "$RUNONCE" = "1" ] ; then
 fi
 
 
+echo "[$PROG_NAME:STATUS] Enter main loop. Monitor script with ':> ls --full-time $LogFile'. Stop script by deleting '$RunFile'."
+
 # Start main loop
 
 while [ -f "$RunFile" ]
 do
     updateLog
-    # Do something
+    # Do something:
+    actDateTime=$(date "+%Y-%m-%d +%H:%M:%S")
+    getDiskSpace
+    getCpuUsage # This command needs some seconds to be executed.
+    updateLog
+    #getMacAddress
+    #getSystemID
+    showInfo
+    #writeInfo
+    sendInfo
     updateLog
     checkExit
 done
