@@ -707,7 +707,7 @@ do
     #getMacAddress
     #getSystemID
     showInfo
-    #writeInfo
+    writeInfo
     sendInfo
     updateLog
     checkExit

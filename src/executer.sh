@@ -127,6 +127,8 @@ ECHONORMAL="1"
 ECHOWARNING="1"
 ECHOERROR="1"
 
+InstallOnly="0"
+
 # Standard Folders and Files
 
 MainFolder="_"
@@ -362,6 +364,7 @@ function removeRun()
 function showHelp()
 {
     echo "[$PROG_NAME:STATUS] Program Parameter:"
+    echo "    -c     : Create only the necessary folder structure"
     echo "    -V     : Show Program Version"
     echo "    -h     : Show this help"
     echo "Copyright $PROG_DATE by Karsten Köth"
@@ -388,7 +391,9 @@ echo "[$PROG_NAME:STATUS] Starting ..."
 
 # Check for program parameters:
 if [ $# -eq 1 ] ; then
-    if [ "$1" = "-V" ] ; then
+    if [ "$1"  = "-c" ] ; then
+        InstallOnly="1"
+    elif [ "$1" = "-V" ] ; then
         showVersion ; exit;
     elif [ "$1" = "-h" ] ; then
         showHelp ; exit;
@@ -402,6 +407,12 @@ adjustVariables
 checkFolders
 checkStart
 touch "$ExecuteFolder$PROG_SCRIPTNAME" # Minimum this script itself should run.
+
+if [ "$InstallOnly" = "1" ] ; then
+    echo "[$PROG_NAME:STATUS] Done."
+    exit
+fi
+
 updateRun
 
 echo "[$PROG_NAME:STATUS] Enter main loop. Monitor script with ':> ls --full-time $LogFile'. Stop script by deleting '$RunFile'."

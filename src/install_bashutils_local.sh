@@ -405,6 +405,7 @@ fi
 # Maybe we want to know other MAC addresses in the network:
 # sudo apt-get -y install arping
 # sudo apt-get -y install nmap
+# For ish: apk add nmap 
 nmapPresent=$(which nmap)
 if [ -z "$nmapPresent" ] ; then
     if [ -x "$aptgetPresent" ] ;  then
