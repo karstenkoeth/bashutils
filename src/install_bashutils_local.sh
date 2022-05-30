@@ -40,10 +40,11 @@
 # 2022-04-01 0.21 kdk Export Path with $HOME/bin
 # 2022-04-08 0.22 kdk Comments added
 # 2022-05-02 0.23 kdk TODO added
+# 2022-05-20 0.24 kdk brew without sudo
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.23"
-PROG_DATE="2022-05-02"
+PROG_VERSION="0.24"
+PROG_DATE="2022-05-20"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -239,6 +240,8 @@ if [ -x "$zypperPresent" ] ; then
 fi
 # Same on MAC OS X (here, sudo brew is no more supported):
 if [ -x "$brewPresent" ] ; then
+    # 2022: brew should no longer be used as root. Therefore do not use sudo:
+    appSudo=""
     $appSudo brew update
     $appSudo brew upgrade
 fi

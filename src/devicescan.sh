@@ -19,10 +19,11 @@
 # 2022-03-24 0.03 kdk With more comments
 # 2022-03-30 0.04 kdk With more comments and ip
 # 2022-05-02 0.05 kdk Error with error message fixed
+# 2022-05-30 0.06 kdk Go on with more STATUS output and getOwnIpAddress(), tested on Raspi
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.05"
-PROG_DATE="2022-05-02"
+PROG_VERSION="0.06"
+PROG_DATE="2022-05-30"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -38,7 +39,7 @@ PROG_SCRIPTNAME="devicescan.sh"
 # tr
 # nmap
 # arp
-# ip
+# ip - Ubuntu paket "iproute2"
 # sed
 # date
 # mkdir
@@ -109,6 +110,8 @@ ECHOVERBOSE="0"
 ECHONORMAL="1"
 ECHOWARNING="1"
 ECHOERROR="1"
+
+IP4ADDRESS="0.0.0.0"
 
 TmpDir="$HOME/tmp/"
 TmpFile="devicescan_nmap_$actDateTime.txt"
@@ -285,6 +288,7 @@ function listMacAddresses()
     # MAC Address: cut -d " " -f 5   <-- Could be non present, check for "contains 5 : ", see above
     if [ "$GetMacApp" = "ip" ] ; then
         # The new way with "ip"
+        echo "[$PROG_NAME:listMacAddresses:STATUS] Searching by 'ip' ..."
         ip -4 neigh | grep ":" | tr "[:lower:]" "[:upper:]" | sed "s/ /;/g"> "$TmpDir$MacFile.ip"
 
         lines=$(cat "$TmpDir$MacFile.ip")
@@ -307,6 +311,7 @@ function listMacAddresses()
 
     if [ "$GetMacApp" = "arp" ] ; then
         # The old way with "arp"
+        echo "[$PROG_NAME:listMacAddresses:STATUS] Searching by 'arp' ..."
 
         # If first the network was scanned, the arp cache is filled.
         arp -a > "$TmpDir$MacFile.arp"
@@ -345,6 +350,28 @@ function scanNetwork()
     # Scan each device exactly
     # for ...
     echo "[$PROG_NAME:DEBUG] TODO"
+}
+
+# #########################################
+# getOwnIpAddress()
+# Parameter
+#    -
+# Return Value
+#    -
+# Try to find the most important ip address and write it to the global variable IP4ADDRESS
+function getOwnIpAddress()
+{
+    if [ "$GetMacApp" = "ip" ] ; then
+        #local tmpadr="0.0.0.0"
+        IP4ADDRESS=$(ip -o -4 addr show | grep -i global | sed "s/  */;/g" | cut -f 4 -d ";" | cut -f 1 -d "/")
+        #tmpadr=$(ip -o -4 addr show | grep -i global | sed "s/  */;/g")
+        #echo "[$PROG_NAME:getOwnIpAddress:DEBUG] '$tmpadr'"
+        #tmpadr=$(echo "$tmpadr" | cut -f 4 -d ";")
+        #echo "[$PROG_NAME:getOwnIpAddress:DEBUG] '$tmpadr'"
+        #tmpadr=$(echo "$tmpadr" | cut -f 1 -d "/")
+        #echo "[$PROG_NAME:getOwnIpAddress:DEBUG] '$tmpadr'"
+        echo "[$PROG_NAME:getOwnIpAddress:DEBUG] '$IP4ADDRESS'"
+    fi
 }
 
 # #########################################
@@ -427,10 +454,14 @@ if [ "$PrepConf" = "1" ] ; then
     exit
 fi
 
+getOwnIpAddress
+
 echo "[$PROG_NAME:STATUS] Scan network ..."
 scanNetwork "192.168.0.*" # TODO: Automatically detect which network we should scan.
 
 echo "[$PROG_NAME:STATUS] Get MAC addresses ..."
 listMacAddresses
+
+# Maybe TODO: Delete all created tmp files.
 
 echo "[$PROG_NAME] Done."
