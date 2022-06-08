@@ -14,7 +14,10 @@
 #    In this folder, some files show the status of the program and control the program
 #
 # _Execute
-#    Programs mentioned in this folder will be executed.
+#    Programs mentioned in this folder will be executed. Mentioned means:
+#    A file with same name as the programs executable file name but with file
+#    length zero is placed in this folder.
+#    At the moment (0.07) only shell scripts are supported, see function checkForExecution().
 #    The program executable (or the script) is installed in the $PATH. 
 #    We check this with "which program".
 #    If a process terminates but the program is listed inside this folder, the process will
@@ -46,10 +49,11 @@
 # 2022-04-19 0.04 kdk Executer for loop added
 # 2022-04-27 0.05 kdk checkForPresence() added, tested on MAC-OS-X
 # 2022-05-18 0.06 kdk Comments added
+# 2022-06-08 0.07 kdk Comments added
 
 PROG_NAME="Executer"
-PROG_VERSION="0.06"
-PROG_DATE="2022-05-18"
+PROG_VERSION="0.07"
+PROG_DATE="2022-06-08"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="executer.sh"
 
@@ -58,6 +62,9 @@ PROG_SCRIPTNAME="executer.sh"
 # TODOs
 #
 # For execute Installer: before start installer do: chmod u+x installer.sh
+#
+# With: (which basename --> $HOME/executer/_Execute/ (Gleich wie in Funktion unten)) -P | tail -n 1 | cut -d "=" -f 2
+# The folder with _Control contains RUNNING if the program should be running.
 
 # #########################################
 #
@@ -365,6 +372,7 @@ function showHelp()
 {
     echo "[$PROG_NAME:STATUS] Program Parameter:"
     echo "    -c     : Create only the necessary folder structure"
+    echo "    -P     : Show Program Folder"
     echo "    -V     : Show Program Version"
     echo "    -h     : Show this help"
     echo "Copyright $PROG_DATE by Karsten Köth"
@@ -393,6 +401,8 @@ echo "[$PROG_NAME:STATUS] Starting ..."
 if [ $# -eq 1 ] ; then
     if [ "$1"  = "-c" ] ; then
         InstallOnly="1"
+    elif [ "$1" = "-P" ] ; then
+        echo "ProgramFolder=$product" ; exit;
     elif [ "$1" = "-V" ] ; then
         showVersion ; exit;
     elif [ "$1" = "-h" ] ; then

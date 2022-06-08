@@ -48,10 +48,11 @@
 # 2022-05-02 0.16 kdk TODO and comments added, sendInfo(), writeInfo()
 # 2022-05-13 0.17 kdk getCpuUsage() added
 # 2022-05-18 0.18 kdk getSystem() enhanced to have text without "Description:   " prefix
+# 2022-06-08 0.19 kdk -P added
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.18"
-PROG_DATE="2022-05-18"
+PROG_VERSION="0.19"
+PROG_DATE="2022-06-08"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -627,6 +628,7 @@ function showHelp()
 {
     echo "[$PROG_NAME:STATUS] Program Parameter:"
     echo "    -1     : Run script only once, not ongoing"
+    echo "    -P     : Show Program Folder"
     echo "    -V     : Show Program Version"
     echo "    -h     : Show this help"
     echo "Copyright $PROG_DATE by Karsten Köth"
@@ -655,6 +657,8 @@ echo "[$PROG_NAME:STATUS] Starting ..."
 if [ $# -eq 1 ] ; then
     if [ "$1" = "-1" ] ; then
         RUNONCE="1"
+    elif [ "$1" = "-P" ] ; then
+        echo "ProgramFolder=$product" ; exit;
     elif [ "$1" = "-V" ] ; then
         showVersion ; exit;
     elif [ "$1" = "-h" ] ; then

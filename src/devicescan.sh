@@ -20,10 +20,11 @@
 # 2022-03-30 0.04 kdk With more comments and ip
 # 2022-05-02 0.05 kdk Error with error message fixed
 # 2022-05-30 0.06 kdk Go on with more STATUS output and getOwnIpAddress(), tested on Raspi
+# 2022-06-08 0.07 kdk -P added
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.06"
-PROG_DATE="2022-05-30"
+PROG_VERSION="0.07"
+PROG_DATE="2022-06-08"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -408,6 +409,7 @@ function showHelp()
 {
     echo "[$PROG_NAME:STATUS] Program Parameter:"
     echo "    -c     : Prepare configuration file"
+    echo "    -P     : Show Program Folder"
     echo "    -V     : Show Program Version"
     echo "    -h     : Show this help"
     echo "Copyright $PROG_DATE by Karsten Köth"
@@ -438,6 +440,8 @@ if [ $# -eq 1 ] ; then
         echo "[$PROG_NAME:STATUS] Input file exists."
     elif [ "$1" = "-c" ] ; then
         PrepConf="1"
+    elif [ "$1" = "-P" ] ; then
+        echo "ProgramFolder=$product" ; exit;
     elif [ "$1" = "-V" ] ; then
         showVersion ; exit;
     elif [ "$1" = "-h" ] ; then
