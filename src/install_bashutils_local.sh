@@ -41,10 +41,11 @@
 # 2022-04-08 0.22 kdk Comments added
 # 2022-05-02 0.23 kdk TODO added
 # 2022-05-20 0.24 kdk brew without sudo
+# 2022-06-27 0.25 kdk Comments added
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.24"
-PROG_DATE="2022-05-20"
+PROG_VERSION="0.25"
+PROG_DATE="2022-06-27"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -221,6 +222,8 @@ fi
 # Zum Installieren versuchen Sie:
 #    sudo apt-get -y install lsb-release
 
+# ################# Care about the package installer
+
 # No idea on which system we are - but we could check which package manager we could use:
 aptgetPresent=$(which apt-get)
 zypperPresent=$(which zypper)
@@ -233,6 +236,9 @@ apkPresent=$(which apk)
 # Here on Ubuntu:
 if [ -x "$aptgetPresent" ] ; then
     $appSudo apt-get -y update 
+# Allways a good idea to update all installed packages. This is typically 
+# called 'upgrade'.
+    $appSudo apt-get -y upgrade 
 fi
 # Same on openSUSE:
 if [ -x "$zypperPresent" ] ; then
@@ -240,6 +246,7 @@ if [ -x "$zypperPresent" ] ; then
 fi
 # Same on MAC OS X (here, sudo brew is no more supported):
 if [ -x "$brewPresent" ] ; then
+    echo "[$PROG_NAME:STATUS] Update brew installer part ..."
     # 2022: brew should no longer be used as root. Therefore do not use sudo:
     appSudo=""
     $appSudo brew update
@@ -249,16 +256,6 @@ fi
 # See help e.g. at: https://wiki.alpinelinux.org/wiki/Package_management
 if [ -x "$apkPresent" ] ; then
     $appSudo apk update
-fi
-
-# Allways a good idea to update all installed packages. This is typically 
-# called 'upgrade'.
-# Here on Ubuntu:
-if [ -x "$aptgetPresent" ] ; then
-    $appSudo apt-get -y upgrade 
-fi
-# Same on iPads etc:
-if [ -x "$apkPresent" ] ; then
     $appSudo apk upgrade
 fi
 
@@ -326,6 +323,8 @@ fi
 # /root/bin/rki.sh: line 101: curl: command not found
 # /root/bin/rki.sh: line 103: jq: command not found
 
+# ################# Care about the Environment
+
 # Minimal "Bash rc" erzeugen, falls nicht vorhanden.
 #
 # ___
@@ -373,6 +372,40 @@ if [ ! -f "$TmpFile" ] ; then
     echo "[$PROG_NAME:ERROR] Can't create temporary file. Exit."
     exit
 fi
+
+# TODO
+# Maybe we need Python (more detailed: python3) on the system.
+# https://wiki.python.org/moin/BeginnersGuide/Download
+# brew install python3
+#
+# Than, we need also pip. pip is the package installer for Python.
+# https://pip.pypa.io/en/stable/
+# curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+# python3 get-pip.py --user
+#
+# Upgrade pip:
+# python3 -m pip install --upgrade pip
+
+# TODO
+# Maybe we want to distribute software via ansible.
+# https://docs.ansible.com/ansible/latest/getting_started/index.html
+# python3 -m pip install --user ansible
+# Installation under MacOS X is shitty: Will installed outside the path in: /Users/USERNAME/Library/Python/3.9/bin
+#
+# Upgrade ansible:
+# python3 -m pip install --upgrade --user ansible
+#
+# Config ansible:
+# 1. Generate config file with: ansible-config init --disabled > ansible.cfg
+# 2. Change config file:
+# inventory=~/.ansible/hosts
+# local_tmp=~/tmp  
+# log_path=~/tmp/ansible.log
+# 3. Store config file: cp ansible.cfg ~/.ansible.cfg
+# 4. Prepare that config works: touch ~/tmp/ansible.log
+#
+# USES
+# For ansible, we need python 3.8 or higher
 
 # TODO
 # Maybe we want to use MQTT:
