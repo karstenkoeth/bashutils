@@ -21,10 +21,11 @@
 # 2022-05-02 0.05 kdk Error with error message fixed
 # 2022-05-30 0.06 kdk Go on with more STATUS output and getOwnIpAddress(), tested on Raspi
 # 2022-06-08 0.07 kdk -P added
+# 2022-07-27 0.08 kdk -P changed from ProgramFolder to ProgramName, not yet tested
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.07"
-PROG_DATE="2022-06-08"
+PROG_VERSION="0.08"
+PROG_DATE="2022-07-27"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -95,6 +96,7 @@ PROG_SCRIPTNAME="devicescan.sh"
 # Constants
 #
 
+product="devicescan"
 
 # #########################################
 #
@@ -114,11 +116,20 @@ ECHOERROR="1"
 
 IP4ADDRESS="0.0.0.0"
 
-TmpDir="$HOME/tmp/"
-TmpFile="devicescan_nmap_$actDateTime.txt"
-ScanFile="devicescan_devices_$actDateTime.txt"
-MacFile="devicescan_mac_$actDateTime.txt"
-ConfigFile="$HOME/.devicescan.csv"
+# Standard Folders and Files
+
+MainFolder="_"
+ControlFolder="_"
+SummaryFolder="_"
+
+RunFile="_"
+LogFile="_"
+
+TmpDir="_"
+TmpFile="_"
+ScanFile="_"
+MacFile="_"
+ConfigFile="_"
 
 UserDatabaseFile="$HOME/Documents/Infrastruktur/Netzwerk.txt"
 
@@ -187,6 +198,30 @@ function checkOrCreateFile()
 }
 
 # #########################################
+# adjustVariables()
+# Parameter
+# Sets the global variables 
+function adjustVariables()
+{
+    # Linux like we should install e.g. under /opt/ or /usr/local/ - but we complete act inside home directory:
+    MainFolder="$HOME/$product/"
+
+    ControlFolder="$MainFolder""_Control/"
+        RunFile="$ControlFolder""RUNNING"
+        LogFile="$ControlFolder""LOG"
+
+    SummaryFolder="$MainFolder""_Summary/"
+
+    TmpDir="$HOME/tmp/"
+    TmpFile="$TmpDir""devicescan_nmap_$actDateTime.txt"
+    ScanFile="devicescan_devices_$actDateTime.txt"
+    MacFile="devicescan_mac_$actDateTime.txt"
+
+    ConfigFile="$HOME/.devicescan.csv"
+
+}
+
+# #########################################
 # checkEnvironment()
 # Parameter
 #    -
@@ -196,16 +231,23 @@ function checkOrCreateFile()
 function checkEnvironment()
 {
     checkOrCreateFolder "$TmpDir" "Temporary"
-    if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Temporary folder '$TmpDir' not usable. Exit"; exit; fi
+        if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Temporary folder '$TmpDir' not usable. Exit"; exit; fi
 
-    checkOrCreateFile "$TmpDir$TmpFile" "Temporary"
-    if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Temporary file '$TmpDir$TmpFile' not usable. Exit"; exit; fi
+    checkOrCreateFile "$TmpFile" "Temporary"
+        if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Temporary file '$TmpFile' not usable. Exit"; exit; fi
+
+    checkOrCreateFolder "$MainFolder" "Main Program"
+        if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Can't create main folder. Exit"; exit; fi
+    checkOrCreateFolder "$ControlFolder" "Control"
+        if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Can't create control folder. Exit"; exit; fi
+    checkOrCreateFolder "$SummaryFolder" "Summary"
+        if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Can't create summary folder. Exit"; exit; fi
 
     checkOrCreateFile "$ConfigFile" "Configuration"
-    if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Configuration file '$ConfigFile' not usable. Exit"; exit; fi
+        if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Configuration file '$ConfigFile' not usable. Exit"; exit; fi
 
     nmapProgram=$(which nmap)
-    if [ -z "$nmapProgram" ] ; then echo "[$PROG_NAME:ERROR] Necessary program 'nmap' not found. Exit"; exit; fi
+        if [ -z "$nmapProgram" ] ; then echo "[$PROG_NAME:ERROR] Necessary program 'nmap' not found. Exit"; exit; fi
 
     GetMacApp=$(which ip)
     if [ -z "$GetMacApp" ] ; then
@@ -343,11 +385,11 @@ function listMacAddresses()
 function scanNetwork()
 {
     # Lists all devices (which could be pinged) into file:
-    nmap -sn "$1" -oG "$TmpDir$TmpFile"
+    nmap -sn "$1" -oG "$TmpFile"
     # Typical line in file: 
     # Host: 192.168.0.1 (kabelbox.local)	Status: Up
     # Extract ip addresses into next file:
-    cat "$TmpDir$TmpFile" | grep "Host" | cut -f 2 -d " " > "$TmpDir$ScanFile"
+    cat "$TmpFile" | grep "Host" | cut -f 2 -d " " > "$TmpDir$ScanFile"
     # Scan each device exactly
     # for ...
     echo "[$PROG_NAME:DEBUG] TODO"
@@ -441,7 +483,7 @@ if [ $# -eq 1 ] ; then
     elif [ "$1" = "-c" ] ; then
         PrepConf="1"
     elif [ "$1" = "-P" ] ; then
-        echo "ProgramFolder=$product" ; exit;
+        echo "ProgramName=$product" ; exit;
     elif [ "$1" = "-V" ] ; then
         showVersion ; exit;
     elif [ "$1" = "-h" ] ; then

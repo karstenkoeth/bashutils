@@ -49,10 +49,11 @@
 # 2022-05-13 0.17 kdk getCpuUsage() added
 # 2022-05-18 0.18 kdk getSystem() enhanced to have text without "Description:   " prefix
 # 2022-06-08 0.19 kdk -P added
+# 2022-07-27 0.20 kdk -P changed from ProgramFolder to ProgramName
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.19"
-PROG_DATE="2022-06-08"
+PROG_VERSION="0.20"
+PROG_DATE="2022-07-27"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -658,7 +659,7 @@ if [ $# -eq 1 ] ; then
     if [ "$1" = "-1" ] ; then
         RUNONCE="1"
     elif [ "$1" = "-P" ] ; then
-        echo "ProgramFolder=$product" ; exit;
+        echo "ProgramName=$product" ; exit;
     elif [ "$1" = "-V" ] ; then
         showVersion ; exit;
     elif [ "$1" = "-h" ] ; then

@@ -50,10 +50,11 @@
 # 2022-04-27 0.05 kdk checkForPresence() added, tested on MAC-OS-X
 # 2022-05-18 0.06 kdk Comments added
 # 2022-06-08 0.07 kdk Comments added
+# 2022-07-27 0.08 kdk -P changed from ProgramFolder to ProgramName
 
 PROG_NAME="Executer"
-PROG_VERSION="0.07"
-PROG_DATE="2022-06-08"
+PROG_VERSION="0.08"
+PROG_DATE="2022-07-27"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="executer.sh"
 
@@ -402,7 +403,7 @@ if [ $# -eq 1 ] ; then
     if [ "$1"  = "-c" ] ; then
         InstallOnly="1"
     elif [ "$1" = "-P" ] ; then
-        echo "ProgramFolder=$product" ; exit;
+        echo "ProgramName=$product" ; exit;
     elif [ "$1" = "-V" ] ; then
         showVersion ; exit;
     elif [ "$1" = "-h" ] ; then
