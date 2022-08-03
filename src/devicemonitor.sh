@@ -50,10 +50,11 @@
 # 2022-05-18 0.18 kdk getSystem() enhanced to have text without "Description:   " prefix
 # 2022-06-08 0.19 kdk -P added
 # 2022-07-27 0.20 kdk -P changed from ProgramFolder to ProgramName
+# 2022-08-03 0.21 kdk cputmp made more robust with sed 
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.20"
-PROG_DATE="2022-07-27"
+PROG_VERSION="0.21"
+PROG_DATE="2022-08-03"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -523,6 +524,7 @@ function getCpuUsage()
         echo "[$PROG_NAME:getDiskSpace:WARNING] System type unknown. Can't get disk space."
         cputmp=0
     fi
+    cputmp=$(echo $cputmp | sed s/,/./g)
     CPUUSAGE=$(LANG=C printf "%.0f%%" $cputmp)
 }
 
