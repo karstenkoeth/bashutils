@@ -42,10 +42,11 @@
 # 2022-05-02 0.23 kdk TODO added
 # 2022-05-20 0.24 kdk brew without sudo
 # 2022-06-27 0.25 kdk Comments added
+# 2022-09-19 0.26 kdk rsync comments
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.25"
-PROG_DATE="2022-06-27"
+PROG_VERSION="0.26"
+PROG_DATE="2022-09-19"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -406,6 +407,28 @@ fi
 #
 # USES
 # For ansible, we need python 3.8 or higher
+
+# TODO
+# Maybe we need rsync for Backups
+# --exclude='.DS_Store'
+# --bwlimit=30          bandwith limit
+#
+# rsync --version       In first line of output, we see the program version number and protocol version number
+#
+# Links
+# https://rsync.samba.org/
+# https://wiki.ubuntuusers.de/rsync/
+#
+# Examples
+# Copy from the folder:
+#   Local Host ./rsynctest
+# the complete folder content to:
+#   Remote Host $HOME/tmp/rsynctest
+# rsync -ave 'ssh -i ~/.ssh/id_raspi' ./rsynctest pi@192.168.0.23:tmp/
+#
+if [ -x "$aptgetPresent" ] ; then
+    $appSudo apt-get -y install rsync
+fi
 
 # TODO
 # Maybe we want to use MQTT:
