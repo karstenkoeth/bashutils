@@ -299,6 +299,7 @@ function getHostname()
 # E.g. https://macaddress.io/  or  https://macvendors.com/   
 # gives back the name of the company to a specific address.
 # Some interesting companies:
+# 80:04:5F:00:00:00 --> Apple, Inc
 # 90:84:0D:00:00:00 --> Apple, Inc
 # 00:F7:6F:00:00:00 --> Apple, Inc
 # A4:E9:75:00:00:00 --> Apple, Inc
