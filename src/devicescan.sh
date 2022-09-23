@@ -22,10 +22,11 @@
 # 2022-05-30 0.06 kdk Go on with more STATUS output and getOwnIpAddress(), tested on Raspi
 # 2022-06-08 0.07 kdk -P added
 # 2022-07-27 0.08 kdk -P changed from ProgramFolder to ProgramName, not yet tested
+# 2022-09-23 0.09 kdk Minor changes, adjustVariables() called in main()
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.08"
-PROG_DATE="2022-07-27"
+PROG_VERSION="0.09"
+PROG_DATE="2022-09-23"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -333,6 +334,8 @@ function listMacAddresses()
         # The new way with "ip"
         echo "[$PROG_NAME:listMacAddresses:STATUS] Searching by 'ip' ..."
         ip -4 neigh | grep ":" | tr "[:lower:]" "[:upper:]" | sed "s/ /;/g"> "$TmpDir$MacFile.ip"
+        # TODO
+        # Under WSL openSuSE the function "neigh" is not supported by ip
 
         lines=$(cat "$TmpDir$MacFile.ip")
 
@@ -414,6 +417,12 @@ function getOwnIpAddress()
         #tmpadr=$(echo "$tmpadr" | cut -f 1 -d "/")
         #echo "[$PROG_NAME:getOwnIpAddress:DEBUG] '$tmpadr'"
         echo "[$PROG_NAME:getOwnIpAddress:DEBUG] '$IP4ADDRESS'"
+        # TODO
+        # Under WSL openSuSE there are 6 addresses found:
+        # eth0 + wifi1 + wifi2 in 169.254.* subnet
+        # eth1 in local net for LAN
+        # wifi0 in local net for WIFI
+        # lo as localhost with 127.0.0.1
     fi
 }
 
@@ -492,11 +501,12 @@ if [ $# -eq 1 ] ; then
 fi
 
 echo "[$PROG_NAME:STATUS] Check folders ..."
+adjustVariables
 checkEnvironment
 
 if [ "$PrepConf" = "1" ] ; then
     prepareConfig 
-    echo "[$PROG_NAME] Done."
+    echo "[$PROG_NAME:STATUS] Done."
     exit
 fi
 
@@ -510,4 +520,4 @@ listMacAddresses
 
 # Maybe TODO: Delete all created tmp files.
 
-echo "[$PROG_NAME] Done."
+echo "[$PROG_NAME:STATUS] Done."
