@@ -43,10 +43,11 @@
 # 2022-05-20 0.24 kdk brew without sudo
 # 2022-06-27 0.25 kdk Comments added
 # 2022-09-19 0.26 kdk rsync comments
+# 2022-10-12 0.27 kdk git added
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.26"
-PROG_DATE="2022-09-19"
+PROG_VERSION="0.27"
+PROG_DATE="2022-10-12"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -232,6 +233,12 @@ brewPresent=$(which brew)
 apkPresent=$(which apk)
 # TODO: Which package manager for debian on chrome book?
 
+# Template for installing packages for different systems:
+    # TODO: aptgetPresent
+    # TODO: zypperPresent
+    # TODO: brewPresent
+    # TODO: apkPresent
+
 # Allways good idea to update the system, update typically updates the 
 # package manager caches.
 # Here on Ubuntu:
@@ -293,6 +300,8 @@ if [ -z "$lsbreleasePresent" ] ; then
     if [ -x "$zypperPresent" ] ; then
         $appSudo zypper --non-interactive install lsb-release  # NOT TESTED
     fi
+    # TODO: brewPresent
+    # TODO: apkPresent
 fi
 # Check, if we are successful:
 lsbreleasePresent=$(which lsb-release)
@@ -313,12 +322,23 @@ if [ -z "$filePresent" ] ; then
     if [ -x "$zypperPresent" ] ; then
         $appSudo zypper --non-interactive install file  # NOT TESTED
     fi
+    # TODO: brewPresent
     # Installation was not working on iPhone - must be something different...
     #if [ -x "$apkPresent" ] ; then
     #    $appSudo apk add coreinfo # NOT TESTED
     #fi
 fi
 
+# 'git' we need to update this program suite --> Install it:
+gitPresent=$(which git)
+if [ -z "$gitPresent" ] ; then
+    if [ -x "$aptgetPresent" ] ; then
+        $appSudo apt-get -y install git
+    fi
+    # TODO: zypperPresent
+    # TODO: brewPresent
+    # TODO: apkPresent
+fi
 
 # iPad-von-Kasa:~# rki.sh # Diese Fehler liefert das Programm:
 # /root/bin/rki.sh: line 101: curl: command not found
