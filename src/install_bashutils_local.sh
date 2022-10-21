@@ -384,7 +384,9 @@ fi
 # transform structured data with the same ease that sed, awk, grep and friends 
 # let you play with text.
 #
-# Example: :> echo "{\"greeting\":\"Hallo Welt\"}" | jq -M
+# Examples: 
+# :> echo "{\"greeting\":\"Hallo Welt\"}" | jq -M
+# :> jq --version
 jqPresent=$(which jq)
 if [ -z "$jqPresent" ] ; then
     if [ -x "$aptgetPresent" ] ; then
