@@ -51,10 +51,11 @@
 # 2022-06-08 0.19 kdk -P added
 # 2022-07-27 0.20 kdk -P changed from ProgramFolder to ProgramName
 # 2022-08-03 0.21 kdk cputmp made more robust with sed 
+# 2022-10-21 0.22 kdk 22.04.01 LTS added
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.21"
-PROG_DATE="2022-08-03"
+PROG_VERSION="0.22"
+PROG_DATE="2022-10-21"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -404,6 +405,10 @@ function getSystem()
                     fi
                     if [ "$SYSTEMDescription" = "Description:	Ubuntu 20.04.3 LTS" ] ; then
                         SYSTEMDescription="Ubuntu 20.04.3 LTS"
+                        SYSTEMTested="1"
+                    fi
+                    if [ "$SYSTEMDescription" = "Description:	Ubuntu 22.04.01 LTS" ] ; then
+                        SYSTEMDescription="Ubuntu 22.04.01 LTS"
                         SYSTEMTested="1"
                     fi
                     if [ "$SYSTEMDescription" = "Description:    Debian GNU/Linux 10 (buster)" ] ; then

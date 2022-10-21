@@ -44,10 +44,11 @@
 # 2022-06-27 0.25 kdk Comments added
 # 2022-09-19 0.26 kdk rsync comments
 # 2022-10-12 0.27 kdk git added
+# 2022-10-21 0.28 kdk curl, jq, packageManagerUpdate() added
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.27"
-PROG_DATE="2022-10-12"
+PROG_VERSION="0.28"
+PROG_DATE="2022-10-21"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -112,6 +113,50 @@ appSudo="sudo"
 #
 # Functions
 #
+
+
+# #########################################
+# packageManagerUpdate()
+# Parameter
+#    -
+# Return Value
+#    -
+# Updates all software packages of the supported package managers.
+# This can take a long time. Therefore this function should not be use every time.
+function packageManagerUpdate()
+{
+    # Here on Ubuntu:
+    if [ -x "$aptgetPresent" ] ; then
+        echo "[$PROG_NAME:STATUS] Update system package manager ..."
+        $appSudo apt-get -y update 
+    # Allways a good idea to update all installed packages. This is typically 
+    # called 'upgrade'.
+        $appSudo apt-get -y upgrade 
+    fi
+
+    # Same on openSUSE:
+    if [ -x "$zypperPresent" ] ; then
+        echo "[$PROG_NAME:STATUS] Update system package manager ..."
+        $appSudo zypper --non-interactive refresh
+    fi
+
+    # Same on MAC OS X (here, sudo brew is no more supported):
+    if [ -x "$brewPresent" ] ; then
+        echo "[$PROG_NAME:STATUS] Update brew installer part ..."
+        # 2022: brew should no longer be used as root. Therefore do not use sudo:
+        appSudo=""
+        $appSudo brew update
+        $appSudo brew upgrade
+    fi
+
+    # Same on iPads inside the 'ish' program, an Alpine Linux Version.
+    # See help e.g. at: https://wiki.alpinelinux.org/wiki/Package_management
+    if [ -x "$apkPresent" ] ; then
+        echo "[$PROG_NAME:STATUS] Update system package manager ..."
+        $appSudo apk update
+        $appSudo apk upgrade
+    fi
+}
 
 # #########################################
 # showHelp()
@@ -194,7 +239,7 @@ fi
 # TODO
 #
 #
-# Here first to check if "sudo" is available:
+# Here first to check if "sudo" is available:  - Why? Have had problems?
 #tmp=$(which sudo)
 #if [ -z "$tmp" ] ; then
 #   appSudo=""
@@ -240,33 +285,8 @@ apkPresent=$(which apk)
     # TODO: apkPresent
 
 # Allways good idea to update the system, update typically updates the 
-# package manager caches.
-# Here on Ubuntu:
-if [ -x "$aptgetPresent" ] ; then
-    $appSudo apt-get -y update 
-# Allways a good idea to update all installed packages. This is typically 
-# called 'upgrade'.
-    $appSudo apt-get -y upgrade 
-fi
-# Same on openSUSE:
-if [ -x "$zypperPresent" ] ; then
-    $appSudo zypper --non-interactive refresh
-fi
-# Same on MAC OS X (here, sudo brew is no more supported):
-if [ -x "$brewPresent" ] ; then
-    echo "[$PROG_NAME:STATUS] Update brew installer part ..."
-    # 2022: brew should no longer be used as root. Therefore do not use sudo:
-    appSudo=""
-    $appSudo brew update
-    $appSudo brew upgrade
-fi
-# Same on iPads inside th 'ish' program, an Alpine Linux Version.
-# See help e.g. at: https://wiki.alpinelinux.org/wiki/Package_management
-if [ -x "$apkPresent" ] ; then
-    $appSudo apk update
-    $appSudo apk upgrade
-fi
-
+# package manager caches:
+packageManagerUpdate
 
 # Sometimes we should use an alternative package manager: snap
 #snapPresent=$(which snap)
@@ -340,9 +360,52 @@ if [ -z "$gitPresent" ] ; then
     # TODO: apkPresent
 fi
 
-# iPad-von-Kasa:~# rki.sh # Diese Fehler liefert das Programm:
-# /root/bin/rki.sh: line 101: curl: command not found
+# 'curl' we need for a lot of networking things --> Install it:
+# iPad-von-Kasa:~# rki.sh # The program show these errors:
+# /root/bin/rki.sh: line 101: curl: command not found 
 # /root/bin/rki.sh: line 103: jq: command not found
+curlPresent=$(which curl)
+if [ -z "$curlPresent" ] ; then
+    if [ -x "$aptgetPresent" ] ; then
+        $appSudo apt-get -y install curl
+    fi
+    # TODO: zypperPresent
+    # TODO: brewPresent
+    # TODO: apkPresent
+fi
+
+# 'jq' is often needed to deal with json data from REST-APIs.
+# iPad-von-Kasa:~# rki.sh # The program show these errors:
+# ...
+# /root/bin/rki.sh: line 103: jq: command not found
+#
+# https://stedolan.github.io/jq/
+# jq is like sed for JSON data - you can use it to slice and filter and map and 
+# transform structured data with the same ease that sed, awk, grep and friends 
+# let you play with text.
+#
+# Example: :> echo "{\"greeting\":\"Hallo Welt\"}" | jq -M
+jqPresent=$(which jq)
+if [ -z "$jqPresent" ] ; then
+    if [ -x "$aptgetPresent" ] ; then
+        $appSudo apt-get -y install jq
+    fi
+    # TODO: zypperPresent
+    # TODO: brewPresent
+    # TODO: apkPresent
+fi
+
+
+# I love 'joe' for fast text editing --> Install it:
+joePresent=$(which joe)
+if [ -z "$joePresent" ] ; then
+    if [ -x "$aptgetPresent" ] ; then
+        $appSudo apt-get -y install joe
+    fi
+    # TODO: zypperPresent
+    # TODO: brewPresent
+    # TODO: apkPresent
+fi
 
 # ################# Care about the Environment
 
