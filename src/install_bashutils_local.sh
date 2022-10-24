@@ -46,9 +46,10 @@
 # 2022-10-12 0.27 kdk git added
 # 2022-10-21 0.28 kdk curl, jq, packageManagerUpdate() added
 # 2022-10-24 0.29 kdk git in brew
+# 2022-10-24 0.30 kdk jq in brew
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.29"
+PROG_VERSION="0.30"
 PROG_DATE="2022-10-24"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
@@ -396,7 +397,9 @@ if [ -z "$jqPresent" ] ; then
         $appSudo apt-get -y install jq
     fi
     # TODO: zypperPresent
-    # TODO: brewPresent
+    if [ -x "$brewPresent" ] ; then
+        $appSudo brew install jq
+    fi
     # TODO: apkPresent
 fi
 
