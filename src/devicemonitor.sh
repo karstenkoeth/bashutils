@@ -52,10 +52,11 @@
 # 2022-07-27 0.20 kdk -P changed from ProgramFolder to ProgramName
 # 2022-08-03 0.21 kdk cputmp made more robust with sed 
 # 2022-10-21 0.22 kdk 22.04.01 LTS added
+# 2022-10-24 0.23 kdk Monterey added
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.22"
-PROG_DATE="2022-10-21"
+PROG_VERSION="0.23"
+PROG_DATE="2022-10-24"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -356,6 +357,7 @@ function getSystem()
             # More specific: 
             # The variable $OSTYPE contains more precisely the system version, e.g. "darwin17"
             # Or use uname -r for e.g. "17.7.0" = MAC OS X High Sierra 10.13.6
+            #                     e.g. "21.6.0" = MAC OS X Monterey 12.6
             #                     e.g. "4.20.69-ish" = iPhone SE 14.5.1 with ish-App
             #                     e.g. "4.20.69-ish" = iPad Air 2 14.7.1 with ish-App
             # https://de.wikipedia.org/wiki/Darwin_(Betriebssystem)
@@ -363,6 +365,9 @@ function getSystem()
             SYSTEMTested="0"
             if [ ! -z "$SYSTEMDescription" ] ;  then
                 if [ "$SYSTEMDescription" = "17.7.0" ] ; then
+                    SYSTEMTested="1"
+                fi
+                if [ "$SYSTEMDescription" = "21.6.0" ] ; then
                     SYSTEMTested="1"
                 fi
                 # Normally, it is found under Linux, but maybe ... try it:
