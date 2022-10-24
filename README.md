@@ -137,3 +137,5 @@ These scripts (ssh2*, scp2*, scpF*) are only useful in combination with the priv
 
 Write little script similar to devicemonitor-getDiskSpace() with one program parameter "Mount Point" to get
 file size of disk in MByte (1 GByte = 1024 MByte).
+
+See more todos in email incoming ...

@@ -45,10 +45,11 @@
 # 2022-09-19 0.26 kdk rsync comments
 # 2022-10-12 0.27 kdk git added
 # 2022-10-21 0.28 kdk curl, jq, packageManagerUpdate() added
+# 2022-10-24 0.29 kdk git in brew
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.28"
-PROG_DATE="2022-10-21"
+PROG_VERSION="0.29"
+PROG_DATE="2022-10-24"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -356,7 +357,9 @@ if [ -z "$gitPresent" ] ; then
         $appSudo apt-get -y install git
     fi
     # TODO: zypperPresent
-    # TODO: brewPresent
+    if [ -x "$brewPresent" ] ; then
+        $appSudo brew install git
+    fi
     # TODO: apkPresent
 fi
 
