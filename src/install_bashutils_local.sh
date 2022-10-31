@@ -11,8 +11,10 @@
 #
 # Tested at:
 # - MacBook - MAC OS X 10.13.6
+# - MacBook - MAC OS X 12.6
 # - raspi
 # - EC2 - Ubuntu
+# - Lenovo - Ubuntu
 # - iPhone - ish
 
 # #########################################
@@ -47,10 +49,11 @@
 # 2022-10-21 0.28 kdk curl, jq, packageManagerUpdate() added
 # 2022-10-24 0.29 kdk git in brew
 # 2022-10-24 0.30 kdk jq in brew
+# 2022-10-31 0.31 kdk joe in brew
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.30"
-PROG_DATE="2022-10-24"
+PROG_VERSION="0.31"
+PROG_DATE="2022-10-31"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -282,9 +285,22 @@ apkPresent=$(which apk)
 
 # Template for installing packages for different systems:
     # TODO: aptgetPresent
+#    if [ -x "$aptgetPresent" ] ;  then
+#        $appSudo apt-get -y install TODOFillInPackageName
+#    fi
     # TODO: zypperPresent
+#    if [ -x "$zypperPresent" ] ; then
+#        $appSudo zypper --non-interactive install TODOFillInPackageName
+#    fi
     # TODO: brewPresent
+#    if [ -x "$brewPresent" ] ; then
+#        $appSudo brew install TODOFillInPackageName
+#    fi
     # TODO: apkPresent
+#    if [ -x "$apkPresent" ] ; then
+#        $appSudo apk add TODOFillInPackageName
+#    fi
+
 
 # Allways good idea to update the system, update typically updates the 
 # package manager caches:
@@ -411,7 +427,9 @@ if [ -z "$joePresent" ] ; then
         $appSudo apt-get -y install joe
     fi
     # TODO: zypperPresent
-    # TODO: brewPresent
+    if [ -x "$brewPresent" ] ; then
+        $appSudo brew install joe
+    fi
     # TODO: apkPresent
 fi
 
@@ -568,6 +586,23 @@ fi
 # network scan with nmap and arp OR with ip
 # SuSE: arp is in package "net-tools-deprecated"
 # MAC: ip like:  brew install iproute2mac --> See: https://github.com/brona/iproute2mac
+ipPresent=$(which ip)
+if [ -z "$ipPresent" ] ; then
+    if [ -x "$aptgetPresent" ] ;  then
+        $appSudo apt-get -y install iproute2
+    fi
+    # TODO: zypperPresent
+#    if [ -x "$zypperPresent" ] ; then
+#        $appSudo zypper --non-interactive install TODOFillInPackageName
+#    fi
+    if [ -x "$brewPresent" ] ; then
+        $appSudo brew install iproute2mac
+    fi
+    # TODO: apkPresent
+#    if [ -x "$apkPresent" ] ; then
+#        $appSudo apk add TODOFillInPackageName
+#    fi
+fi
 
 # At the moment not needed - but a good function:
 # getFunctionsFile()

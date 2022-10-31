@@ -52,10 +52,11 @@
 # 2022-07-27 0.20 kdk -P changed from ProgramFolder to ProgramName
 # 2022-08-03 0.21 kdk cputmp made more robust with sed 
 # 2022-10-21 0.22 kdk 22.04.01 LTS added
+# 2022-10-31 0.23 kdk MAC OS X 21.6.0 added
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.22"
-PROG_DATE="2022-10-21"
+PROG_VERSION="0.23"
+PROG_DATE="2022-10-31"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -363,6 +364,9 @@ function getSystem()
             SYSTEMTested="0"
             if [ ! -z "$SYSTEMDescription" ] ;  then
                 if [ "$SYSTEMDescription" = "17.7.0" ] ; then
+                    SYSTEMTested="1"
+                fi
+                if [ "$SYSTEMDescription" = "21.6.0" ] ; then
                     SYSTEMTested="1"
                 fi
                 # Normally, it is found under Linux, but maybe ... try it:
