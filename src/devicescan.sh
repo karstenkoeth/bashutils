@@ -23,10 +23,11 @@
 # 2022-06-08 0.07 kdk -P added
 # 2022-07-27 0.08 kdk -P changed from ProgramFolder to ProgramName, not yet tested
 # 2022-09-23 0.09 kdk Minor changes, adjustVariables() called in main()
+# 2022-11-01 0.10 kdk Scan under MAC OS X with 'ip'
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.09"
-PROG_DATE="2022-09-23"
+PROG_VERSION="0.10"
+PROG_DATE="2022-11-01"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -115,7 +116,10 @@ ECHONORMAL="1"
 ECHOWARNING="1"
 ECHOERROR="1"
 
+SYSTEM="unknown"
+
 IP4ADDRESS="0.0.0.0"
+IP4SUBNET="0.0.0.*"
 
 # Standard Folders and Files
 
@@ -264,6 +268,23 @@ function checkEnvironment()
     else
         # We have "ip":
         GetMacApp="ip"
+        # But which Version?
+        # Program code from file "devicemonitor.sh" and function "getSystem()"):
+        unamePresent=$(which uname)
+        if [ -z "$unamePresent" ] ; then
+            echo "[$PROG_NAME:ERROR] 'uname' not available. Exit"
+            exit
+        else
+            sSYSTEM=$(uname -s) 
+            # Detect System:
+            if [ "$sSYSTEM" = "Darwin" ] ; then
+                SYSTEM="MACOSX"
+            elif [ "$sSYSTEM" = "Linux" ] ; then
+                SYSTEM="LINUX"
+            else
+                echo "[$PROG_NAME:WARNING] System '$sSYSTEM' unknown."
+            fi
+        fi
     fi
 }
 
@@ -332,9 +353,19 @@ function listMacAddresses()
     # IP  Address: cut -d " " -f 1
     # MAC Address: cut -d " " -f 5   <-- Could be non present, check for "contains 5 : ", see above
     if [ "$GetMacApp" = "ip" ] ; then
-        # The new way with "ip"
+        # The new way with "ip", works under MACOSX and LINUX
         echo "[$PROG_NAME:listMacAddresses:STATUS] Searching by 'ip' ..."
-        ip -4 neigh | grep ":" | tr "[:lower:]" "[:upper:]" | sed "s/ /;/g"> "$TmpDir$MacFile.ip"
+        if [ "$SYSTEM" = "LINUX" ] ;  then
+            ip -4 neigh | grep ":" | tr "[:lower:]" "[:upper:]" | sed "s/ /;/g"> "$TmpDir$MacFile.ip"
+        elif [ "$SYSTEM" = "MACOSX" ] ;  then
+            # Adaption under MACOSX:
+            # Output e.g.: '192.168.0.164;DEV;EN4;LLADDR;60:3:8:C0:F6:C1;REACHABLE'
+            # Need to enhance MAC addresses to have always 2 digits in every section: '60:3:... --> 60:03:...'
+            # Same problem as below in 'arp' session.
+            ip -4 neigh | grep ":" | tr "[:lower:]" "[:upper:]" | sed "s/ /;/g"> "$TmpDir$MacFile.mac"
+            # Line starts not with MAC address. Therefore '^' is not before MAC, instead ';' is before MAC
+            cat "$TmpDir$MacFile.mac" | sed "s/;\(.\):/;0\1:/g"  | sed "s/:\(.\)$/:0\1/g" | sed "s/:\(.\):/:0\1:/g" | sed "s/:\(.\):/:0\1:/g" | mac_converter.sh -L > "$TmpDir$MacFile.ip"
+        fi
         # TODO
         # Under WSL openSuSE the function "neigh" is not supported by ip
 
@@ -343,8 +374,8 @@ function listMacAddresses()
         for line in $lines
         do
             #echo "'$line'"
-            newLineMAC=$(echo $line | cut -d ";" -f 5)
-            newLineIP=$(echo $line | cut -d ";" -f 1)
+            newLineMAC=$(echo "$line" | cut -d ";" -f 5)
+            newLineIP=$(echo "$line" | cut -d ";" -f 1)
             newLineName=$(getHostname "$newLineMAC")
             newLine="$newLineMAC;$newLineIP;$newLineName;"
             echo "'$newLine'"
@@ -388,6 +419,7 @@ function listMacAddresses()
 # The result will be written down in the tmp file
 function scanNetwork()
 {
+    echo "[$PROG_NAME:DEBUG] Scanning network '$1' ..."
     # Lists all devices (which could be pinged) into file:
     nmap -sn "$1" -oG "$TmpFile"
     # Typical line in file: 
@@ -410,13 +442,22 @@ function getOwnIpAddress()
 {
     if [ "$GetMacApp" = "ip" ] ; then
         #local tmpadr="0.0.0.0"
-        IP4ADDRESS=$(ip -o -4 addr show | grep -i global | sed "s/  */;/g" | cut -f 4 -d ";" | cut -f 1 -d "/")
-        #tmpadr=$(ip -o -4 addr show | grep -i global | sed "s/  */;/g")
-        #echo "[$PROG_NAME:getOwnIpAddress:DEBUG] '$tmpadr'"
-        #tmpadr=$(echo "$tmpadr" | cut -f 4 -d ";")
-        #echo "[$PROG_NAME:getOwnIpAddress:DEBUG] '$tmpadr'"
-        #tmpadr=$(echo "$tmpadr" | cut -f 1 -d "/")
-        #echo "[$PROG_NAME:getOwnIpAddress:DEBUG] '$tmpadr'"
+        if [ "$SYSTEM" = "LINUX" ] ;  then
+            # Under "Raspbian GNU/Linux 9.13 (stretch)": Parameter -o is implemented and generates 1 line per interface:
+            IP4ADDRESS=$(ip -o -4 addr show | grep -i global | sed "s/  */;/g" | cut -f 4 -d ";" | cut -f 1 -d "/")
+            #tmpadr=$(ip -o -4 addr show | grep -i global | sed "s/  */;/g")
+            #echo "[$PROG_NAME:getOwnIpAddress:DEBUG] '$tmpadr'"
+            #tmpadr=$(echo "$tmpadr" | cut -f 4 -d ";")
+            #echo "[$PROG_NAME:getOwnIpAddress:DEBUG] '$tmpadr'"
+            #tmpadr=$(echo "$tmpadr" | cut -f 1 -d "/")
+            #echo "[$PROG_NAME:getOwnIpAddress:DEBUG] '$tmpadr'"
+        elif [ "$SYSTEM" = "MACOSX" ] ; then
+            # Under MACOSX "17.7.0": Parameter -o is not implemented
+            IP4ADDRESS=$(ip -4 addr show | grep -i brd | sed "s/  */;/g" | cut -f 2 -d ";" | cut -f 1 -d "/")
+        fi
+        # TODO
+        # It is possible to have more than one line in the variable 'IP4ADDRESS'. Check and search the most important.
+        # But also with 2 addresses it is possible to have no connection to the internet.
         echo "[$PROG_NAME:getOwnIpAddress:DEBUG] '$IP4ADDRESS'"
         # TODO
         # Under WSL openSuSE there are 6 addresses found:
@@ -425,6 +466,21 @@ function getOwnIpAddress()
         # wifi0 in local net for WIFI
         # lo as localhost with 127.0.0.1
     fi
+}
+
+# #########################################
+# getOwnIpSubnet()
+# Parameter
+#  1 - ip address inside the subnet
+# Return Value
+#    -
+#
+function getOwnIpSubnet()
+{
+    sTmp1=$(echo "$IP4ADDRESS" | cut -f 1 -d ".")
+    sTmp2=$(echo "$IP4ADDRESS" | cut -f 2 -d ".")
+    sTmp3=$(echo "$IP4ADDRESS" | cut -f 3 -d ".")
+    IP4SUBNET="$sTmp1.$sTmp2.$sTmp3.*"
 }
 
 # #########################################
@@ -512,9 +568,8 @@ if [ "$PrepConf" = "1" ] ; then
 fi
 
 getOwnIpAddress
-
-echo "[$PROG_NAME:STATUS] Scan network ..."
-scanNetwork "192.168.0.*" # TODO: Automatically detect which network we should scan.
+getOwnIpSubnet "$IP4ADDRESS"
+scanNetwork "$IP4SUBNET" 
 
 echo "[$PROG_NAME:STATUS] Get MAC addresses ..."
 listMacAddresses

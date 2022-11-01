@@ -50,10 +50,11 @@
 # 2022-10-24 0.29 kdk git in brew
 # 2022-10-24 0.30 kdk jq in brew
 # 2022-10-31 0.31 kdk joe in brew
+# 2022-11-01 0.32 kdk Comments added
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.31"
-PROG_DATE="2022-10-31"
+PROG_VERSION="0.32"
+PROG_DATE="2022-11-01"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -63,6 +64,34 @@ PROG_LIBRARYNAME="bashutils_common_functions.bash"
 # TODO
 #
 # https://trello.com/c/5bsK792K/409-bashutils-ish
+#
+# The bashutils scripts are using the following programs and functions:
+#
+# devicemonitor:
+# - awk
+# - cat
+# - cut
+# - date
+# - df
+# - echo
+# - grep
+# - lsb_release
+# - mkdir
+# - printf
+# - rm
+# - sed
+# - sleep
+# - tail
+# - top
+# - touch
+# - uname
+# - which
+# - xargs
+#
+# devicescan:
+#
+# See upper part of file devicescan.sh
+#
 
 # #########################################
 #

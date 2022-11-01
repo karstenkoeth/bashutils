@@ -341,7 +341,7 @@ function getConfig()
 #    -
 # Return Value
 #    -
-# Identifies the system tape and changes the global variables: SYSTEM + SYSTEMDescription + SYSTEMTested
+# Identifies the system type and changes the global variables: SYSTEM + SYSTEMDescription + SYSTEMTested
 function getSystem()
 {
     # Check, if program is available:
