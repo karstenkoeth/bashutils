@@ -54,10 +54,11 @@
 # 2022-10-21 0.22 kdk 22.04.01 LTS added
 # 2022-10-24 0.23 kdk Monterey added
 # 2022-10-31 0.24 kdk MAC OS X 21.6.0 added
+# 2022-11-07 0.25 kdk 'not yet supported' added
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.24"
-PROG_DATE="2022-10-31"
+PROG_VERSION="0.25"
+PROG_DATE="2022-11-07"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -347,7 +348,7 @@ function getSystem()
     # Check, if program is available:
     unamePresent=$(which uname)
     if [ -z "$unamePresent" ] ; then
-        echo "[$PROG_NAME:ERROR] 'uname' not available. Exit"
+        echo "[$PROG_NAME:getSystem:ERROR] 'uname' not available. Exit"
         exit
     else
         sSYSTEM=$(uname -s) 
@@ -379,6 +380,7 @@ function getSystem()
             fi
             # Be paranoid: If nothing found, be sure the string is clean:
             if [ "$SYSTEMTested" = "0" ] ; then
+                echo "[$PROG_NAME:getSystem:Darwin:WARNING] Support for '$SYSTEMDescription' not yet implemented."
                 SYSTEMDescription=""
             fi
         elif [ "$sSYSTEM" = "Linux" ] ; then
@@ -439,8 +441,12 @@ function getSystem()
                 fi
                 # Be paranoid: If nothing found, be sure the string is clean:
                 if [ "$SYSTEMTested" = "0" ] ; then
+                    echo "[$PROG_NAME:getSystem:Linux:WARNING] Support for '$SYSTEMDescription' not yet implemented."
                     SYSTEMDescription=""
                 fi
+            else
+                # No lsb_release:
+                echo "[$PROG_NAME:getSystem:Linux:WARNING] 'lsb_release' not found."
             fi
             # If we have no info with lsb-release:
             if [ -z "$SYSTEMDescription" ] ; then
@@ -451,6 +457,10 @@ function getSystem()
                         SYSTEMTested="1"
                     fi
                     # ... Add more known and tested systems.
+                fi
+                if [ "$SYSTEMTested" = "0" ] ; then
+                    echo "[$PROG_NAME:getSystem:Linux:uname:WARNING] Support for '$SYSTEMDescription' not yet implemented."
+                    SYSTEMDescription=""
                 fi
             fi
             #
