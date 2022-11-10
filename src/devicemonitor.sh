@@ -55,10 +55,11 @@
 # 2022-10-24 0.23 kdk Monterey added
 # 2022-10-31 0.24 kdk MAC OS X 21.6.0 added
 # 2022-11-07 0.25 kdk 'not yet supported' added
+# 2022-11-10 0.26 kdk MAC OS X Ventura 13.0.1 added
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.25"
-PROG_DATE="2022-11-07"
+PROG_VERSION="0.26"
+PROG_DATE="2022-11-10"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -360,6 +361,7 @@ function getSystem()
             # The variable $OSTYPE contains more precisely the system version, e.g. "darwin17"
             # Or use uname -r for e.g. "17.7.0" = MAC OS X High Sierra 10.13.6
             #                     e.g. "21.6.0" = MAC OS X Monterey 12.6
+            #                     e.g. "22.1.0" = MAC OS X Ventura 13.0.1
             #                     e.g. "4.20.69-ish" = iPhone SE 14.5.1 with ish-App
             #                     e.g. "4.20.69-ish" = iPad Air 2 14.7.1 with ish-App
             # https://de.wikipedia.org/wiki/Darwin_(Betriebssystem)
@@ -370,6 +372,9 @@ function getSystem()
                     SYSTEMTested="1"
                 fi
                 if [ "$SYSTEMDescription" = "21.6.0" ] ; then
+                    SYSTEMTested="1"
+                fi
+                if [ "$SYSTEMDescription" = "22.1.0" ] ; then
                     SYSTEMTested="1"
                 fi
                 # Normally, it is found under Linux, but maybe ... try it:

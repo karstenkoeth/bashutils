@@ -52,9 +52,10 @@
 # 2022-10-31 0.31 kdk joe in brew
 # 2022-11-01 0.32 kdk Comments added
 # 2022-11-10 0.33 kdk croc added
+# 2022-11-10 0.34 kdk nmap with brew added
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.33"
+PROG_VERSION="0.34"
 PROG_DATE="2022-11-10"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
@@ -636,6 +637,17 @@ if [ -z "$nmapPresent" ] ; then
         # nmap is in: impish (21.10) - but did not work, package nmap works.
         $appSudo apt-get -y install nmap
     fi
+    # TODO: zypperPresent
+#    if [ -x "$zypperPresent" ] ; then
+#        $appSudo zypper --non-interactive install TODOFillInPackageName
+#    fi
+    if [ -x "$brewPresent" ] ; then
+        $appSudo brew install nmap
+    fi
+    # TODO: apkPresent
+#    if [ -x "$apkPresent" ] ; then
+#        $appSudo apk add TODOFillInPackageName
+#    fi
 fi
 
 # TODO
