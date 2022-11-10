@@ -51,10 +51,11 @@
 # 2022-10-24 0.30 kdk jq in brew
 # 2022-10-31 0.31 kdk joe in brew
 # 2022-11-01 0.32 kdk Comments added
+# 2022-11-10 0.33 kdk croc added
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.32"
-PROG_DATE="2022-11-01"
+PROG_VERSION="0.33"
+PROG_DATE="2022-11-10"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -64,6 +65,9 @@ PROG_LIBRARYNAME="bashutils_common_functions.bash"
 # TODO
 #
 # https://trello.com/c/5bsK792K/409-bashutils-ish
+#
+
+# #########################################
 #
 # The bashutils scripts are using the following programs and functions:
 #
@@ -460,6 +464,29 @@ if [ -z "$joePresent" ] ; then
         $appSudo brew install joe
     fi
     # TODO: apkPresent
+fi
+
+# croc is easy to use working on different systems:
+# Securely send things from one computer to another - https://github.com/schollz/croc
+crocPresent=$(which croc)
+if [ -z "$crocPresent" ] ; then
+    if [ -x "$aptgetPresent" ] ;  then
+        #$appSudo apt-get -y install TODOFillInPackageName
+        curl https://getcroc.schollz.com | bash
+    fi
+    # TODO: zypperPresent
+#    if [ -x "$zypperPresent" ] ; then
+#        $appSudo zypper --non-interactive install TODOFillInPackageName
+#    fi
+    if [ -x "$brewPresent" ] ; then
+        $appSudo brew install croc
+    fi
+    # TODO: apkPresent - Not yet tested
+    if [ -x "$apkPresent" ] ; then
+       # $appSudo apk add TODOFillInPackageName
+        apk add bash coreutils  # For wget
+        wget -qO- https://getcroc.schollz.com | bash
+    fi
 fi
 
 # ################# Care about the Environment
