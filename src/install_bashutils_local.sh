@@ -53,10 +53,11 @@
 # 2022-11-01 0.32 kdk Comments added
 # 2022-11-10 0.33 kdk croc added
 # 2022-11-10 0.34 kdk nmap with brew added
+# 2022-11-11 0.35 kdk oidc-agent added
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.34"
-PROG_DATE="2022-11-10"
+PROG_VERSION="0.35"
+PROG_DATE="2022-11-11"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -198,6 +199,31 @@ function packageManagerUpdate()
 }
 
 # #########################################
+# checkOrCreateFolder()
+# Parameter
+#   1: folder name
+#   2: folder description
+# Return
+#    0 = All ok
+#    1 = An error occured
+# This function checks if a folder exists. If not, it creates the folder.
+# Check return value e.g. with: if [ $? -eq 1 ] ; then echo "There was an error"; fi
+function checkOrCreateFolder()
+{
+    if [ ! -d "$1" ] ; then        
+        mkdir "$1"
+        if [ -d "$1" ] ; then
+            echo "[$PROG_NAME:DEBUG] $2 folder created."
+            return 0
+        else
+            echo "[$PROG_NAME:ERROR] $2 folder could not be created."
+            return 1
+        fi        
+    fi  
+    return 0      
+}
+
+# #########################################
 # showHelp()
 # Parameter
 #    -
@@ -254,19 +280,15 @@ fi
 
 # Prepare destination directory:
 DestDir="$HOME/bin/"
-mkdir -p -v "$DestDir"
-if [ ! -d "$DestDir" ] ; then
-    echo "[$PROG_NAME:ERROR] Destination directoy not found. Exit."
-    exit
-fi
+checkOrCreateFolder "$DestDir" "Binaries"
 
 # Most scripts inside bashutils need this directory:
 TmpDir="$HOME/tmp/"
-mkdir -p -v "$TmpDir"
-if [ ! -d "$TmpDir" ] ; then
-    echo "[$PROG_NAME:ERROR] Can't create temporary directoy. Exit."
-    exit
-fi
+checkOrCreateFolder "$TmpDir" "Temporary"
+
+# Some scripts need to store secrets:
+checkOrCreateFolder "$HOME/.ssh" "Secure Shell"
+checkOrCreateFolder "$HOME/.oidc-agent" "OIDC Agent"
 
 # On ubuntu 18.04 in docker: Here we are acting as root and therefore "sudo" is unknown.
 #   --> First, we have to look, if we are running as "root" or not:
@@ -426,6 +448,32 @@ if [ -z "$curlPresent" ] ; then
     # TODO: zypperPresent
     # TODO: brewPresent
     # TODO: apkPresent
+fi
+
+# oidc-agent is useful to connect to web services from bash scripts.
+# https://indigo-dc.gitbook.io/oidc-agent/
+# https://github.com/indigo-dc/oidc-agent
+oidcPresent=$(which oidc-agent)
+if [ -z "$oidcPresent" ] ; then
+    # TODO: aptgetPresent
+    if [ -x "$aptgetPresent" ] ;  then
+        # Debian 12 and newer / Ubuntu 22.04 and newer
+        $appSudo apt-get -y install oidc-agent
+        # TODO: No support under Raspbian GNU/Linux 9.13 (stretch)
+    fi
+    # TODO: zypperPresent
+#    if [ -x "$zypperPresent" ] ; then
+#        $appSudo zypper --non-interactive install TODOFillInPackageName
+#    fi
+    # TODO: brewPresent
+    if [ -x "$brewPresent" ] ; then
+        brew tap indigo-dc/oidc-agent
+        $appSudo brew install oidc-agent
+    fi
+    # TODO: apkPresent
+#    if [ -x "$apkPresent" ] ; then
+#        $appSudo apk add TODOFillInPackageName
+#    fi
 fi
 
 # 'jq' is often needed to deal with json data from REST-APIs.
