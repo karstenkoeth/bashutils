@@ -54,10 +54,11 @@
 # 2022-11-10 0.33 kdk croc added
 # 2022-11-10 0.34 kdk nmap with brew added
 # 2022-11-11 0.35 kdk oidc-agent added
+# 2022-11-16 0.36 kdk With input from cli.sh
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.35"
-PROG_DATE="2022-11-11"
+PROG_VERSION="0.36"
+PROG_DATE="2022-11-16"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -75,9 +76,9 @@ PROG_LIBRARYNAME="bashutils_common_functions.bash"
 #
 # devicemonitor:
 # - awk
-# - cat
-# - cut
-# - date
+# - cat             *
+# - cut             *
+# - date            *
 # - df
 # - echo
 # - grep
@@ -85,7 +86,7 @@ PROG_LIBRARYNAME="bashutils_common_functions.bash"
 # - mkdir
 # - printf
 # - rm
-# - sed
+# - sed             *
 # - sleep
 # - tail
 # - top
@@ -98,6 +99,8 @@ PROG_LIBRARYNAME="bashutils_common_functions.bash"
 #
 # See upper part of file devicescan.sh
 #
+#
+# *These programs are checked inside this script.
 
 # #########################################
 #
@@ -196,6 +199,29 @@ function packageManagerUpdate()
         $appSudo apk update
         $appSudo apk upgrade
     fi
+}
+
+# #########################################
+# osUpgrade()
+# Parameter
+#    -
+# Return Value
+#    -
+# Updates the OS version e.g. from Ubuntu 18 to Ubuntu 20.
+# This can take a long time. Therefore this function should not be use every time.
+function osUpgrade()
+{
+    # TODO: Not yet finalized: How to care about the save reboot process?
+
+    # Under Ubuntu:
+    $appSudo apt -y autoremove
+    $appSudo apt -y update
+    $appSudo apt -y upgrade
+    # Check, if all other programs are clean shut down!
+    $appSudo reboot
+    # After reboot:
+    $appSudo do-release-upgrade
+    # Not yet done because of some warnings...
 }
 
 # #########################################
@@ -310,7 +336,10 @@ fi
 
 # On SUSE, the program 'cnf' could answer in which software package a program is included.
 # On Ubuntu, the website https://packages.ubuntu.com/ could answer in which software package a program is included.
+#            Or use the program 'apt show' to show package details
 # On Alpine Linux, the program 'apk search -v --description' could answer in which software package a program is included.
+# On MAC OS X, the program 'brew info' could answer in which software package a program is included.
+#              Or a look at: https://brew.sh/index_de
 
 # Before update the system: detect the system we are running on:
 # TODO: Use function:
@@ -423,6 +452,69 @@ if [ -z "$filePresent" ] ; then
     #fi
 fi
 
+# Take care the bashutils core unix dependencies are present:
+datePresent=$(which date)
+if [ -z "$datePresent" ] ; then
+    if [ -x "$aptgetPresent" ] ;  then
+        $appSudo apt-get -y install coreutils
+    fi
+    # TODO: zypperPresent
+#    if [ -x "$zypperPresent" ] ; then
+#        $appSudo zypper --non-interactive install TODOFillInPackageName
+#    fi
+    # brew: 'date' is standard
+    # TODO: apkPresent
+#    if [ -x "$apkPresent" ] ; then
+#        $appSudo apk add TODOFillInPackageName
+#    fi
+fi
+
+# 'date' itself is so standard, there seems no need to install it.
+# But there are a lot of interesting helper functions. 
+# See: https://www.fresse.org/dateutils/
+# For MAC OS X: https://formulae.brew.sh/formula/dateutils#default
+#               brew install dateutils
+# For Ubuntu: https://packages.ubuntu.com/search?keywords=dateutils
+#               apt-get -y install dateutils
+#
+# INFO: Today not yet used. Therefore no install line.
+
+# Take care the bashutils core unix dependencies are present:
+#
+# cut
+#        Ubuntu: coreutils
+#        MAC OS X: So standard, there seems no need to install it. No brew formulae exists.
+#
+# cat
+#        Ubuntu: coreutils
+#        MAC OS X: So standard, there seems no need to install it. No brew formulae exists.
+#
+# wc
+#        Ubuntu: coreutils
+#        MAC OS X: So standard, there seems no need to install it. No brew formulae exists.
+#
+
+# Take care the bashutils core unix dependencies are present:
+sedPresent=$(which sed)
+if [ -z "$sedPresent" ] ; then
+    if [ -x "$aptgetPresent" ] ;  then
+        $appSudo apt-get -y install sed
+    fi
+    # TODO: zypperPresent
+#    if [ -x "$zypperPresent" ] ; then
+#        $appSudo zypper --non-interactive install TODOFillInPackageName
+#    fi
+    # brew: Available at MAC OS X as standard. With brew a gnu-sed could be installed instead.
+    # https://formulae.brew.sh/formula/gnu-sed#default
+#    if [ -x "$brewPresent" ] ; then
+#        $appSudo brew install TODOFillInPackageName
+#    fi
+    # TODO: apkPresent
+#    if [ -x "$apkPresent" ] ; then
+#        $appSudo apk add TODOFillInPackageName
+#    fi
+fi
+
 # 'git' we need to update this program suite --> Install it:
 gitPresent=$(which git)
 if [ -z "$gitPresent" ] ; then
@@ -446,7 +538,9 @@ if [ -z "$curlPresent" ] ; then
         $appSudo apt-get -y install curl
     fi
     # TODO: zypperPresent
-    # TODO: brewPresent
+    if [ -x "$brewPresent" ] ; then
+        $appSudo brew install curl
+    fi
     # TODO: apkPresent
 fi
 
