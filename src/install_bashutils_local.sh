@@ -55,10 +55,11 @@
 # 2022-11-10 0.34 kdk nmap with brew added
 # 2022-11-11 0.35 kdk oidc-agent added
 # 2022-11-16 0.36 kdk With input from cli.sh
+# 2022-11-25 0.37 kdk Comments added, socat added
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.36"
-PROG_DATE="2022-11-16"
+PROG_VERSION="0.37"
+PROG_DATE="2022-11-25"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -99,6 +100,25 @@ PROG_LIBRARYNAME="bashutils_common_functions.bash"
 #
 # See upper part of file devicescan.sh
 #
+# http-echo:
+# - cat             *
+# - cut             *
+# - date            *
+# - grep
+# - kill
+# - mkdir
+# - ps
+# - sed             *
+# - socat           *
+# - uuidgen         *
+#
+# http-text:
+# - cat             *
+# - cut             *
+# - date            *
+# - grep
+# - mkdir           *
+# - sed             *
 #
 # *These programs are checked inside this script.
 
@@ -544,6 +564,29 @@ if [ -z "$curlPresent" ] ; then
     # TODO: apkPresent
 fi
 
+# 'socat' or 'netcat' is needed for cool network stuff.
+# We try to do all things with socat to install only one tool.
+# SOcket CAT: netcat on steroids
+# http://www.dest-unreach.org/socat/
+socatPresent=$(which socat)
+if [ -z "$socatPresent" ] ; then
+    # TODO: aptgetPresent
+    if [ -x "$aptgetPresent" ] ;  then
+        $appSudo apt-get -y install socat
+    fi
+    # TODO: zypperPresent
+#    if [ -x "$zypperPresent" ] ; then
+#        $appSudo zypper --non-interactive install TODOFillInPackageName
+#    fi
+    if [ -x "$brewPresent" ] ; then
+        $appSudo brew install socat
+    fi
+    # TODO: apkPresent
+#    if [ -x "$apkPresent" ] ; then
+#        $appSudo apk add TODOFillInPackageName
+#    fi
+fi
+
 # oidc-agent is useful to connect to web services from bash scripts.
 # https://indigo-dc.gitbook.io/oidc-agent/
 # https://github.com/indigo-dc/oidc-agent
@@ -655,6 +698,7 @@ if [ -z "$uuidgenPresent" ] ; then
     if [ -x "$zypperPresent" ] ; then
         $appSudo zypper --non-interactive install uuid  # NOT TESTED
     fi
+    # brew: Not found inside brew, but found on MAC OS X
     if [ -x "$apkPresent" ] ; then
         $appSudo apk add uuidgen
     fi

@@ -24,10 +24,11 @@
 # 2022-07-27 0.08 kdk -P changed from ProgramFolder to ProgramName, not yet tested
 # 2022-09-23 0.09 kdk Minor changes, adjustVariables() called in main()
 # 2022-11-01 0.10 kdk Scan under MAC OS X with 'ip'
+# 2022-11-25 0.11 kdk Bug inside MAC OS X 'ip' part removed
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.10"
-PROG_DATE="2022-11-01"
+PROG_VERSION="0.11"
+PROG_DATE="2022-11-25"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -364,7 +365,12 @@ function listMacAddresses()
             # Same problem as below in 'arp' session.
             ip -4 neigh | grep ":" | tr "[:lower:]" "[:upper:]" | sed "s/ /;/g"> "$TmpDir$MacFile.mac"
             # Line starts not with MAC address. Therefore '^' is not before MAC, instead ';' is before MAC
-            cat "$TmpDir$MacFile.mac" | sed "s/;\(.\):/;0\1:/g"  | sed "s/:\(.\)$/:0\1/g" | sed "s/:\(.\):/:0\1:/g" | sed "s/:\(.\):/:0\1:/g" | mac_converter.sh -L > "$TmpDir$MacFile.ip"
+            # Bug: Is missing: sed "s/:\(.\);/:0\1;/" | 
+            # Line ends not with MAC address. Therefore '$' is not after MAC, instead ';' is after MAC 
+            # Four times possible inside ':' and ':'
+            cat "$TmpDir$MacFile.mac" | sed "s/;\(.\):/;0\1:/g" | sed "s/:\(.\);/:0\1;/g" |\
+            sed "s/:\(.\):/:0\1:/g" | sed "s/:\(.\):/:0\1:/g" | sed "s/:\(.\):/:0\1:/g" | sed "s/:\(.\):/:0\1:/g" |\
+            mac_converter.sh -L > "$TmpDir$MacFile.ip"
         fi
         # TODO
         # Under WSL openSuSE the function "neigh" is not supported by ip
