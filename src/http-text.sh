@@ -16,10 +16,11 @@
 # 2021-03-01 0.06 kdk Debugging ...
 # 2021-03-02 0.07 kdk Debugging ...
 # 2021-03-02 0.08 kdk Prepared for continuous run
+# 2022-11-30 0.09 kdk More general
 
 PROG_NAME="http process text"
-PROG_VERSION="0.08"
-PROG_DATE="2021-03-02"
+PROG_VERSION="0.09"
+PROG_DATE="2022-11-30"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="http-text.sh"
 
@@ -34,7 +35,7 @@ PROG_SCRIPTNAME="http-text.sh"
 #
 # MIT license (MIT)
 #
-# Copyright 2021 - 2020 Karsten Köth
+# Copyright 2022 - 2020 Karsten Köth
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -53,6 +54,13 @@ PROG_SCRIPTNAME="http-text.sh"
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
+
+# #########################################
+#
+# Constants
+#
+
+product="http-text"
 
 
 # #########################################
@@ -291,7 +299,7 @@ function handlePOST()
 actDateTime=$(date "+%Y-%m-%d +%H:%M:%S")
 # Log file:
 mkdir -p "$ServerDir"
-logFile="$ServerDir/http-text.log"
+logFile="$ServerDir/$product.log"
 
 log "Init..."
 

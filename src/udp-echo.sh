@@ -9,21 +9,13 @@
 #
 # Versions
 #
-# 2020-12-17 0.01 kdk First Version with version information
-# 2020-12-20 0.02 kdk With Port as parameter
-# 2020-12-21 0.03 kdk With CORS in http header
-# 2020-12-22 0.04 kdk Kill optimized to catch all
-# 2021-02-26 0.05 kdk Prepared for MQTT
-# 2021-03-01 0.06 kdk Debugging ...
-# 2021-03-02 0.08 kdk Prepared for continuous run
-# 2021-11-09 0.09 kdk Demo mode
-# 2022-11-30 0.10 kdk More general
+# 2022-11-30 0.01 kdk Derived from http-echo.sh version 0.10
 
-PROG_NAME="HTTP Echo"
-PROG_VERSION="0.10"
+PROG_NAME="UDP Echo"
+PROG_VERSION="0.01"
 PROG_DATE="2022-11-30"
 PROG_CLASS="bashutils"
-PROG_SCRIPTNAME="http-echo.sh"
+PROG_SCRIPTNAME="udp-echo.sh"
 
 # #########################################
 #
@@ -54,18 +46,19 @@ PROG_SCRIPTNAME="http-echo.sh"
 # Constants
 #
 
-product="http-echo"
+product="udp-echo"
 
 # #########################################
 #
 # Variables
 #
 
-PORT="11883"
+PORT="30718"
 DEMOPORT="8089"
 MQTT="0"
 DEMO="0"
-SERVER="http-text.sh"
+SERVER="udp-text.sh"
+DEBUG="0"
 
 # #########################################
 #
@@ -98,7 +91,6 @@ function getSharingDirectory()
     echo "$TmpDir"
 }
 
-
 # #########################################
 # serverText()
 # Parameter
@@ -121,26 +113,12 @@ function serverText()
     SharingDir=$(getSharingDirectory)
     #echo "[$PROG_NAME:serverText:SharingDir:DEBUG] '$SharingDir'"
 
-    socat TCP-L:$serverPort,fork EXEC:"$ServerScript $SharingDir"
-    # socat -d -d TCP-L:$serverPort,fork EXEC:"$ServerScript $SharingDir"
-}
-
-
-# #########################################
-# serverSimple()
-# Parameter
-#   1 : Port number listen at
-# Return 
-#    -
-# This function starts a simple server not needing any additional files.
-function serverSimple()
-{
-    serverPort="$1"
-    # bash echo
-    #socat -T 1 -d -d TCP-L:10081,reuseaddr,fork,crlf SYSTEM:"echo -e \"\\\"HTTP/1.0 200 OK\\\nDocumentType: text/plain\\\n\\\ndate: \$\(date\)\\\nserver:\$SOCAT_SOCKADDR:\$SOCAT_SOCKPORT\\\nclient: \$SOCAT_PEERADDR:\$SOCAT_PEERPORT\\\n\\\"\"; cat; echo -e \"\\\"\\\n\\\"\""
-
-    # bsd echo, e.g. on MAC:
-    socat -T 1 -d -d TCP-L:$serverPort,reuseaddr,fork,crlf SYSTEM:"echo \"\\\"HTTP/1.0 200 OK\\\nDocumentType: text/plain\\\nAccess-Control-Allow-Origin: *\\\n\\\ndate: \$\(date\)\\\nserver: \$SOCAT_SOCKADDR:\$SOCAT_SOCKPORT\\\nclient: \$SOCAT_PEERADDR:\$SOCAT_PEERPORT\\\n\\\"\"; cat; echo \"\\\"\\\n\\\"\""
+    if [ "$DEBUG" = "0" ] ; then
+        socat UDP4-RECVFROM:$serverPort,broadcast,fork EXEC:"$ServerScript $SharingDir"
+    else
+        # With debug output:
+        socat -d -d UDP4-RECVFROM:$serverPort,broadcast,fork EXEC:"$ServerScript $SharingDir" 
+    fi
 }
 
 # #########################################
@@ -210,7 +188,6 @@ case $1 in
 esac
 }
 
-
 # #########################################
 # showHelp()
 # Parameter
@@ -222,6 +199,7 @@ function showHelp()
 {
     echo "[$PROG_NAME:STATUS] Program Parameter:"
     echo "    -V     : Show Program Version"
+    echo "    -D     : Switch debug mode on"
     echo "    -h     : Show this help"
     echo "    -k     : Kill all '$PROG_SCRIPTNAME' processes"
     echo "    -d     : Support demo mode with fixed starting directory and port $DEMOPORT"
@@ -241,7 +219,6 @@ function showVersion()
 {
     echo "$PROG_NAME ($PROG_CLASS) $PROG_VERSION"
 }
-
 
 # #########################################
 #
@@ -267,15 +244,14 @@ if [ $# -ge 1 ] ; then
     elif [ "$1" = "-d" ] ; then
         DEMO="1"
         PORT="$DEMOPORT"
+    elif [ "$1" = "-D" ] ; then
+        DEBUG="1"
     elif [ "$1" = "-V" ] ; then
         showVersion ; exit;
     elif [ "$1" = "-h" ] ; then
         showHelp ; exit;
     fi
 fi
-
-# Old style:
-#serverSimple $PORT
 
 serverText $PORT
 
