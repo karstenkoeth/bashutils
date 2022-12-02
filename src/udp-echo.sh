@@ -10,12 +10,20 @@
 # Versions
 #
 # 2022-11-30 0.01 kdk Derived from http-echo.sh version 0.10
+# 2022-12-02 0.02 kdk in cooperation with udp-autoip.sh
 
 PROG_NAME="UDP Echo"
-PROG_VERSION="0.01"
-PROG_DATE="2022-11-30"
+PROG_VERSION="0.02"
+PROG_DATE="2022-12-02"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="udp-echo.sh"
+
+# #########################################
+#
+# TODO
+#
+# Make sendTelegram() independend from ip address and available over command line parameter
+
 
 # #########################################
 #
@@ -57,14 +65,15 @@ PORT="30718"
 DEMOPORT="8089"
 MQTT="0"
 DEMO="0"
-SERVER="udp-text.sh"
+AUTOIP="0"
+SERVER_AUTOIP="udp-autoip.sh"
+SERVER=""
 DEBUG="0"
 
 # #########################################
 #
 # Functions
 #
-
 
 # #########################################
 # getSharingDirectory()
@@ -79,6 +88,8 @@ function getSharingDirectory()
         TmpDir="$HOME/tmp/$product""_mqtt"
     elif [ "$DEMO" = "1" ] ; then
         TmpDir="$HOME/tmp/$product""_demo"
+    elif [ "$AUTOIP" = "1" ] ; then
+        TmpDir="$HOME/tmp/$product""_autoip"
     else
         Uuid=$(uuidgen)
         TmpDir="$HOME/tmp/$product""_$Uuid"
@@ -92,6 +103,18 @@ function getSharingDirectory()
 }
 
 # #########################################
+# sendTelegram()
+# Parameter
+#   1 : Text to send
+# Return
+#   - 
+# Send text over UDP
+function sendTelegram()
+{
+    echo | socat STDIO UDP4-DATAGRAM:255.255.255.255:$PORT,broadcast,range=192.168.0.0/24
+}
+
+# #########################################
 # serverText()
 # Parameter
 #   1 : Port number listen at
@@ -101,7 +124,11 @@ function getSharingDirectory()
 function serverText()
 {
     serverPort="$1"
-    serverProcess="$SERVER"
+    if [ "$AUTOIP" = "1" ] ; then
+        serverProcess="$SERVER_AUTOIP"
+    else
+        serverProcess="$SERVER"
+    fi
     BinaryDir=$(dirname "$0")
     ServerScript="$BinaryDir/$serverProcess"
     if [ ! -f "$ServerScript" ] ; then
@@ -202,6 +229,7 @@ function showHelp()
     echo "    -D     : Switch debug mode on"
     echo "    -h     : Show this help"
     echo "    -k     : Kill all '$PROG_SCRIPTNAME' processes"
+    echo "    -a     : Support AutoIp UDP telegrams"
     echo "    -d     : Support demo mode with fixed starting directory and port $DEMOPORT"
     echo "    -m     : Support mqtt2rest program with fixed starting directory and port $PORT"
     echo "    -p 80  : Define the port listen at. (e.g. port 80)."
@@ -237,6 +265,8 @@ if [ $# -ge 1 ] ; then
                 echo "[$PROG_NAME:STATUS] Port set to '$PORT'."
             fi
         fi
+    elif [ "$1" = "-a" ] ; then
+        AUTOIP="1"
     elif [ "$1" = "-k" ] ; then
         killServer ; exit;
     elif [ "$1" = "-m" ] ; then
