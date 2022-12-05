@@ -56,10 +56,11 @@
 # 2022-11-11 0.35 kdk oidc-agent added
 # 2022-11-16 0.36 kdk With input from cli.sh
 # 2022-11-25 0.37 kdk Comments added, socat added
+# 2022-12-05 0.38 kdk Comments added
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.37"
-PROG_DATE="2022-11-25"
+PROG_VERSION="0.38"
+PROG_DATE="2022-12-05"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -119,6 +120,10 @@ PROG_LIBRARYNAME="bashutils_common_functions.bash"
 # - grep
 # - mkdir           *
 # - sed             *
+#
+# git-commit:
+# date              *
+# git               *
 #
 # *These programs are checked inside this script.
 
