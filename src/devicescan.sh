@@ -25,10 +25,12 @@
 # 2022-09-23 0.09 kdk Minor changes, adjustVariables() called in main()
 # 2022-11-01 0.10 kdk Scan under MAC OS X with 'ip'
 # 2022-11-25 0.11 kdk Bug inside MAC OS X 'ip' part removed
+# 2022-12-09 0.12 kdk Distribution half done
+# 2022-12-11 0.13 kdk Go on with distribution
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.11"
-PROG_DATE="2022-11-25"
+PROG_VERSION="0.13"
+PROG_DATE="2022-12-11"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -135,6 +137,7 @@ TmpDir="_"
 TmpFile="_"
 ScanFile="_"
 MacFile="_"
+DevicesFile="_"
 ConfigFile="_"
 
 UserDatabaseFile="$HOME/Documents/Infrastruktur/Netzwerk.txt"
@@ -223,7 +226,8 @@ function adjustVariables()
     ScanFile="devicescan_devices_$actDateTime.txt"
     MacFile="devicescan_mac_$actDateTime.txt"
 
-    ConfigFile="$HOME/.devicescan.csv"
+    ConfigFile="$HOME/.$product.ini"
+    DevicesFile="$HOME/.$product.csv"
 
 }
 
@@ -251,7 +255,9 @@ function checkEnvironment()
 
     checkOrCreateFile "$ConfigFile" "Configuration"
         if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Configuration file '$ConfigFile' not usable. Exit"; exit; fi
-
+    checkOrCreateFile "$DevicesFile" "Devices"
+        if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Devices file '$DevicesFile' not usable. Exit"; exit; fi
+    
     nmapProgram=$(which nmap)
         if [ -z "$nmapProgram" ] ; then echo "[$PROG_NAME:ERROR] Necessary program 'nmap' not found. Exit"; exit; fi
 
@@ -306,12 +312,11 @@ function scanDevice()
 # Parameter
 #    MAC Address (in upper Case)
 # Return Value
-#    -
+#    Host Name
 # The result will be written to stdout
 function getHostname()
 {
-    # TODO Name abstrahieren
-    cat "$ConfigFile" | grep "$1" | cut -d ";" -f 2
+    cat "$DevicesFile" | grep "$1" | cut -d ";" -f 2
 }
 
 # #########################################
@@ -507,9 +512,48 @@ function prepareConfig()
     # Try to find user based database file
     # cat ~/Documents/Infrastruktur/Netzwerk.txt | grep ";" | grep "$1" | cut -d ";" -f 2
     if [ -f "$UserDatabaseFile" ] ; then
-        cat "$UserDatabaseFile" | grep ";" > "$ConfigFile"
-        echo "[$PROG_NAME:DEBUG] Configuration file filled."
+        cat "$UserDatabaseFile" | grep ";" > "$DevicesFile"
+        echo "[$PROG_NAME:prepareConfig:DEBUG] Devices file filled."
     fi
+
+    # Distribute ConfigFile to all clients:
+    # scp "$ConfigFile" raspi:  # "raspi" must be included in file ~/.ssh/config
+    #                           # ":" means: Copy into home directory
+    # Example for ~/.ssh/config :
+    # Host raspi
+	#   Hostname 192.168.0.23
+	#   User pi
+	#   IdentityFile ~/.ssh/id_raspi
+    #
+    # To distribute the 'Devices File' to other clients: Add the name of the 
+    # client as mentioned in the ssh config to the config file of this program.
+    # Example for ~/.devicescan.ini :
+    # Client = raspi
+    #
+    # Go trough the configfiles and copy file to all targets
+    lines=$(cat "$ConfigFile" | grep -i "Client")
+
+    # Separation only by newline, not by any whitespaces (set -f turns off globbing, i.e. wildcard expansion):
+    IFS='
+'
+    for line in $lines
+    do
+        #echo "[$PROG_NAME:prepareConfig:DEBUG] Client line: '$line'"
+        # The section heading "Clients" matches also to the search string "Client", Check for variables line:
+        variableFound=$(echo "$line" | grep "=")
+        if [ ! -z "$variableFound" ] ; then            
+            # Similar to getConfig() in devicemonitor.sh:
+            target=$(echo "$line" | cut -d "=" -f 2 | sed "s/^ *//g" | sed "s/$ *//g")
+            targetFound=$(cat "$HOME/.ssh/config" | grep "$target")
+            if [ -z "$targetFound" ] ; then
+                echo "[$PROG_NAME:prepareConfig:WARNING] Client '$target' not found in ssh config."
+            else
+                scp "$ConfigFile" "$target":
+            fi
+        fi
+    done
+    unset IFS
+    echo "[$PROG_NAME:prepareConfig:DEBUG] Devices file distributed to all clients."
 }
 
 # #########################################

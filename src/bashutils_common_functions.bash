@@ -22,6 +22,7 @@
 # 2021-11-18 0.25 kdk With random()
 # 2022-02-04 0.26 kdk With filesize()
 # 2022-02-23 0.27 kdk ShellCheck adaptions
+# 2022-12-11 0.28 kdk With deleteLeadingAndTrailingSpaces()
 
 # #########################################
 #
@@ -225,6 +226,19 @@ function random()
 function deleteQuotationMark()
 {
     s=$(echo "$1" | sed -- "s/\"//g")
+    echo "$s"
+}
+
+# #########################################
+# deleteLeadingAndTrailingSpaces()
+# Parameter
+#    1: String to remove the chars from
+# Return
+#    1: Input string without the chars
+# Leading and trailing spaces will be removed.
+function deleteLeadingAndTrailingSpaces()
+{
+    s=$(echo "$1" | sed "s/^ *//g" | sed "s/$ *//g")
     echo "$s"
 }
 

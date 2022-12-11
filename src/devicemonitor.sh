@@ -56,10 +56,11 @@
 # 2022-10-31 0.24 kdk MAC OS X 21.6.0 added
 # 2022-11-07 0.25 kdk 'not yet supported' added
 # 2022-11-10 0.26 kdk MAC OS X Ventura 13.0.1 added
+# 2022-12-11 0.27 kdk Config file name adjusted to standard
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.26"
-PROG_DATE="2022-11-10"
+PROG_VERSION="0.27"
+PROG_DATE="2022-12-11"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -144,12 +145,12 @@ ProcessFolder="_"
 
 RunFile="_"
 LogFile="_"
-MainLoopSleepFactor="10"  # Do the main task around every 10 seconds.
-MainLoopResponseTime="1s" # Reaction time of around 1 second to the "shut down" command given over file the system ('RunFile')
+MainLoopSleepFactor="10"    # Do the main task around every 10 seconds.
+MainLoopResponseTime="1s"   # Reaction time of around 1 second to the "shut down" command given over file the system ('RunFile')
 
-ConfigFile="$HOME/.devicemonitor.ini"
-ConfServer=""
-ConfInfoFile="" # Set in adjustVariables()
+ConfigFile="_"              # Set in adjustVariables()
+ConfServer=""               # Set in ConfigFile
+ConfInfoFile=""             # Set in adjustVariables()
 
 # #########################################
 #
@@ -171,6 +172,8 @@ function adjustVariables()
 
     ProcessFolder="$MainFolder""_Process/"
         ConfInfoFile="$ProcessFolder""devicestatus.json"
+
+    ConfigFile="$HOME/.$product.ini"
 }
 
 # #########################################
@@ -334,7 +337,9 @@ function checkEnvironment()
 # Read out the variables from the config file.
 function getConfig()
 {
-    ConfServer=$(cat "$ConfigFile" | grep "Server" | cut -d "=" -f 2)
+    # Similar to the old Windows file format. Variable name and variable content is delimited with a equal sign.
+    # Remove spaces before and after the variable content.
+    ConfServer=$(cat "$ConfigFile" | grep -i "Server" | cut -d "=" -f 2 | sed "s/^ *//g" | sed "s/$ *//g")
 }
 
 # #########################################
