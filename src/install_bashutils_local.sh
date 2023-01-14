@@ -58,9 +58,10 @@
 # 2022-11-25 0.37 kdk Comments added, socat added
 # 2022-12-05 0.38 kdk Comments added
 # 2023-01-14 0.39 kdk SHORT added
+# 2023-01-14 0.40 kdk Missing which added by rsync
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.39"
+PROG_VERSION="0.40"
 PROG_DATE="2023-01-14"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
@@ -791,8 +792,11 @@ fi
 #   Remote Host $HOME/tmp/rsynctest
 # rsync -ave 'ssh -i ~/.ssh/id_raspi' ./rsynctest pi@192.168.0.23:tmp/
 #
-if [ -x "$aptgetPresent" ] ; then
-    $appSudo apt-get -y install rsync
+rsyncPresent=$(which rsync)
+if [ -z "$rsyncPresent" ] ; then
+    if [ -x "$aptgetPresent" ] ; then
+        $appSudo apt-get -y install rsync
+    fi
 fi
 
 # TODO
