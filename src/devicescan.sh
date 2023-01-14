@@ -27,10 +27,11 @@
 # 2022-11-25 0.11 kdk Bug inside MAC OS X 'ip' part removed
 # 2022-12-09 0.12 kdk Distribution half done
 # 2022-12-11 0.13 kdk Go on with distribution
+# 2023-01-14 0.14 kdk Print out changed
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.13"
-PROG_DATE="2022-12-11"
+PROG_VERSION="0.14"
+PROG_DATE="2023-01-14"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -65,7 +66,7 @@ PROG_SCRIPTNAME="devicescan.sh"
 #
 # MIT license (MIT)
 #
-# Copyright 2022 - 2021 Karsten Köth
+# Copyright 2023 - 2021 Karsten Köth
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -176,7 +177,7 @@ function checkOrCreateFolder()
     if [ ! -d "$1" ] ; then        
         mkdir "$1"
         if [ -d "$1" ] ; then
-            echo "[$PROG_NAME:DEBUG] $2 folder created."
+            echo "[$PROG_NAME:STATUS] $2 folder created."
         else
             echo "[$PROG_NAME:ERROR] $2 folder could not be created."
             return 1
@@ -198,7 +199,7 @@ function checkOrCreateFile()
     if [ ! -f "$1" ] ; then        
         touch "$1"
         if [ -f "$1" ] ; then
-            echo "[$PROG_NAME:DEBUG] $2 file created."
+            echo "[$PROG_NAME:STATUS] $2 file created."
         else
             echo "[$PROG_NAME:ERROR] $2 file could not be created."
             return 1
@@ -430,7 +431,7 @@ function listMacAddresses()
 # The result will be written down in the tmp file
 function scanNetwork()
 {
-    echo "[$PROG_NAME:DEBUG] Scanning network '$1' ..."
+    echo "[$PROG_NAME:STATUS] Scanning network '$1' ..."
     # Lists all devices (which could be pinged) into file:
     nmap -sn "$1" -oG "$TmpFile"
     # Typical line in file: 
@@ -513,7 +514,7 @@ function prepareConfig()
     # cat ~/Documents/Infrastruktur/Netzwerk.txt | grep ";" | grep "$1" | cut -d ";" -f 2
     if [ -f "$UserDatabaseFile" ] ; then
         cat "$UserDatabaseFile" | grep ";" > "$DevicesFile"
-        echo "[$PROG_NAME:prepareConfig:DEBUG] Devices file filled."
+        #echo "[$PROG_NAME:prepareConfig:DEBUG] Devices file filled."
     fi
 
     # Distribute ConfigFile to all clients:
@@ -553,7 +554,7 @@ function prepareConfig()
         fi
     done
     unset IFS
-    echo "[$PROG_NAME:prepareConfig:DEBUG] Devices file distributed to all clients."
+    #echo "[$PROG_NAME:prepareConfig:DEBUG] Devices file distributed to all clients."
 }
 
 # #########################################

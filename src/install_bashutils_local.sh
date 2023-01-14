@@ -57,10 +57,11 @@
 # 2022-11-16 0.36 kdk With input from cli.sh
 # 2022-11-25 0.37 kdk Comments added, socat added
 # 2022-12-05 0.38 kdk Comments added
+# 2023-01-14 0.39 kdk SHORT added
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.38"
-PROG_DATE="2022-12-05"
+PROG_VERSION="0.39"
+PROG_DATE="2023-01-14"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -131,7 +132,7 @@ PROG_LIBRARYNAME="bashutils_common_functions.bash"
 #
 # MIT license (MIT)
 #
-# Copyright 2022 - 2020 Karsten Köth
+# Copyright 2023 - 2020 Karsten Köth
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -173,6 +174,8 @@ ECHOVERBOSE="1"
 ECHONORMAL="1"
 ECHOWARNING="1"
 ECHOERROR="1"
+
+SHORT="0"
 
 # Script specific Apps:
 appSudo="sudo"
@@ -284,6 +287,7 @@ function checkOrCreateFolder()
 function showHelp()
 {
     echo "[$PROG_NAME:STATUS] Program Parameter:"
+    echo "    -s     : Do not update the packages descriptions and the package manager"
     echo "    -V     : Show Program Version"
     echo "    -h     : Show this help"
     echo "Copy all script files from the source directoy"
@@ -314,7 +318,9 @@ echo "[$PROG_NAME:STATUS] Starting installer ..."
 
 # Check for program parameters:
 if [ $# -eq 1 ] ; then
-    if [ "$1" = "-V" ] ; then
+    if [ "$1" = "-s" ] ; then
+        SHORT="1"
+    elif [ "$1" = "-V" ] ; then
         showVersion ; exit;
     elif [ "$1" = "-h" ] ; then
         showHelp ; exit;
@@ -414,7 +420,9 @@ apkPresent=$(which apk)
 
 # Allways good idea to update the system, update typically updates the 
 # package manager caches:
-packageManagerUpdate
+if [ "$SHORT" = "0" ] ; then
+    packageManagerUpdate
+fi
 
 # Sometimes we should use an alternative package manager: snap
 #snapPresent=$(which snap)
