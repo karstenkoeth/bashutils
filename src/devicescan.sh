@@ -6,6 +6,26 @@
 #
 # This script scans ip addresses in the local network
 
+# Config File
+#
+# The location and name of the config file is: $HOME/.devicescan.ini
+#
+# [Clients] Section 
+# Distribute the 'Devices File' to all clients:
+# scp "$DevicesFile" raspi:  # "raspi" must be included in file ~/.ssh/config
+#                            # ":" means: Copy into home directory
+# Example for ~/.ssh/config :
+# Host raspi
+#   Hostname 192.168.0.23
+#   User pi
+#   IdentityFile ~/.ssh/id_raspi
+#
+# To distribute the 'Devices File' to other clients: Add the name of the 
+# client as mentioned in the ssh config to the config file of this program.
+# Example for ~/.devicescan.ini :
+# Client = raspi
+
+
 # #########################################
 #
 # Versions
@@ -28,9 +48,10 @@
 # 2022-12-09 0.12 kdk Distribution half done
 # 2022-12-11 0.13 kdk Go on with distribution
 # 2023-01-14 0.14 kdk Print out changed
+# 2023-01-14 0.15 kdk Copy correct file
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.14"
+PROG_VERSION="0.15"
 PROG_DATE="2023-01-14"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
@@ -517,9 +538,9 @@ function prepareConfig()
         #echo "[$PROG_NAME:prepareConfig:DEBUG] Devices file filled."
     fi
 
-    # Distribute ConfigFile to all clients:
-    # scp "$ConfigFile" raspi:  # "raspi" must be included in file ~/.ssh/config
-    #                           # ":" means: Copy into home directory
+    # Distribute the 'Devices File' to all clients:
+    # scp "$DevicesFile" raspi:  # "raspi" must be included in file ~/.ssh/config
+    #                            # ":" means: Copy into home directory
     # Example for ~/.ssh/config :
     # Host raspi
 	#   Hostname 192.168.0.23
@@ -549,7 +570,10 @@ function prepareConfig()
             if [ -z "$targetFound" ] ; then
                 echo "[$PROG_NAME:prepareConfig:WARNING] Client '$target' not found in ssh config."
             else
+                # Not sure, if its a good idea to copy the config file ...
                 scp "$ConfigFile" "$target":
+                # This file contains the link between hostname and MAC address:
+                scp "$DevicesFile" "$target":
             fi
         fi
     done
