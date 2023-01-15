@@ -407,12 +407,19 @@ function listMacAddresses()
             newLineIP=$(echo "$line" | cut -d ";" -f 1)
             newLineName=$(getHostname "$newLineMAC")
             newLine="$newLineMAC;$newLineIP;$newLineName;"
+            #
             # TODO: Remove Multicast addresses from list:
+            # 
             # https://de.wikipedia.org/wiki/Multicast:
             # Bei IPv4 werden die untersten 23 Bit der IP-Adresse in die MAC-Adresse 01-00-5e-00-00-00 eingesetzt, 
             # wodurch sich Adressen aus dem Bereich von 01-00-5e-00-00-00 bis 01-00-5e-7f-ff-ff ergeben können. 
             # Hierbei wird bewusst in Kauf genommen, dass mehrere IPv4-Adressen auf dieselbe MAC-Adresse abgebildet 
             # werden (zum Beispiel 224.0.0.1 und 233.128.0.1).
+            # 
+            # https://www.omnisecu.com/tcpip/broadcast-mac-address.php
+            # The MAC address used for broadcast (broadcast MAC address) is ff:ff:ff:ff:ff:ff. 
+            # Broadcast MAC address is a MAC address consisting of all binary 1s.
+            #
             echo "'$newLine'"
             # TODO: In der Device List taucht der localhost, also das eigene Device, nicht auf.
             if [ "$IP4ADDRESS" = "$newLineIP" ] ; then
@@ -491,7 +498,7 @@ function getOwnMacAddress()
         if [ "$SYSTEM" = "LINUX" ] ;  then
             MACADDRESS=$(cat /sys/class/net/eth0/address | tr "[:lower:]" "[:upper:]")
         elif [ "$SYSTEM" = "MACOSX" ] ; then
-            MACADDRESS=$(ip -4 addr show | grep -i ether | sed "s/ether /;/g" | cut -d ";" -f 2)
+            MACADDRESS=$(ip -4 addr show | grep -i ether | sed "s/ether /;/g" | cut -d ";" -f 2 | tr "[:lower:]" "[:upper:]")
         fi
         echo "[$PROG_NAME:getOwnMacAddress:DEBUG] '$MACADDRESS'"
     fi
