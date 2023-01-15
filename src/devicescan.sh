@@ -5,7 +5,8 @@
 # Overview
 #
 # This script scans ip addresses in the local network
-
+#
+#
 # Config File
 #
 # The location and name of the config file is: $HOME/.devicescan.ini
@@ -49,10 +50,11 @@
 # 2022-12-11 0.13 kdk Go on with distribution
 # 2023-01-14 0.14 kdk Print out changed
 # 2023-01-14 0.15 kdk Copy correct file
+# 2023-01-15 0.16 kdk Comments added
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.15"
-PROG_DATE="2023-01-14"
+PROG_VERSION="0.16"
+PROG_DATE="2023-01-15"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -110,16 +112,6 @@ PROG_SCRIPTNAME="devicescan.sh"
 
 # #########################################
 #
-# Includes
-#
-# TODO: Given in this way, the include file must be in same directory the 
-#       script is called from. We have to auto-detect the path to the binary.
-# source bashutils_common_functions.bash
-
-
-
-# #########################################
-#
 # Constants
 #
 
@@ -143,6 +135,7 @@ ECHOERROR="1"
 
 SYSTEM="unknown"
 
+MACADDRESS="00:00:00:00:00:00"
 IP4ADDRESS="0.0.0.0"
 IP4SUBNET="0.0.0.*"
 
@@ -373,6 +366,8 @@ function listMacAddresses()
     # #####################################
     # ip - Version
 
+    local NoOwn="1"
+
     # ip -4 neigh : Shows the ip and mac addresses in one line, e.g.:
     # 192.168.0.176 dev eth0 lladdr 68:5b:35:be:43:49 REACHABLE
     # 192.168.0.220 dev eth0  FAILED
@@ -406,15 +401,34 @@ function listMacAddresses()
 
         for line in $lines
         do
+            # You get this list also with: 'ip neighbour'
             #echo "'$line'"
             newLineMAC=$(echo "$line" | cut -d ";" -f 5)
             newLineIP=$(echo "$line" | cut -d ";" -f 1)
             newLineName=$(getHostname "$newLineMAC")
             newLine="$newLineMAC;$newLineIP;$newLineName;"
+            # TODO: Remove Multicast addresses from list:
+            # https://de.wikipedia.org/wiki/Multicast:
+            # Bei IPv4 werden die untersten 23 Bit der IP-Adresse in die MAC-Adresse 01-00-5e-00-00-00 eingesetzt, 
+            # wodurch sich Adressen aus dem Bereich von 01-00-5e-00-00-00 bis 01-00-5e-7f-ff-ff ergeben können. 
+            # Hierbei wird bewusst in Kauf genommen, dass mehrere IPv4-Adressen auf dieselbe MAC-Adresse abgebildet 
+            # werden (zum Beispiel 224.0.0.1 und 233.128.0.1).
             echo "'$newLine'"
             # TODO: In der Device List taucht der localhost, also das eigene Device, nicht auf.
+            if [ "$IP4ADDRESS" = "$newLineIP" ] ; then
+                # We have the own IP address in the list:
+                NoOwn="0"
+            fi
         done
         
+        if [ "$NoOwn" = "1" ] ; then
+            # The own ip address was not part of the list. Therefore add this:
+            newLineMAC="$MACADDRESS"
+            newLineIP="$IP4ADDRESS"
+            newLineName=$(getHostname "$newLineMAC")
+            newLine="$newLineMAC;$newLineIP;$newLineName;"
+            echo "'$newLine'"
+        fi
     fi
 
     # #####################################
@@ -462,6 +476,25 @@ function scanNetwork()
     # Scan each device exactly
     # for ...
     echo "[$PROG_NAME:DEBUG] TODO"
+}
+
+# #########################################
+# getOwnMacAddress()
+# Parameter
+#    -
+# Return Value
+#    -
+# Try to find the most important mac address and write it to the global variable MACADDRESS
+function getOwnMacAddress()
+{
+    if [ "$GetMacApp" = "ip" ] ; then
+        if [ "$SYSTEM" = "LINUX" ] ;  then
+            read MACADDRESS </sys/class/net/eth0/address
+        elif [ "$SYSTEM" = "MACOSX" ] ; then
+            MACADDRESS=$(ip -4 addr show | grep -i ether | sed "s/ether /;/g" | cut -d ";" -f 2)
+        fi
+        echo "[$PROG_NAME:getOwnMacAddress:DEBUG] '$MACADDRESS'"
+    fi
 }
 
 # #########################################
@@ -642,6 +675,7 @@ if [ "$PrepConf" = "1" ] ; then
     exit
 fi
 
+getOwnMacAddress
 getOwnIpAddress
 getOwnIpSubnet "$IP4ADDRESS"
 scanNetwork "$IP4SUBNET" 
