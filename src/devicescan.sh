@@ -489,7 +489,7 @@ function getOwnMacAddress()
 {
     if [ "$GetMacApp" = "ip" ] ; then
         if [ "$SYSTEM" = "LINUX" ] ;  then
-            read MACADDRESS </sys/class/net/eth0/address
+            MACADDRESS=$(cat /sys/class/net/eth0/address | tr "[:lower:]" "[:upper:]")
         elif [ "$SYSTEM" = "MACOSX" ] ; then
             MACADDRESS=$(ip -4 addr show | grep -i ether | sed "s/ether /;/g" | cut -d ";" -f 2)
         fi
