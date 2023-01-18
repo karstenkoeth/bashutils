@@ -24,8 +24,17 @@
 # To distribute the 'Devices File' to other clients: Add the name of the 
 # client as mentioned in the ssh config to the config file of this program.
 # Example for ~/.devicescan.ini :
+# [Clients]
 # Client = raspi
-
+#
+#
+# Devices File
+#
+# The location and name of the devices file is: $HOME/.devicescan.csv
+#
+# The devices file defines the link between the MAC address and the device name.
+# Example for ~/.devicescan.csv :
+# 40:2B:50:12:AB:34;Kabelbox Router
 
 # #########################################
 #
@@ -51,10 +60,11 @@
 # 2023-01-14 0.14 kdk Print out changed
 # 2023-01-14 0.15 kdk Copy correct file
 # 2023-01-15 0.16 kdk Comments added
+# 2023-01-18 0.17 kdk Comments and isMultiCastMacAddress() added
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.16"
-PROG_DATE="2023-01-15"
+PROG_VERSION="0.17"
+PROG_DATE="2023-01-18"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -144,6 +154,7 @@ IP4SUBNET="0.0.0.*"
 MainFolder="_"
 ControlFolder="_"
 SummaryFolder="_"
+DataFolder="_"
 
 RunFile="_"
 LogFile="_"
@@ -235,6 +246,7 @@ function adjustVariables()
         LogFile="$ControlFolder""LOG"
 
     SummaryFolder="$MainFolder""_Summary/"
+    DataFolder="$MainFolder""_Data/"
 
     TmpDir="$HOME/tmp/"
     TmpFile="$TmpDir""devicescan_nmap_$actDateTime.txt"
@@ -267,6 +279,8 @@ function checkEnvironment()
         if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Can't create control folder. Exit"; exit; fi
     checkOrCreateFolder "$SummaryFolder" "Summary"
         if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Can't create summary folder. Exit"; exit; fi
+    checkOrCreateFolder "$DataFolder" "Data"
+        if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Can't create data folder. Exit"; exit; fi
 
     checkOrCreateFile "$ConfigFile" "Configuration"
         if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Configuration file '$ConfigFile' not usable. Exit"; exit; fi
@@ -367,6 +381,7 @@ function listMacAddresses()
     # ip - Version
 
     local NoOwn="1"
+    local MultiCast="0"
 
     # ip -4 neigh : Shows the ip and mac addresses in one line, e.g.:
     # 192.168.0.176 dev eth0 lladdr 68:5b:35:be:43:49 REACHABLE
@@ -408,7 +423,7 @@ function listMacAddresses()
             newLineName=$(getHostname "$newLineMAC")
             newLine="$newLineMAC;$newLineIP;$newLineName;"
             #
-            # TODO: Remove Multicast addresses from list:
+            # Remove Multicast addresses from list:
             # 
             # https://de.wikipedia.org/wiki/Multicast:
             # Bei IPv4 werden die untersten 23 Bit der IP-Adresse in die MAC-Adresse 01-00-5e-00-00-00 eingesetzt, 
@@ -416,11 +431,13 @@ function listMacAddresses()
             # Hierbei wird bewusst in Kauf genommen, dass mehrere IPv4-Adressen auf dieselbe MAC-Adresse abgebildet 
             # werden (zum Beispiel 224.0.0.1 und 233.128.0.1).
             # 
+            MultiCast=$(isMultiCastMacAddress $newLineMAC)
             # https://www.omnisecu.com/tcpip/broadcast-mac-address.php
             # The MAC address used for broadcast (broadcast MAC address) is ff:ff:ff:ff:ff:ff. 
             # Broadcast MAC address is a MAC address consisting of all binary 1s.
-            #
-            echo "'$newLine'"
+            if [ "$newLineMAC" != "FF:FF:FF:FF:FF:FF" ] && [ "$MultiCast" != "1" ] ; then
+                echo "'$newLine'"
+            fi
             # TODO: In der Device List taucht der localhost, also das eigene Device, nicht auf.
             if [ "$IP4ADDRESS" = "$newLineIP" ] ; then
                 # We have the own IP address in the list:
@@ -501,6 +518,37 @@ function getOwnMacAddress()
             MACADDRESS=$(ip -4 addr show | grep -i ether | sed "s/ether /;/g" | cut -d ";" -f 2 | tr "[:lower:]" "[:upper:]")
         fi
         echo "[$PROG_NAME:getOwnMacAddress:DEBUG] '$MACADDRESS'"
+    fi
+}
+
+# #########################################
+# isMultiCastMacAddress()
+# Parameter
+#    1: MAC address to test
+# Return Value
+#    "0":  0 means no MultiCast or no MAC address
+#    "1":  1 means in MultiCast range
+function isMultiCastMacAddress()
+{
+    # https://de.wikipedia.org/wiki/Multicast:
+    # Bei IPv4 werden die untersten 23 Bit der IP-Adresse in die MAC-Adresse 01-00-5e-00-00-00 eingesetzt, 
+    # wodurch sich Adressen aus dem Bereich von 01-00-5e-00-00-00 bis 01-00-5e-7f-ff-ff ergeben können. 
+    # Hierbei wird bewusst in Kauf genommen, dass mehrere IPv4-Adressen auf dieselbe MAC-Adresse abgebildet 
+    # werden (zum Beispiel 224.0.0.1 und 233.128.0.1).
+
+    # Check for valid length of string:
+    local sLen=${#1}
+    # MAC address has 17 characters:
+    if [ $sLen -eq 17 ] ; then
+        local subMac=${1:0:8}
+        if [ "$subMac" = "01:00:5E" ] ; then
+            # In MultiCast range:
+            echo "1"
+        else
+            echo "0"
+        fi
+    else
+        echo "0"
     fi
 }
 
