@@ -61,10 +61,11 @@
 # 2023-01-14 0.15 kdk Copy correct file
 # 2023-01-15 0.16 kdk Comments added
 # 2023-01-18 0.17 kdk Comments and isMultiCastMacAddress() added
+# 2023-01-25 0.18 kdk Comments added
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.17"
-PROG_DATE="2023-01-18"
+PROG_VERSION="0.18"
+PROG_DATE="2023-01-25"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -72,6 +73,10 @@ PROG_SCRIPTNAME="devicescan.sh"
 #
 # TODOs
 #
+# Install DrawScript correctly. Must be done inside install_bashutils
+# Do drawUptime()
+# for every device known (typically more as "found") start drawUptime()
+# create csv fiel with date,time,uptimeStatus and filename "device.csv"
 
 # #########################################
 #
@@ -83,6 +88,7 @@ PROG_SCRIPTNAME="devicescan.sh"
 # ip - Ubuntu paket "iproute2"
 # sed
 # date
+# gnuplot
 # mkdir
 # touch
 # which
@@ -155,6 +161,8 @@ MainFolder="_"
 ControlFolder="_"
 SummaryFolder="_"
 DataFolder="_"
+GraphFolder="_"
+ScriptFolder="_"
 
 RunFile="_"
 LogFile="_"
@@ -170,6 +178,8 @@ UserDatabaseFile="$HOME/Documents/Infrastruktur/Netzwerk.txt"
 
 GetMacApp="-"
 PrepConf="0"
+GnuPlotBinary="-"
+DrawScript="-"
 
 # #########################################
 #
@@ -247,6 +257,8 @@ function adjustVariables()
 
     SummaryFolder="$MainFolder""_Summary/"
     DataFolder="$MainFolder""_Data/"
+    GraphFolder="$MainFolder""_Graphs/"
+    ScriptFolder="$MainFolder""src/"
 
     TmpDir="$HOME/tmp/"
     TmpFile="$TmpDir""devicescan_nmap_$actDateTime.txt"
@@ -256,6 +268,7 @@ function adjustVariables()
     ConfigFile="$HOME/.$product.ini"
     DevicesFile="$HOME/.$product.csv"
 
+    DrawScript="$ScriptFolder""devicescan.gnuplot"
 }
 
 # #########################################
@@ -281,6 +294,10 @@ function checkEnvironment()
         if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Can't create summary folder. Exit"; exit; fi
     checkOrCreateFolder "$DataFolder" "Data"
         if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Can't create data folder. Exit"; exit; fi
+    checkOrCreateFolder "$GraphFolder" "Graph"
+        if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Can't create graph folder. Exit"; exit; fi
+    checkOrCreateFolder "$ScriptFolder" "Script"
+        if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Can't create script folder. Exit"; exit; fi
 
     checkOrCreateFile "$ConfigFile" "Configuration"
         if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Configuration file '$ConfigFile' not usable. Exit"; exit; fi
@@ -321,6 +338,20 @@ function checkEnvironment()
                 echo "[$PROG_NAME:WARNING] System '$sSYSTEM' unknown."
             fi
         fi
+    fi
+
+    # Gnuplot to generate diagrams:
+    isGnuplot=$(gnuplot -V 2> /dev/null)
+    if [ -z "$isGnuplot" ] ; then
+        echo "[$PROG_NAME:WARNING] Gnuplot not found."
+        exit
+    else
+        GnuPlotBinary="gnuplot"
+    fi
+    # Gnuplot needs a script file:
+    if [ ! -f "$DrawScript" ] ; then
+        echo "[$PROG_NAME:WARNING] Gnuplot Script not found."
+        GnuPlotBinary="-"
     fi
 }
 
@@ -366,6 +397,24 @@ function getHostname()
 # B8:27:EB:00:00:00 --> Raspberry Pi Foundation
 # F8:DC:7A:00:00:00 --> Variscite Ltd ->- used by ->- Sick AG, Product TDC-E
 
+# #########################################
+# drawUptime()
+# Parameter
+#    device
+# Return Value
+#    -
+# Draw with gnuplot a diagram about the uptime of one device
+function drawUptime()
+{
+    if [ "$GnuPlotBinary" = "-" ] ; then
+        echo "[$PROG_NAME:drawUptime:ERROR] gnuplot binary not found. Can't draw uptime diagram for '$1'."
+        return
+    fi
+
+    # Output file:
+    #local DrawFile="$GraphFolder$Product"_"$OriginDate"_"$OriginTime"_"$1.png"
+    #$GnuPlotBinary -e "FILENAME='$BlaBlaFile'" -e "TITLE='$1'" "$DrawScript" > "$DrawFile"
+}
 
 # #########################################
 # listMacAddresses()
@@ -443,6 +492,10 @@ function listMacAddresses()
                 # We have the own IP address in the list:
                 NoOwn="0"
             fi
+            # Store information in relation to scan date and time:
+            # csv file format:
+            # 2023-01-25,14-18-00,1330,86825
+
         done
         
         if [ "$NoOwn" = "1" ] ; then

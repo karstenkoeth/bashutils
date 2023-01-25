@@ -59,10 +59,11 @@
 # 2022-12-05 0.38 kdk Comments added
 # 2023-01-14 0.39 kdk SHORT added
 # 2023-01-14 0.40 kdk Missing which added by rsync
+# 2023-01-25 0.41 kdk gnuplot added for devicescan.sh
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.40"
-PROG_DATE="2023-01-14"
+PROG_VERSION="0.41"
+PROG_DATE="2023-01-25"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -688,6 +689,27 @@ if [ -z "$crocPresent" ] ; then
         wget -qO- https://getcroc.schollz.com | bash
     fi
 fi
+
+# gnuplot to draw diagrams
+gnuplotPresent=$(which gnuplot)
+if [ -z "$gnuplotPresent" ] ; then
+    if [ -x "$aptgetPresent" ] ;  then
+        $appSudo apt-get -y install gnuplot-nox
+    fi
+    # TODO: zypperPresent
+#    if [ -x "$zypperPresent" ] ; then
+#        $appSudo zypper --non-interactive install TODOFillInPackageName
+#    fi
+    #if [ -x "$brewPresent" ] ; then
+        # macOS 10.13 is no more able to install with brew the gnuplot tool
+    #    $appSudo brew install gnuplot
+    #fi
+    # TODO: apkPresent - Not yet tested
+    #if [ -x "$apkPresent" ] ; then
+    #   # $appSudo apk add TODOFillInPackageName
+    #fi
+fi
+
 
 # ################# Care about the Environment
 
