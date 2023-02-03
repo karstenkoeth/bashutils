@@ -60,10 +60,11 @@
 # 2023-01-14 0.39 kdk SHORT added
 # 2023-01-14 0.40 kdk Missing which added by rsync
 # 2023-01-25 0.41 kdk gnuplot added for devicescan.sh
+# 2023-02-03 0.42 kdk More adaption to OpenSuSe
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.41"
-PROG_DATE="2023-01-25"
+PROG_VERSION="0.42"
+PROG_DATE="2023-02-03"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -395,10 +396,10 @@ fi
 # ################# Care about the package installer
 
 # No idea on which system we are - but we could check which package manager we could use:
-aptgetPresent=$(which apt-get)
-zypperPresent=$(which zypper)
-brewPresent=$(which brew)
-apkPresent=$(which apk)
+aptgetPresent=$(which apt-get 2> /dev/zero)
+zypperPresent=$(which zypper 2> /dev/zero)
+brewPresent=$(which brew 2> /dev/zero)
+apkPresent=$(which apk 2> /dev/zero)
 # TODO: Which package manager for debian on chrome book?
 
 # Template for installing packages for different systems:
