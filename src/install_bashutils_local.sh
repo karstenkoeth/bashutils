@@ -61,9 +61,10 @@
 # 2023-01-14 0.40 kdk Missing which added by rsync
 # 2023-01-25 0.41 kdk gnuplot added for devicescan.sh
 # 2023-02-03 0.42 kdk More adaption to OpenSuSe
+# 2023-02-03 0.43 kdk Much more " 2> /dev/zero" added after "which"
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.42"
+PROG_VERSION="0.43"
 PROG_DATE="2023-02-03"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
@@ -75,6 +76,7 @@ PROG_LIBRARYNAME="bashutils_common_functions.bash"
 #
 # https://trello.com/c/5bsK792K/409-bashutils-ish
 #
+# Hinter jedes "which" ein " 2> /dev/zero" hängen.
 
 # #########################################
 #
@@ -446,7 +448,7 @@ fi
 # https://snapcraft.io/docs/troubleshooting
 
 # 'lsb-release' is needed to detect on which Linux version we are running.
-lsbreleasePresent=$(which lsb-release)
+lsbreleasePresent=$(which lsb-release 2> /dev/zero)
 if [ -z "$lsbreleasePresent" ] ; then
     # Sometimes a little bit different spelling:
     lsbreleasePresent=$(which lsb_release)
@@ -463,17 +465,17 @@ if [ -z "$lsbreleasePresent" ] ; then
     # TODO: apkPresent
 fi
 # Check, if we are successful:
-lsbreleasePresent=$(which lsb-release)
+lsbreleasePresent=$(which lsb-release 2> /dev/zero)
 if [ -z "$lsbreleasePresent" ] ; then
     # Sometimes a little bit different spelling:
-    lsbreleasePresent=$(which lsb_release)
+    lsbreleasePresent=$(which lsb_release 2> /dev/zero)
 fi
 if [ -z "$lsbreleasePresent" ] && [ -z "$brewPresent" ] ; then
     echo "[$PROG_NAME:WARNING] Can't find 'lsb-release' or 'brew'."
 fi
 
 # 'file' is not standard --> Install it:
-filePresent=$(which file)
+filePresent=$(which file 2> /dev/zero)
 if [ -z "$filePresent" ] ; then
     if [ -x "$aptgetPresent" ] ; then
         $appSudo apt-get -y install file
@@ -489,7 +491,7 @@ if [ -z "$filePresent" ] ; then
 fi
 
 # Take care the bashutils core unix dependencies are present:
-datePresent=$(which date)
+datePresent=$(which date 2> /dev/zero)
 if [ -z "$datePresent" ] ; then
     if [ -x "$aptgetPresent" ] ;  then
         $appSudo apt-get -y install coreutils
@@ -531,7 +533,7 @@ fi
 #
 
 # Take care the bashutils core unix dependencies are present:
-sedPresent=$(which sed)
+sedPresent=$(which sed 2> /dev/zero)
 if [ -z "$sedPresent" ] ; then
     if [ -x "$aptgetPresent" ] ;  then
         $appSudo apt-get -y install sed
@@ -552,7 +554,7 @@ if [ -z "$sedPresent" ] ; then
 fi
 
 # 'git' we need to update this program suite --> Install it:
-gitPresent=$(which git)
+gitPresent=$(which git 2> /dev/zero)
 if [ -z "$gitPresent" ] ; then
     if [ -x "$aptgetPresent" ] ; then
         $appSudo apt-get -y install git
@@ -568,7 +570,7 @@ fi
 # iPad-von-Kasa:~# rki.sh # The program show these errors:
 # /root/bin/rki.sh: line 101: curl: command not found 
 # /root/bin/rki.sh: line 103: jq: command not found
-curlPresent=$(which curl)
+curlPresent=$(which curl 2> /dev/zero)
 if [ -z "$curlPresent" ] ; then
     if [ -x "$aptgetPresent" ] ; then
         $appSudo apt-get -y install curl
@@ -584,7 +586,7 @@ fi
 # We try to do all things with socat to install only one tool.
 # SOcket CAT: netcat on steroids
 # http://www.dest-unreach.org/socat/
-socatPresent=$(which socat)
+socatPresent=$(which socat 2> /dev/zero)
 if [ -z "$socatPresent" ] ; then
     # TODO: aptgetPresent
     if [ -x "$aptgetPresent" ] ;  then
@@ -606,7 +608,7 @@ fi
 # oidc-agent is useful to connect to web services from bash scripts.
 # https://indigo-dc.gitbook.io/oidc-agent/
 # https://github.com/indigo-dc/oidc-agent
-oidcPresent=$(which oidc-agent)
+oidcPresent=$(which oidc-agent 2> /dev/zero)
 if [ -z "$oidcPresent" ] ; then
     # TODO: aptgetPresent
     if [ -x "$aptgetPresent" ] ;  then
@@ -642,7 +644,7 @@ fi
 # Examples: 
 # :> echo "{\"greeting\":\"Hallo Welt\"}" | jq -M
 # :> jq --version
-jqPresent=$(which jq)
+jqPresent=$(which jq 2> /dev/zero)
 if [ -z "$jqPresent" ] ; then
     if [ -x "$aptgetPresent" ] ; then
         $appSudo apt-get -y install jq
@@ -656,7 +658,7 @@ fi
 
 
 # I love 'joe' for fast text editing --> Install it:
-joePresent=$(which joe)
+joePresent=$(which joe 2> /dev/zero)
 if [ -z "$joePresent" ] ; then
     if [ -x "$aptgetPresent" ] ; then
         $appSudo apt-get -y install joe
@@ -670,7 +672,7 @@ fi
 
 # croc is easy to use working on different systems:
 # Securely send things from one computer to another - https://github.com/schollz/croc
-crocPresent=$(which croc)
+crocPresent=$(which croc 2> /dev/zero)
 if [ -z "$crocPresent" ] ; then
     if [ -x "$aptgetPresent" ] ;  then
         #$appSudo apt-get -y install TODOFillInPackageName
@@ -692,7 +694,7 @@ if [ -z "$crocPresent" ] ; then
 fi
 
 # gnuplot to draw diagrams
-gnuplotPresent=$(which gnuplot)
+gnuplotPresent=$(which gnuplot 2> /dev/zero)
 if [ -z "$gnuplotPresent" ] ; then
     if [ -x "$aptgetPresent" ] ;  then
         $appSudo apt-get -y install gnuplot-nox
@@ -727,7 +729,7 @@ fi
 export PATH="$PATH:$HOME/bin"
 
 # Make sure all necessary tools are present:
-uuidgenPresent=$(which uuidgen)
+uuidgenPresent=$(which uuidgen 2> /dev/zero)
 if [ -z "$uuidgenPresent" ] ; then
     if [ -x "$aptgetPresent" ] ;  then
         $appSudo apt-get -y install uuid-runtime
@@ -740,7 +742,7 @@ if [ -z "$uuidgenPresent" ] ; then
         $appSudo apk add uuidgen
     fi
 fi
-uuidgenPresent=$(which uuidgen)
+uuidgenPresent=$(which uuidgen 2> /dev/zero)
 if [ -z "$uuidgenPresent" ] ; then
     echo "[$PROG_NAME:ERROR] 'uuidgen' not installable. Exit."
     exit
@@ -815,7 +817,7 @@ fi
 #   Remote Host $HOME/tmp/rsynctest
 # rsync -ave 'ssh -i ~/.ssh/id_raspi' ./rsynctest pi@192.168.0.23:tmp/
 #
-rsyncPresent=$(which rsync)
+rsyncPresent=$(which rsync 2> /dev/zero)
 if [ -z "$rsyncPresent" ] ; then
     if [ -x "$aptgetPresent" ] ; then
         $appSudo apt-get -y install rsync
@@ -857,7 +859,7 @@ fi
 # sudo apt-get -y install arping
 # sudo apt-get -y install nmap
 # For ish: apk add nmap 
-nmapPresent=$(which nmap)
+nmapPresent=$(which nmap 2> /dev/zero)
 if [ -z "$nmapPresent" ] ; then
     if [ -x "$aptgetPresent" ] ;  then
         # nmap is in: impish (21.10) - but did not work, package nmap works.
@@ -880,7 +882,7 @@ fi
 # network scan with nmap and arp OR with ip
 # SuSE: arp is in package "net-tools-deprecated"
 # MAC: ip like:  brew install iproute2mac --> See: https://github.com/brona/iproute2mac
-ipPresent=$(which ip)
+ipPresent=$(which ip 2> /dev/zero)
 if [ -z "$ipPresent" ] ; then
     if [ -x "$aptgetPresent" ] ;  then
         $appSudo apt-get -y install iproute2
