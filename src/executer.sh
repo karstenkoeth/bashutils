@@ -51,10 +51,11 @@
 # 2022-05-18 0.06 kdk Comments added
 # 2022-06-08 0.07 kdk Comments added
 # 2022-07-27 0.08 kdk -P changed from ProgramFolder to ProgramName
+# 2023-02-03 0.09 kdk Some " 2> /dev/zero" added
 
 PROG_NAME="Executer"
-PROG_VERSION="0.08"
-PROG_DATE="2022-07-27"
+PROG_VERSION="0.09"
+PROG_DATE="2023-02-03"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="executer.sh"
 
@@ -86,7 +87,7 @@ PROG_SCRIPTNAME="executer.sh"
 #
 # MIT license (MIT)
 #
-# Copyright 2022 - 2021 Karsten Köth
+# Copyright 2023 - 2021 Karsten Köth
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -216,7 +217,7 @@ function checkFolders()
 function checkForPresence()
 {
     local sTmp
-    sTmp=$(which "$1")
+    sTmp=$(which "$1" 2> /dev/zero)
     if [ -z "$sTmp" ] ; then
         echo "[$PROG_NAME:WARNING] Program '$sTmp' not found."
         return 1
