@@ -2,13 +2,13 @@
 
 # #########################################
 #
-# ########### Overview ###########
+# ########### Overview ####################
 #
 # This bash script permanently looks for commands inside a special directory and executes these.
 # This script could be started somewhere, but the main folder is always the same. Only one
 # instance of the script is able to run at the same time.
 #
-# ########### Folder structure ###########
+# ########### Folder structure ############
 #
 # _Control
 #    In this folder, some files show the status of the program and control the program
@@ -23,7 +23,7 @@
 #    If a process terminates but the program is listed inside this folder, the process will
 #    be started again.
 #
-# ########### Installer ###########
+# ########### Installer ###################
 #
 # The installer runs as an own process to be able to be restarted by this executer.
 #
@@ -52,10 +52,11 @@
 # 2022-06-08 0.07 kdk Comments added
 # 2022-07-27 0.08 kdk -P changed from ProgramFolder to ProgramName
 # 2023-02-03 0.09 kdk Some " 2> /dev/zero" added
+# 2023-02-07 0.10 kdk Format corrected
 
 PROG_NAME="Executer"
-PROG_VERSION="0.09"
-PROG_DATE="2023-02-03"
+PROG_VERSION="0.10"
+PROG_DATE="2023-02-07"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="executer.sh"
 
