@@ -58,9 +58,10 @@
 # 2022-11-10 0.26 kdk MAC OS X Ventura 13.0.1 added
 # 2022-12-11 0.27 kdk Config file name adjusted to standard
 # 2023-02-07 0.28 kdk MAC OS X Ventura 13.2 added
+# 2023-02-07 0.29 kdk MAC OS X disk encryption status added
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.28"
+PROG_VERSION="0.29"
 PROG_DATE="2023-02-07"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
@@ -69,6 +70,14 @@ PROG_SCRIPTNAME="devicemonitor.sh"
 #
 # TODOs
 #
+
+# #########################################
+# 
+# Hints
+#
+# The user name could be retrieved with 'whoami' on Linux and MAC OS X.
+# At the moment not included here, because we want to get information about
+# the system, not the user.
 
 # #########################################
 #
@@ -118,6 +127,7 @@ product="devicemonitor"
 # Typically, we need in a lot of scripts the start date and time of the script:
 actDateTime=$(date "+%Y-%m-%d +%H:%M:%S")
 DISKSPACE="0%"
+DISKENCRYPTION="Unknown"
 CPUUSAGE="0%"
 SYSTEM="unknown"
     # Allowed values:
@@ -430,6 +440,12 @@ function getSystem()
                         SYSTEMDescription="Ubuntu 20.04.3 LTS"
                         SYSTEMTested="1"
                     fi
+                    if [ "$SYSTEMDescription" = "Description:    Ubuntu 20.04.4 LTS" ] ; then
+                        # Inside Citrix Dedicated Desktop the "* Base WSL"
+                        # Tested at 2022-04-01
+                        SYSTEMDescription="Ubuntu 20.04.4 LTS"
+                        SYSTEMTested="1"
+                    fi
                     if [ "$SYSTEMDescription" = "Description:	Ubuntu 22.04.01 LTS" ] ; then
                         SYSTEMDescription="Ubuntu 22.04.01 LTS"
                         SYSTEMTested="1"
@@ -438,12 +454,6 @@ function getSystem()
                         # Chromebook
                         # Tested at 2022-04-08
                         SYSTEMDescription="Debian GNU/Linux 10 (buster)"
-                        SYSTEMTested="1"
-                    fi
-                    if [ "$SYSTEMDescription" = "Description:    Ubuntu 20.04.4 LTS" ] ; then
-                        # Inside Citrix Dedicated Desktop the "* Base WSL"
-                        # Tested at 2022-04-01
-                        SYSTEMDescription="Ubuntu 20.04.4 LTS"
                         SYSTEMTested="1"
                     fi
                     if [ "$SYSTEMDescription" = "Description:	Raspbian GNU/Linux 9.13 (stretch)" ] ; then
@@ -519,6 +529,16 @@ function getDiskSpace()
         #sStringZ=$(df -H / | tail -n 1 | cut -d "%" -f 1)
         #DISKSPACE=$(echo ${sStringZ: -3}"%")
         DISKSPACE=$(df -H / | tail -n 1 | xargs | cut -d " " -f 5)
+        # We are looking also for encryption status of the disk:
+        fdesetupPresent=$(which fdesetup 2> /dev/zero )
+        if [ ! -z "$fdesetupPresent" ] ; then
+            fdeReturn=$(fdesetup status)
+            if [ "$fdeReturn" = "FileVault is On." ] ; then
+                DISKENCRYPTION="On"
+            else
+                DISKENCRYPTION="Off"
+            fi
+        fi
     else
         echo "[$PROG_NAME:getDiskSpace:WARNING] System type unknown. Can't get disk space."
     fi
@@ -599,12 +619,13 @@ function getSystemID()
 # Shows the collection information
 function showInfo()
 {
-    echo "[$PROG_NAME:STATUS] System Type      : $SYSTEM"
+    echo "[$PROG_NAME:STATUS] System Type           : $SYSTEM"
     if [ "$SYSTEMTested" = "1" ] ; then
-        echo "[$PROG_NAME:STATUS] System Version   : $SYSTEMDescription"
+        echo "[$PROG_NAME:STATUS] System Version        : $SYSTEMDescription"
     fi
-    echo "[$PROG_NAME:STATUS] Usage Disk Space : $DISKSPACE" 
-    echo "[$PROG_NAME:STATUS] Usage CPU Time   : $CPUUSAGE"
+    echo "[$PROG_NAME:STATUS] Usage Disk Space      : $DISKSPACE"
+    echo "[$PROG_NAME:STATUS]       Disk Encryption : $DISKENCRYPTION"
+    echo "[$PROG_NAME:STATUS] Usage CPU Time        : $CPUUSAGE"
 }
 
 # #########################################
@@ -621,6 +642,7 @@ function createJSON()
     jstr="$jstr""\"System Type\":\"$SYSTEM\","
     jstr="$jstr""\"System Version\":\"$SYSTEMDescription\","
     jstr="$jstr""\"Disk Space used\":\"$DISKSPACE\","
+    jstr="$jstr""\"Disk Encryption\":\"$DISKENCRYPTION\","
     jstr="$jstr""\"CPU Time Usage\":\"$CPUUSAGE\","
                                                                 # Here some values from plugins could be integrated
     local vstr

@@ -62,10 +62,11 @@
 # 2023-01-25 0.41 kdk gnuplot added for devicescan.sh
 # 2023-02-03 0.42 kdk More adaption to OpenSuSe
 # 2023-02-03 0.43 kdk Much more " 2> /dev/zero" added after "which"
+# 2023-02-07 0.44 kdk TODOs added
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.43"
-PROG_DATE="2023-02-03"
+PROG_VERSION="0.44"
+PROG_DATE="2023-02-07"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -77,6 +78,9 @@ PROG_LIBRARYNAME="bashutils_common_functions.bash"
 # https://trello.com/c/5bsK792K/409-bashutils-ish
 #
 # Hinter jedes "which" ein " 2> /dev/zero" hängen.
+# ^ Ist das nicht erledigt?
+#
+# gnuplot unter mac os x installieren
 
 # #########################################
 #
