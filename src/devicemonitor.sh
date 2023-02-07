@@ -57,10 +57,11 @@
 # 2022-11-07 0.25 kdk 'not yet supported' added
 # 2022-11-10 0.26 kdk MAC OS X Ventura 13.0.1 added
 # 2022-12-11 0.27 kdk Config file name adjusted to standard
+# 2023-02-07 0.28 kdk MAC OS X Ventura 13.2 added
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.27"
-PROG_DATE="2022-12-11"
+PROG_VERSION="0.28"
+PROG_DATE="2023-02-07"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -75,7 +76,7 @@ PROG_SCRIPTNAME="devicemonitor.sh"
 #
 # MIT license (MIT)
 #
-# Copyright 2022 - 2021 Karsten Köth
+# Copyright 2023 - 2021 Karsten Köth
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -367,6 +368,7 @@ function getSystem()
             # Or use uname -r for e.g. "17.7.0" = MAC OS X High Sierra 10.13.6
             #                     e.g. "21.6.0" = MAC OS X Monterey 12.6
             #                     e.g. "22.1.0" = MAC OS X Ventura 13.0.1
+            #                     e.g. "22.3.0" = MAC OS X Ventura 13.2
             #                     e.g. "4.20.69-ish" = iPhone SE 14.5.1 with ish-App
             #                     e.g. "4.20.69-ish" = iPad Air 2 14.7.1 with ish-App
             # https://de.wikipedia.org/wiki/Darwin_(Betriebssystem)
@@ -380,6 +382,9 @@ function getSystem()
                     SYSTEMTested="1"
                 fi
                 if [ "$SYSTEMDescription" = "22.1.0" ] ; then
+                    SYSTEMTested="1"
+                fi
+                if [ "$SYSTEMDescription" = "22.3.0" ] ; then
                     SYSTEMTested="1"
                 fi
                 # Normally, it is found under Linux, but maybe ... try it:
