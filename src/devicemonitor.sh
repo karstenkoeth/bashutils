@@ -138,6 +138,7 @@ SYSTEM="unknown"
 SYSTEMDescription="" # Will be filled if possible
 SYSTEMTested="0" # If we detect a system, the script was tested on, we switch to "1"
 MACADDRESS="00:00:00:00:00:00"
+SERIALNUMBER="unknown"
 
 # Handle output of the different verbose levels - in combination with the 
 # "echo?" functions inside "bashutils_common_functions.bash":
@@ -607,7 +608,19 @@ function getMacAddress()
 # Get the individual ID we use to identify this system in an asset management system.
 function getSystemID()
 {
-    echo "[$PROG_NAME:getSystemID:WARNING] Not yet implemented."
+    if [ "$SYSTEM" = "LINUX" ] ; then
+        echo "[$PROG_NAME:getSystemID:LINUX:WARNING] Not yet implemented."
+    elif [ "$SYSTEM" = "MACOSX" ] ; then
+        local systemProfPresent=$(which system_profiler 2> /dev/zero)
+        if [ ! -z "$systemProfPresent" ] ; then
+            # Get complete System Information and use only the line with serial number.
+            # Remove trailing and leading spaces.
+            SERIALNUMBER=$(system_profiler SPHardwareDataType | grep "Serial Number" | cut -d ":" -f 2 | sed "s/^ *//g" | sed "s/$ *//g")
+            # Tested on MAC OS X 22.3.0
+        fi
+    else
+        echo "[$PROG_NAME:getSystemID:Unknown:WARNING] Not yet implemented."
+    fi
 }
 
 # #########################################
@@ -626,6 +639,9 @@ function showInfo()
     echo "[$PROG_NAME:STATUS] Usage Disk Space      : $DISKSPACE"
     echo "[$PROG_NAME:STATUS]       Disk Encryption : $DISKENCRYPTION"
     echo "[$PROG_NAME:STATUS] Usage CPU Time        : $CPUUSAGE"
+    if [ ! "$SERIALNUMBER" = "unknown" ] ; then
+        echo "[$PROG_NAME:STATUS] Serial Number         : $SERIALNUMBER"
+    fi
 }
 
 # #########################################
@@ -644,6 +660,10 @@ function createJSON()
     jstr="$jstr""\"Disk Space used\":\"$DISKSPACE\","
     jstr="$jstr""\"Disk Encryption\":\"$DISKENCRYPTION\","
     jstr="$jstr""\"CPU Time Usage\":\"$CPUUSAGE\","
+    if [ ! "$SERIALNUMBER" = "unknown" ] ; then
+        jstr="$jstr""\"Serial Number\":\"$SERIALNUMBER\","
+    fi
+
                                                                 # Here some values from plugins could be integrated
     local vstr
     vstr=$(showVersion)                                                               
@@ -743,7 +763,7 @@ actDateTime=$(date "+%Y-%m-%d +%H:%M:%S")
 getDiskSpace
 getCpuUsage
 #getMacAddress
-#getSystemID
+getSystemID
 
 # Show Info:
 showInfo
@@ -770,7 +790,7 @@ do
     getCpuUsage # This command needs some seconds to be executed.
     updateLog
     #getMacAddress
-    #getSystemID
+    getSystemID
     showInfo
     writeInfo
     sendInfo
