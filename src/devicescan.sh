@@ -62,10 +62,11 @@
 # 2023-01-15 0.16 kdk Comments added
 # 2023-01-18 0.17 kdk Comments and isMultiCastMacAddress() added
 # 2023-01-25 0.18 kdk Comments added
+# 2023-02-16 0.19 kdk setDeviceStatus() added and tested on MAC
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.18"
-PROG_DATE="2023-01-25"
+PROG_VERSION="0.19"
+PROG_DATE="2023-02-16"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -76,7 +77,7 @@ PROG_SCRIPTNAME="devicescan.sh"
 # Install DrawScript correctly. Must be done inside install_bashutils
 # Do drawUptime()
 # for every device known (typically more as "found") start drawUptime()
-# create csv fiel with date,time,uptimeStatus and filename "device.csv"
+# create csv file with date,time,uptimeStatus and filename "device.csv"
 
 # #########################################
 #
@@ -140,6 +141,8 @@ product="devicescan"
 
 # Typically, we need in a lot of scripts the start date and time of the script:
 actDateTime=$(date "+%Y-%m-%d_%H:%M:%S")
+actDate=$(date "+%Y-%m-%d") # Corresponds to format inside gnuplot script
+actTime=$(date "+%H:%M:%S")
 
 # Handle output of the different verbose levels - in combination with the 
 # "echo?" functions inside "bashutils_common_functions.bash":
@@ -264,6 +267,7 @@ function adjustVariables()
     TmpFile="$TmpDir""devicescan_nmap_$actDateTime.txt"
     ScanFile="devicescan_devices_$actDateTime.txt"
     MacFile="devicescan_mac_$actDateTime.txt"
+    KnownDevicesFile="$TmpDir""devicescan_knowndevices_$actDateTime.txt"
 
     ConfigFile="$HOME/.$product.ini"
     DevicesFile="$HOME/.$product.csv"
@@ -344,7 +348,8 @@ function checkEnvironment()
     isGnuplot=$(gnuplot -V 2> /dev/null)
     if [ -z "$isGnuplot" ] ; then
         echo "[$PROG_NAME:WARNING] Gnuplot not found."
-        exit
+        #exit              # --> ERROR
+        GnuPlotBinary="-"  # --> WARNING
     else
         GnuPlotBinary="gnuplot"
     fi
@@ -407,10 +412,11 @@ function getHostname()
 function drawUptime()
 {
     if [ "$GnuPlotBinary" = "-" ] ; then
-        echo "[$PROG_NAME:drawUptime:ERROR] gnuplot binary not found. Can't draw uptime diagram for '$1'."
+        echo "[$PROG_NAME:drawUptime:WARNING] gnuplot binary not found. Can't draw uptime diagram for '$1'."
         return
     fi
 
+    
     # Output file:
     #local DrawFile="$GraphFolder$Product"_"$OriginDate"_"$OriginTime"_"$1.png"
     #$GnuPlotBinary -e "FILENAME='$BlaBlaFile'" -e "TITLE='$1'" "$DrawScript" > "$DrawFile"
@@ -431,6 +437,7 @@ function listMacAddresses()
 
     local NoOwn="1"
     local MultiCast="0"
+    local fileMAC=""
 
     # ip -4 neigh : Shows the ip and mac addresses in one line, e.g.:
     # 192.168.0.176 dev eth0 lladdr 68:5b:35:be:43:49 REACHABLE
@@ -486,6 +493,17 @@ function listMacAddresses()
             # Broadcast MAC address is a MAC address consisting of all binary 1s.
             if [ "$newLineMAC" != "FF:FF:FF:FF:FF:FF" ] && [ "$MultiCast" != "1" ] ; then
                 echo "'$newLine'"
+                # We found this device. Store in database of known devices:
+                # "database" is the standard data folder with filename corresponding to MAC address.
+                # MAC address has form: FF:FF:FF:FF:FF:FF
+                # File name has form:   FF-FF-FF-FF-FF-FF.txt
+                # File contains device name from "Devices File".
+                fileMAC=$(echo "$newLineMAC" | sed "s/:/-/g")
+                fileMAC="device_$fileMAC.txt"
+                if [ ! -e "$DataFolder$fileMAC" ] ; then
+                    # New device found:
+                    echo "$newLineName" > "$DataFolder$fileMAC"
+                fi
             fi
             # TODO: In der Device List taucht der localhost, also das eigene Device, nicht auf.
             if [ "$IP4ADDRESS" = "$newLineIP" ] ; then
@@ -505,6 +523,12 @@ function listMacAddresses()
             newLineName=$(getHostname "$newLineMAC")
             newLine="$newLineMAC;$newLineIP;$newLineName;"
             echo "'$newLine'"
+            fileMAC=$(echo "$newLineMAC" | sed "s/:/-/g")
+            fileMAC="device_$fileMAC.txt"
+            if [ ! -e "$DataFolder$fileMAC" ] ; then
+                # New device found:
+                echo "$newLineName" > "$DataFolder$fileMAC"
+            fi
         fi
     fi
 
@@ -658,6 +682,51 @@ function getOwnIpSubnet()
 }
 
 # #########################################
+# setDevicesStatus()
+# Parameter
+#    -
+# Return Value
+#    -
+# Set the status (reachable or not) for every known device.
+# Before this function, the function listMacAddresses() must be called.
+function setDevicesStatus()
+{
+    local searchMAC=""
+    local isOnline=""
+
+    # Create list of known devices:
+    ls -1 "$DataFolder"device_*.txt > "$KnownDevicesFile"
+    
+    # Go through each element:
+    if [ -s "$KnownDevicesFile" ] ; then
+        # Device exists and is not empty:
+        lines=$(cat "$KnownDevicesFile")
+        # Separation only by newline, not by any whitespaces (set -f turns off globbing, i.e. wildcard expansion):
+        IFS='
+'
+        for line in $lines
+        do
+            # line contains the MAC address in "file name format". Therefore convert:
+            searchFile=$(basename "$line")
+            storeFile=$(echo "$searchFile" | sed "s/\.txt/\.csv/g")
+            searchMAC=$(echo "$searchFile" | cut -d "_" -f 2 | cut -d "." -f 1 | sed "s/-/:/g")
+            #echo "[$PROG_NAME:setDevicesStatus:DEBUG] MAC address: '$line' '$searchMAC' '$searchFile' '$storeFile'"
+            isOnline=$(grep "$searchMAC" "$TmpDir$MacFile.ip")
+            if [ -z "$isOnline" ] ; then
+                #echo "[$PROG_NAME:setDevicesStatus:DEBUG] Device is offline."
+                echo "$actDate,$actTime,0" >> "$DataFolder""$storeFile"
+            else
+                #echo "[$PROG_NAME:setDevicesStatus:DEBUG] Device is online."
+                echo "$actDate,$actTime,1" >> "$DataFolder""$storeFile"
+            fi
+        done
+        unset IFS
+    else
+        echo "[$PROG_NAME:setDevicesStatus:STATUS] No known devices."
+    fi
+}
+
+# #########################################
 # prepareConfig()
 # Parameter
 #    -
@@ -790,6 +859,7 @@ scanNetwork "$IP4SUBNET"
 
 echo "[$PROG_NAME:STATUS] Get MAC addresses ..."
 listMacAddresses
+setDevicesStatus
 
 # Maybe TODO: Delete all created tmp files.
 
