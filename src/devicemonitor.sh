@@ -59,10 +59,11 @@
 # 2022-12-11 0.27 kdk Config file name adjusted to standard
 # 2023-02-07 0.28 kdk MAC OS X Ventura 13.2 added
 # 2023-02-07 0.29 kdk MAC OS X disk encryption status added
+# 2023-03-10 0.30 kdk 21.3.0 added
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.29"
-PROG_DATE="2023-02-07"
+PROG_VERSION="0.30"
+PROG_DATE="2023-03-10"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -377,6 +378,7 @@ function getSystem()
             # More specific: 
             # The variable $OSTYPE contains more precisely the system version, e.g. "darwin17"
             # Or use uname -r for e.g. "17.7.0" = MAC OS X High Sierra 10.13.6
+            #                     e.g. "21.3.0" = MAC OS X 
             #                     e.g. "21.6.0" = MAC OS X Monterey 12.6
             #                     e.g. "22.1.0" = MAC OS X Ventura 13.0.1
             #                     e.g. "22.3.0" = MAC OS X Ventura 13.2
@@ -390,6 +392,9 @@ function getSystem()
                     SYSTEMTested="1"
                 fi
                 if [ "$SYSTEMDescription" = "21.6.0" ] ; then
+                    SYSTEMTested="1"
+                fi
+                if [ "$SYSTEMDescription" = "21.3.0" ] ; then
                     SYSTEMTested="1"
                 fi
                 if [ "$SYSTEMDescription" = "22.1.0" ] ; then

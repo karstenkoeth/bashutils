@@ -63,10 +63,11 @@
 # 2023-02-03 0.42 kdk More adaption to OpenSuSe
 # 2023-02-03 0.43 kdk Much more " 2> /dev/zero" added after "which"
 # 2023-02-07 0.44 kdk TODOs added
+# 2023-03-10 0.45 kdk TODOs added
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.44"
-PROG_DATE="2023-02-07"
+PROG_VERSION="0.45"
+PROG_DATE="2023-03-10"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -185,6 +186,7 @@ ECHOWARNING="1"
 ECHOERROR="1"
 
 SHORT="0"
+SYSTEM="Unknown"
 
 # Script specific Apps:
 appSudo="sudo"
@@ -259,6 +261,34 @@ function osUpgrade()
     # After reboot:
     $appSudo do-release-upgrade
     # Not yet done because of some warnings...
+}
+
+# #########################################
+# getSystem()
+# Parameter
+#    -
+# Return Value
+#    -
+# Identifies the system type and changes the global variables: SYSTEM
+# This function is a light version of getSystem() in devicemonitor.sh
+function getSystem()
+{
+    # Check, if program is available:
+    local unamePresent=$(which uname)
+    if [ -z "$unamePresent" ] ; then
+        echo "[$PROG_NAME:getSystem:WARNING] 'uname' not available."
+        SYSTEM="Unknown"
+    else
+        local sSYSTEM=$(uname -s) 
+        # Detect System:
+        if [ "$sSYSTEM" = "Darwin" ] ; then
+            SYSTEM="MACOSX"
+        elif [ "$sSYSTEM" = "Linux" ] ; then
+            SYSTEM="LINUX"
+        else
+            SYSTEM="Unknown"
+        fi
+    fi
 }
 
 # #########################################
@@ -382,10 +412,11 @@ fi
 #              Or a look at: https://brew.sh/index_de
 
 # Before update the system: detect the system we are running on:
-# TODO: Use function:
 # TODO: If Linux, which linux?
 # See also: bashutils - devicemonitor.sh - getSystem()
-# to detect, we need some programs - have to install:
+getSystem
+
+# To detect the system version and some more details, we need some programs - have to install:
 #
 # SuSE:
 # Das Programm 'lsb_release' kann im folgenden Paket gefunden werden:
@@ -407,6 +438,20 @@ zypperPresent=$(which zypper 2> /dev/zero)
 brewPresent=$(which brew 2> /dev/zero)
 apkPresent=$(which apk 2> /dev/zero)
 # TODO: Which package manager for debian on chrome book?
+
+# Maybe we haven't found a package manager. This could happen on a MAC OS X System without brew.
+# Therefore check the system and try to install brew.
+# TODO
+if [ "$SYSTEM" = "MACOSX" ] && [ ! -x "$brewPresent" ] ; then
+    echo "[$PROG_NAME:WARNING] Running on MAC OS X, but without 'brew'. Please install it."
+    # /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    # -f No errors
+    # -L Maybe get from new location
+    # -s Silent or quiet mode. Do not show progress meter or error messages.
+    # -S When used with -s, it makes curl show an error message if it fails.
+    # If you want a non-interactive run of the Homebrew installer that doesn’t prompt for passwords (e.g. in automation scripts), 
+    # prepend NONINTERACTIVE=1 to the installation command.
+fi
 
 # Template for installing packages for different systems:
     # TODO: aptgetPresent
