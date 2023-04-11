@@ -956,12 +956,11 @@ fi
 # Explanation:
 # The codec option for audio streams has been set to copy, so no decoding-filtering-encoding operations will occur, or can occur. 
 # After that, maybe you want to delete the input file...
-ipPresent=$(which ffmpeg 2> /dev/zero)
+ipPresent=$(which ffmpeg -version 2> /dev/zero)
 if [ -z "$ffmpegPresent" ] ; then
-    # TODO: aptgetPresent
-#    if [ -x "$aptgetPresent" ] ;  then
-#        $appSudo apt-get -y install TODOFillInPackageName
-#    fi
+    if [ -x "$aptgetPresent" ] ;  then
+        $appSudo apt-get -y install ffmpeg
+    fi
     # TODO: zypperPresent
 #    if [ -x "$zypperPresent" ] ; then
 #        $appSudo zypper --non-interactive install TODOFillInPackageName
