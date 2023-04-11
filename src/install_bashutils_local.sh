@@ -64,10 +64,11 @@
 # 2023-02-03 0.43 kdk Much more " 2> /dev/zero" added after "which"
 # 2023-02-07 0.44 kdk TODOs added
 # 2023-03-10 0.45 kdk TODOs added
+# 2023-04-11 0.46 kdk TODOs added
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.45"
-PROG_DATE="2023-03-10"
+PROG_VERSION="0.46"
+PROG_DATE="2023-04-11"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -943,6 +944,32 @@ if [ -z "$ipPresent" ] ; then
     if [ -x "$brewPresent" ] ; then
         $appSudo brew install iproute2mac
     fi
+    # TODO: apkPresent
+#    if [ -x "$apkPresent" ] ; then
+#        $appSudo apk add TODOFillInPackageName
+#    fi
+fi
+
+# TODO
+# ffmpeg is a good tool to include images into mp3 files. See also: https://ffmpeg.org/
+#  > ffmpeg -i BeispielInput.mp3 -i Bild.png -c copy -map 0 -map 1 BeispielOutput.mp3
+# Explanation:
+# The codec option for audio streams has been set to copy, so no decoding-filtering-encoding operations will occur, or can occur. 
+# After that, maybe you want to delete the input file...
+ipPresent=$(which ffmpeg 2> /dev/zero)
+if [ -z "$ffmpegPresent" ] ; then
+    # TODO: aptgetPresent
+#    if [ -x "$aptgetPresent" ] ;  then
+#        $appSudo apt-get -y install TODOFillInPackageName
+#    fi
+    # TODO: zypperPresent
+#    if [ -x "$zypperPresent" ] ; then
+#        $appSudo zypper --non-interactive install TODOFillInPackageName
+#    fi
+    # TODO: Did not run under old MAC OS X 10.13 - test on Raspi
+#    if [ -x "$brewPresent" ] ; then
+#        $appSudo brew install ffmpeg
+#    fi
     # TODO: apkPresent
 #    if [ -x "$apkPresent" ] ; then
 #        $appSudo apk add TODOFillInPackageName
