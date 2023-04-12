@@ -65,10 +65,11 @@
 # 2023-02-07 0.44 kdk TODOs added
 # 2023-03-10 0.45 kdk TODOs added
 # 2023-04-11 0.46 kdk TODOs added
+# 2023-04-12 0.47 kdk Sections introduced and caddy included
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.46"
-PROG_DATE="2023-04-11"
+PROG_VERSION="0.47"
+PROG_DATE="2023-04-12"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -455,6 +456,8 @@ if [ "$SYSTEM" = "MACOSX" ] && [ ! -x "$brewPresent" ] ; then
 fi
 
 # Template for installing packages for different systems:
+#blaPresent=$(which bla)
+#if [ -z "$blaPresent" ] ; then
     # TODO: aptgetPresent
 #    if [ -x "$aptgetPresent" ] ;  then
 #        $appSudo apt-get -y install TODOFillInPackageName
@@ -471,7 +474,7 @@ fi
 #    if [ -x "$apkPresent" ] ; then
 #        $appSudo apk add TODOFillInPackageName
 #    fi
-
+#fi
 
 # Allways good idea to update the system, update typically updates the 
 # package manager caches:
@@ -828,6 +831,8 @@ fi
 # Upgrade pip:
 # python3 -m pip install --upgrade pip
 
+# ############# Network Section #############
+
 # TODO
 # Maybe we want to distribute software via ansible.
 # https://docs.ansible.com/ansible/latest/getting_started/index.html
@@ -950,13 +955,48 @@ if [ -z "$ipPresent" ] ; then
 #    fi
 fi
 
+# caddy is a open source web server and reverse proxy
+# See: https://caddyserver.com/
+caddyPresent=$(which caddy 2> /dev/zero)
+if [ -z "$caddyPresent" ] ; then
+    # Download to tmp dir:
+    sActDir=$(pwd)
+    # TODO: aptgetPresent
+#    if [ -x "$aptgetPresent" ] ;  then
+#        $appSudo apt-get -y install TODOFillInPackageName
+        # Need to distinguish between different hardware architectures:
+        # https://caddyserver.com/download
+#    fi
+    # TODO: zypperPresent
+#    if [ -x "$zypperPresent" ] ; then
+#        $appSudo zypper --non-interactive install TODOFillInPackageName
+#    fi
+    # TODO: brewPresent
+#    if [ -x "$brewPresent" ] ; then
+    if [ "$SYSTEM" = "MACOSX" ] ; then
+#        $appSudo brew install TODOFillInPackageName
+        # Very dirty system evaluation...
+        wget "https://caddyserver.com/api/download?os=darwin&arch=amd64" -O caddy
+        chmod u+x caddy
+    fi
+    # TODO: apkPresent
+#    if [ -x "$apkPresent" ] ; then
+#        $appSudo apk add TODOFillInPackageName
+#    fi
+    # Clean up:
+    cd "$sActDir"
+fi
+
+
+# ############# Multi Media Section #############
+
 # TODO
 # ffmpeg is a good tool to include images into mp3 files. See also: https://ffmpeg.org/
 #  > ffmpeg -i BeispielInput.mp3 -i Bild.png -c copy -map 0 -map 1 BeispielOutput.mp3
 # Explanation:
 # The codec option for audio streams has been set to copy, so no decoding-filtering-encoding operations will occur, or can occur. 
 # After that, maybe you want to delete the input file...
-ipPresent=$(which ffmpeg -version 2> /dev/zero)
+ipPresent=$(which ffmpeg 2> /dev/zero)
 if [ -z "$ffmpegPresent" ] ; then
     if [ -x "$aptgetPresent" ] ;  then
         $appSudo apt-get -y install ffmpeg
