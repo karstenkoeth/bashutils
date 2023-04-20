@@ -66,10 +66,11 @@
 # 2023-03-10 0.45 kdk TODOs added
 # 2023-04-11 0.46 kdk TODOs added
 # 2023-04-12 0.47 kdk Sections introduced and caddy included
+# 2023-04-20 0.48 kdk Comments added for caddy
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.47"
-PROG_DATE="2023-04-12"
+PROG_VERSION="0.48"
+PROG_DATE="2023-04-20"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -966,6 +967,9 @@ if [ -z "$caddyPresent" ] ; then
 #        $appSudo apt-get -y install TODOFillInPackageName
         # Need to distinguish between different hardware architectures:
         # https://caddyserver.com/download
+        # https://caddyserver.com/docs/install
+        # For raspi:
+        # https://caddyserver.com/api/download?os=linux&arch=arm&arm=7
 #    fi
     # TODO: zypperPresent
 #    if [ -x "$zypperPresent" ] ; then

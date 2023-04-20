@@ -60,10 +60,11 @@
 # 2023-02-07 0.28 kdk MAC OS X Ventura 13.2 added
 # 2023-02-07 0.29 kdk MAC OS X disk encryption status added
 # 2023-03-10 0.30 kdk 21.3.0 added
+# 2023-04-20 0.31 kdk Serial Number on Linux
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.30"
-PROG_DATE="2023-03-10"
+PROG_VERSION="0.31"
+PROG_DATE="2023-04-20"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -615,6 +616,24 @@ function getSystemID()
 {
     if [ "$SYSTEM" = "LINUX" ] ; then
         echo "[$PROG_NAME:getSystemID:LINUX:WARNING] Not yet implemented."
+        # Do we run on a raspi?
+        #   Raspi:>  cat /proc/cpuinfo | grep -i hardware
+        #   RETURN: Hardware	: BCM2835
+        #   Raspi:>  cat /proc/cpuinfo | grep -i serial
+        # More general:
+        # Linux:> cat /sys/firmware/devicetree/base/serial-number
+        if [ -r /sys/firmware/devicetree/base/serial-number ]; then
+            SERIALNUMBER=$(cat /sys/firmware/devicetree/base/serial-number)
+        else
+            echo "[$PROG_NAME:getSystemID:LINUX:WARNING] Not yet implemented on this linux system."
+        fi
+        # Get Product Name:
+        # Linux:> cat /sys/firmware/devicetree/base/model 
+        # RETURN: "Raspberry Pi 3 Model B Plus Rev 1.3"
+        # Note: This is "ARMv7"
+        # Get Processor architecture:
+        # Linux:> uname -m
+        # RETURN: "armv7l"
     elif [ "$SYSTEM" = "MACOSX" ] ; then
         local systemProfPresent=$(which system_profiler 2> /dev/zero)
         if [ ! -z "$systemProfPresent" ] ; then
