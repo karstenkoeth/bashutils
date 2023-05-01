@@ -23,7 +23,7 @@
 #
 # To distribute the 'Devices File' to other clients: Add the name of the 
 # client as mentioned in the ssh config to the config file of this program.
-# Example for ~/.devicescan.ini :
+# Example for $HOME/.devicescan.ini :
 # [Clients]
 # Client = raspi
 #
@@ -33,7 +33,7 @@
 # The location and name of the devices file is: $HOME/.devicescan.csv
 #
 # The devices file defines the link between the MAC address and the device name.
-# Example for ~/.devicescan.csv :
+# Example for $HOME/.devicescan.csv :
 # 40:2B:50:12:AB:34;Kabelbox Router
 
 # #########################################
@@ -63,10 +63,11 @@
 # 2023-01-18 0.17 kdk Comments and isMultiCastMacAddress() added
 # 2023-01-25 0.18 kdk Comments added
 # 2023-02-16 0.19 kdk setDeviceStatus() added and tested on MAC
+# 2023-05-01 0.20 kdk Comments added, drawDevicesStatus() added but not yet finished
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.19"
-PROG_DATE="2023-02-16"
+PROG_VERSION="0.20"
+PROG_DATE="2023-05-01"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -174,6 +175,7 @@ TmpDir="_"
 TmpFile="_"
 ScanFile="_"
 MacFile="_"
+KnownDevicesFile="" # We test with '-s'. Therefore the useless string should be empty.
 DevicesFile="_"
 ConfigFile="_"
 
@@ -551,6 +553,10 @@ function listMacAddresses()
     
     fi
 
+    # Prepare for subsequent functions, e.g. setDevicesStatus, drawDevicesStatus
+    # Create list of known devices:
+    ls -1 "$DataFolder"device_*.txt > "$KnownDevicesFile"
+    
     # TODO: Remove "#"
     # Clean up:
     #delFile "$TmpDir$MacFile.arp"
@@ -588,6 +594,7 @@ function scanNetwork()
 # Try to find the most important mac address and write it to the global variable MACADDRESS
 function getOwnMacAddress()
 {
+    # BUG TODO: Run into problems if more than one ethernet interface (e.g. LAN + WLAN) is active.
     if [ "$GetMacApp" = "ip" ] ; then
         if [ "$SYSTEM" = "LINUX" ] ;  then
             MACADDRESS=$(cat /sys/class/net/eth0/address | tr "[:lower:]" "[:upper:]")
@@ -691,12 +698,11 @@ function getOwnIpSubnet()
 # Before this function, the function listMacAddresses() must be called.
 function setDevicesStatus()
 {
+    local searchFile=""
+    local storeFile=""
     local searchMAC=""
     local isOnline=""
 
-    # Create list of known devices:
-    ls -1 "$DataFolder"device_*.txt > "$KnownDevicesFile"
-    
     # Go through each element:
     if [ -s "$KnownDevicesFile" ] ; then
         # Device exists and is not empty:
@@ -724,6 +730,69 @@ function setDevicesStatus()
     else
         echo "[$PROG_NAME:setDevicesStatus:STATUS] No known devices."
     fi
+}
+
+# #########################################
+# drawDevicesStatus()
+# Parameter
+#    -
+# Return Value
+#    -
+# Draw the csv values created with setDevicesStatus() with html.
+# For every known device we draw an own diagram.
+# Most code nearly similar to setDevicesStatus() function.
+# Before this function, the function listMacAddresses() must be called.
+function drawDevicesStatus()
+{
+    local searchFile=""
+    local storeFile=""
+    local searchMAC=""
+    local deviceName=""
+
+    # Go through each element:
+    if [ -s "$KnownDevicesFile" ] ; then
+        # Device exists and is not empty:
+        lines=$(cat "$KnownDevicesFile")
+        # Separation only by newline, not by any whitespaces (set -f turns off globbing, i.e. wildcard expansion):
+        IFS='
+'
+        for line in $lines
+        do
+            # line contains the MAC address in "file name format". Therefore convert:
+            searchFile=$(basename "$line")
+            # Variable "searchFile" contains e.g. value "device_00-60-B5-44-A0-D6.txt"
+            # File "searchFile" contains e.g. content "Raspberry Pi"
+            storeFile=$(echo "$searchFile" | sed "s/\.txt/\.html/g")
+            storeFile="$GraphFolder""$storeFile"
+            deviceName=$(cat "$line")
+            searchMAC=$(echo "$searchFile" | cut -d "_" -f 2 | cut -d "." -f 1 | sed "s/-/:/g")
+            #echo "[$PROG_NAME:drawDevicesStatus:DEBUG] MAC address: '$line' '$searchMAC' '$searchFile' '$storeFile' '$deviceName'"
+            # Plot the file with plotly
+            # https://www.w3schools.com/ai/tryit.asp?filename=tryai_plotly_scatter
+            # Write html head:
+            echo "<!DOCTYPE html>" > "$storeFile"
+            echo "<html>
+                  <script src=\"https://cdn.plot.ly/plotly-latest.min.js\"></script>
+                  <body>
+                  <div id=\"myPlot\" style=\"width:100%\"></div>
+                  <script>" >> "$storeFile"
+            # Write data points into file:
+            # TODO
+            # Write definition into file:
+            # TODO
+            # Write layout into file:
+            # TODO
+            # Write html foot:
+            echo "Plotly.newPlot("myPlot", data, layout);
+                  </script>
+                  </body>
+                  </html>" >> "$storeFile"
+        done
+        unset IFS
+    else
+        echo "[$PROG_NAME:drawDevicesStatus:STATUS] No known devices."
+    fi
+
 }
 
 # #########################################
@@ -860,7 +929,9 @@ scanNetwork "$IP4SUBNET"
 echo "[$PROG_NAME:STATUS] Get MAC addresses ..."
 listMacAddresses
 setDevicesStatus
+drawDevicesStatus  # <-- TODO - not yet finished.
 
 # Maybe TODO: Delete all created tmp files.
+# delFile "$KnownDevicesFile"
 
 echo "[$PROG_NAME:STATUS] Done."
