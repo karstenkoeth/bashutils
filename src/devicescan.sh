@@ -64,10 +64,11 @@
 # 2023-01-25 0.18 kdk Comments added
 # 2023-02-16 0.19 kdk setDeviceStatus() added and tested on MAC
 # 2023-05-01 0.20 kdk Comments added, drawDevicesStatus() added but not yet finished
+# 2023-05-02 0.21 kdk Go on with drawDevicesStatus(), single files done. small test done.
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.20"
-PROG_DATE="2023-05-01"
+PROG_VERSION="0.21"
+PROG_DATE="2023-05-02"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -75,10 +76,10 @@ PROG_SCRIPTNAME="devicescan.sh"
 #
 # TODOs
 #
-# Install DrawScript correctly. Must be done inside install_bashutils
-# Do drawUptime()
-# for every device known (typically more as "found") start drawUptime()
-# create csv file with date,time,uptimeStatus and filename "device.csv"
+# Remove things regarding gnuplot...  Must be done inside install_bashutils
+# Do drawUptime(): single files done. Do it for overview
+# 
+# 
 
 # #########################################
 #
@@ -745,9 +746,16 @@ function setDevicesStatus()
 function drawDevicesStatus()
 {
     local searchFile=""
+    local dataFile=""
     local storeFile=""
     local searchMAC=""
     local deviceName=""
+    local dataDate=""
+    local dataTime=""
+    local dataStatus=""
+    local elementFirst=""
+    local xArray=""
+    local yArray=""
 
     # Go through each element:
     if [ -s "$KnownDevicesFile" ] ; then
@@ -762,6 +770,7 @@ function drawDevicesStatus()
             searchFile=$(basename "$line")
             # Variable "searchFile" contains e.g. value "device_00-60-B5-44-A0-D6.txt"
             # File "searchFile" contains e.g. content "Raspberry Pi"
+            dataFile=$(echo "$searchFile" | sed "s/\.txt/\.csv/g")
             storeFile=$(echo "$searchFile" | sed "s/\.txt/\.html/g")
             storeFile="$GraphFolder""$storeFile"
             deviceName=$(cat "$line")
@@ -776,12 +785,42 @@ function drawDevicesStatus()
                   <body>
                   <div id=\"myPlot\" style=\"width:100%\"></div>
                   <script>" >> "$storeFile"
-            # Write data points into file:
-            # TODO
+            # Write data points for one device into file:
+            xArray=""
+            yArray=""
+            elementFirst="1"
+            # dataFile contains the values in form: 2023-02-16,22:21:12,1
+            dataLines=$(cat "$DataFolder""$dataFile")
+            for dataLine in $dataLines
+            do
+                dataDate=$(echo "$dataLine" | cut -d "," -f 1)
+                dataTime=$(echo "$dataLine" | cut -d "," -f 2)
+                dataStatus=$(echo "$dataLine" | cut -d "," -f 3)
+                if [ "$elementFirst" = "1" ] ; then
+                    elementFirst="0"
+                else
+                    xArray="$xArray"","
+                    yArray="$yArray"","
+                fi
+                xArray="$xArray""\"$dataDate\""
+                yArray="$yArray""\"$dataStatus\""
+            done
+            echo "[$PROG_NAME:drawDevicesStatus:DEBUG] xArray: '$xArray'"
+            echo "[$PROG_NAME:drawDevicesStatus:DEBUG] yArray: '$yArray'"
+            echo "const xArray = [""$xArray""];" >> "$storeFile"
+            echo "const yArray = [""$yArray""];" >> "$storeFile"
             # Write definition into file:
-            # TODO
+            echo "const data = [{
+                  x:xArray,
+                  y:yArray,
+                  mode:\"markers\"
+                  }];" >> "$storeFile"
             # Write layout into file:
-            # TODO
+            echo "const layout = {
+                  xaxis: {range: [\"2023-01-01\", \"2023-12-31\"], title: \"Date\"},
+                  yaxis: {range: [0, 1], title: \"Status\"},  
+                  title: \"$deviceName\"
+                  };" >> "$storeFile"
             # Write html foot:
             echo "Plotly.newPlot("myPlot", data, layout);
                   </script>
