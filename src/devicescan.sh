@@ -65,10 +65,11 @@
 # 2023-02-16 0.19 kdk setDeviceStatus() added and tested on MAC
 # 2023-05-01 0.20 kdk Comments added, drawDevicesStatus() added but not yet finished
 # 2023-05-02 0.21 kdk Go on with drawDevicesStatus(), single files done. small test done.
+# 2023-05-04 0.22 kdk Go on with drawDevicesStatus(), see TODO
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.21"
-PROG_DATE="2023-05-02"
+PROG_VERSION="0.22"
+PROG_DATE="2023-05-04"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -734,6 +735,46 @@ function setDevicesStatus()
 }
 
 # #########################################
+# writeHtmlHead()
+# Parameter:
+#    1: File Name
+#    2: File Title
+# Write the head for a html file incl. body tag.
+# Note: function from swsCosts.sh
+function writeHtmlHead()
+{
+    echo "<!DOCTYPE html>   <html>   <head>   <meta charset=\"UTF-8\">   <title>Web Services Costs - $2</title>" > "$1"
+    echo "<style>h1{font-family:sans-serif;}</style>" >> "$1"
+    echo "<style>p{font-family:sans-serif;}</style>"  >> "$1"
+    echo "</head><body style=\"margin:0px\">" >> "$1"
+}
+
+# #########################################
+# writeHtmlImage()
+# Parameter:
+#    1: File Name
+#    2: Image Header
+#    3: Image file name
+# Write a body part for a html file including header and image.
+# Note: function from swsCosts.sh
+function writeHtmlImage()
+{
+    echo "<h1>$2</h1>" >> "$1"
+    echo "<img src=\"https://blabla.amazonaws.com/$3\"/>" >> "$1"
+}
+
+# #########################################
+# writeHtmlFooter()
+# Parameter:
+#    1: File Name
+# Write the end of the body for a html file.
+# Note: function from swsCosts.sh
+function writeHtmlFooter()
+{
+    echo "</body></html>" >> "$1"
+}
+
+# #########################################
 # drawDevicesStatus()
 # Parameter
 #    -
@@ -745,6 +786,7 @@ function setDevicesStatus()
 # Before this function, the function listMacAddresses() must be called.
 function drawDevicesStatus()
 {
+    local htmlFile=""
     local searchFile=""
     local dataFile=""
     local storeFile=""
@@ -759,11 +801,19 @@ function drawDevicesStatus()
 
     # Go through each element:
     if [ -s "$KnownDevicesFile" ] ; then
+        # Write summary html file:
+        # Write the html file:
+        htmlFile="$SummaryFolder""index.html"
+        # TODO: Go on here...
+        writeHtmlHead "$htmlFile" "Summary"
+        writeHtmlImage "$htmlFile" "Main Account" "sum_Costs.png" # See file name in section above "Write data to file"
+        writeHtmlFooter "$htmlFile"
         # Device exists and is not empty:
         lines=$(cat "$KnownDevicesFile")
         # Separation only by newline, not by any whitespaces (set -f turns off globbing, i.e. wildcard expansion):
         IFS='
 '
+        # Iterate for every known device:
         for line in $lines
         do
             # line contains the MAC address in "file name format". Therefore convert:
@@ -791,6 +841,7 @@ function drawDevicesStatus()
             elementFirst="1"
             # dataFile contains the values in form: 2023-02-16,22:21:12,1
             dataLines=$(cat "$DataFolder""$dataFile")
+            # Iterate for every line inside every known device:
             for dataLine in $dataLines
             do
                 dataDate=$(echo "$dataLine" | cut -d "," -f 1)
