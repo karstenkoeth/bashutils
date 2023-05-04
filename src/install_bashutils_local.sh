@@ -12,6 +12,7 @@
 # Tested at:
 # - MacBook - MAC OS X 10.13.6
 # - MacBook - MAC OS X 12.6
+# - MacBook - MAC OS X 13.3.1
 # - raspi
 # - EC2 - Ubuntu
 # - Lenovo - Ubuntu
@@ -67,10 +68,11 @@
 # 2023-04-11 0.46 kdk TODOs added
 # 2023-04-12 0.47 kdk Sections introduced and caddy included
 # 2023-04-20 0.48 kdk Comments added for caddy
+# 2023-05-04 0.49 kdk Bug fixing for caddy install section on MAC OS X
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.48"
-PROG_DATE="2023-04-20"
+PROG_VERSION="0.49"
+PROG_DATE="2023-05-04"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -190,6 +192,10 @@ ECHOERROR="1"
 
 SHORT="0"
 SYSTEM="Unknown"
+
+SourceDir="-"
+DestDir="-"
+TmpDir="-"
 
 # Script specific Apps:
 appSudo="sudo"
@@ -962,6 +968,7 @@ caddyPresent=$(which caddy 2> /dev/zero)
 if [ -z "$caddyPresent" ] ; then
     # Download to tmp dir:
     sActDir=$(pwd)
+    cd "$TmpDir"
     # TODO: aptgetPresent
 #    if [ -x "$aptgetPresent" ] ;  then
 #        $appSudo apt-get -y install TODOFillInPackageName
@@ -980,8 +987,21 @@ if [ -z "$caddyPresent" ] ; then
     if [ "$SYSTEM" = "MACOSX" ] ; then
 #        $appSudo brew install TODOFillInPackageName
         # Very dirty system evaluation...
+        # If there is a file named 'caddy': Rename it:
+        if [ -e "./caddy" ] ; then
+            mv ./caddy ./caddy_"$actDateTime"
+        fi
+        echo "[$PROG_NAME:STATUS] Try to download 'caddy' ..."
         wget "https://caddyserver.com/api/download?os=darwin&arch=amd64" -O caddy
         chmod u+x caddy
+        # Check caddy:
+        # caddy version string is e.g.: v2.6.4 h1:2hwYqiRwk1tf3VruhMpLcYTg+11fCdr8S3jhNAdnPy8=
+        sCaddyVersion=$(./caddy version | cut -d " " -f 1)
+        sCaddyTest=${sCaddyVersion:0:1}
+        if [ "$sCaddyTest" = "v" ] ; then
+            # It seems to be a known caddy version with runs on this architecture:
+            mv ./caddy "$DestDir"
+        fi
     fi
     # TODO: apkPresent
 #    if [ -x "$apkPresent" ] ; then

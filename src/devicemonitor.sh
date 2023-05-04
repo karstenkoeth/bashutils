@@ -61,10 +61,11 @@
 # 2023-02-07 0.29 kdk MAC OS X disk encryption status added
 # 2023-03-10 0.30 kdk 21.3.0 added
 # 2023-04-20 0.31 kdk Serial Number on Linux
+# 2023-05-04 0.32 kdk 22.4.0 added
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.31"
-PROG_DATE="2023-04-20"
+PROG_VERSION="0.32"
+PROG_DATE="2023-05-04"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -383,6 +384,7 @@ function getSystem()
             #                     e.g. "21.6.0" = MAC OS X Monterey 12.6
             #                     e.g. "22.1.0" = MAC OS X Ventura 13.0.1
             #                     e.g. "22.3.0" = MAC OS X Ventura 13.2
+            #                     e.g. "22.4.0" = MAC OS X Ventura 13.3.1
             #                     e.g. "4.20.69-ish" = iPhone SE 14.5.1 with ish-App
             #                     e.g. "4.20.69-ish" = iPad Air 2 14.7.1 with ish-App
             # https://de.wikipedia.org/wiki/Darwin_(Betriebssystem)
@@ -402,6 +404,9 @@ function getSystem()
                     SYSTEMTested="1"
                 fi
                 if [ "$SYSTEMDescription" = "22.3.0" ] ; then
+                    SYSTEMTested="1"
+                fi
+                if [ "$SYSTEMDescription" = "22.4.0" ] ; then
                     SYSTEMTested="1"
                 fi
                 # Normally, it is found under Linux, but maybe ... try it:
