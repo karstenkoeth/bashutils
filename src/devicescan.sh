@@ -66,10 +66,11 @@
 # 2023-05-01 0.20 kdk Comments added, drawDevicesStatus() added but not yet finished
 # 2023-05-02 0.21 kdk Go on with drawDevicesStatus(), single files done. small test done.
 # 2023-05-04 0.22 kdk Go on with drawDevicesStatus(), see TODO
+# 2023-05-05 0.23 kdk Nearly done with draw
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.22"
-PROG_DATE="2023-05-04"
+PROG_VERSION="0.23"
+PROG_DATE="2023-05-05"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -77,8 +78,6 @@ PROG_SCRIPTNAME="devicescan.sh"
 #
 # TODOs
 #
-# Remove things regarding gnuplot...  Must be done inside install_bashutils
-# Do drawUptime(): single files done. Do it for overview
 # 
 # 
 
@@ -92,7 +91,7 @@ PROG_SCRIPTNAME="devicescan.sh"
 # ip - Ubuntu paket "iproute2"
 # sed
 # date
-# gnuplot
+# gnuplot <-- no more needed
 # mkdir
 # touch
 # which
@@ -351,7 +350,7 @@ function checkEnvironment()
     # Gnuplot to generate diagrams:
     isGnuplot=$(gnuplot -V 2> /dev/null)
     if [ -z "$isGnuplot" ] ; then
-        echo "[$PROG_NAME:WARNING] Gnuplot not found."
+        #echo "[$PROG_NAME:WARNING] Gnuplot not found."
         #exit              # --> ERROR
         GnuPlotBinary="-"  # --> WARNING
     else
@@ -359,7 +358,7 @@ function checkEnvironment()
     fi
     # Gnuplot needs a script file:
     if [ ! -f "$DrawScript" ] ; then
-        echo "[$PROG_NAME:WARNING] Gnuplot Script not found."
+        #echo "[$PROG_NAME:WARNING] Gnuplot Script not found."
         GnuPlotBinary="-"
     fi
 }
@@ -416,7 +415,7 @@ function getHostname()
 function drawUptime()
 {
     if [ "$GnuPlotBinary" = "-" ] ; then
-        echo "[$PROG_NAME:drawUptime:WARNING] gnuplot binary not found. Can't draw uptime diagram for '$1'."
+        #echo "[$PROG_NAME:drawUptime:WARNING] gnuplot binary not found. Can't draw uptime diagram for '$1'."
         return
     fi
 
@@ -603,7 +602,7 @@ function getOwnMacAddress()
         elif [ "$SYSTEM" = "MACOSX" ] ; then
             MACADDRESS=$(ip -4 addr show | grep -i ether | sed "s/ether /;/g" | cut -d ";" -f 2 | tr "[:lower:]" "[:upper:]")
         fi
-        echo "[$PROG_NAME:getOwnMacAddress:DEBUG] '$MACADDRESS'"
+        echo "[$PROG_NAME:getOwnMacAddress:STATUS] '$MACADDRESS'"
     fi
 }
 
@@ -665,7 +664,7 @@ function getOwnIpAddress()
         # TODO
         # It is possible to have more than one line in the variable 'IP4ADDRESS'. Check and search the most important.
         # But also with 2 addresses it is possible to have no connection to the internet.
-        echo "[$PROG_NAME:getOwnIpAddress:DEBUG] '$IP4ADDRESS'"
+        echo "[$PROG_NAME:getOwnIpAddress:STATUS] '$IP4ADDRESS'"
         # TODO
         # Under WSL openSuSE there are 6 addresses found:
         # eth0 + wifi1 + wifi2 in 169.254.* subnet
@@ -743,10 +742,10 @@ function setDevicesStatus()
 # Note: function from swsCosts.sh
 function writeHtmlHead()
 {
-    echo "<!DOCTYPE html>   <html>   <head>   <meta charset=\"UTF-8\">   <title>Web Services Costs - $2</title>" > "$1"
+    echo "<!DOCTYPE html>   <html>   <head>   <meta charset=\"UTF-8\">   <title>Devices - $2</title>" > "$1"
     echo "<style>h1{font-family:sans-serif;}</style>" >> "$1"
     echo "<style>p{font-family:sans-serif;}</style>"  >> "$1"
-    echo "</head><body style=\"margin:0px\">" >> "$1"
+    echo "</head><body style=\"\">" >> "$1"
 }
 
 # #########################################
@@ -761,6 +760,18 @@ function writeHtmlImage()
 {
     echo "<h1>$2</h1>" >> "$1"
     echo "<img src=\"https://blabla.amazonaws.com/$3\"/>" >> "$1"
+}
+
+# #########################################
+# writeHtmlLink()
+# Parameter:
+#    1: File Name
+#    2: Link Name
+#    3: Link URL
+# Write a body part for a html file including header and image.
+function writeHtmlLink()
+{
+    echo "<p><a href=\"$3\"/>$2</a></p>" >> "$1"
 }
 
 # #########################################
@@ -789,6 +800,7 @@ function drawDevicesStatus()
     local htmlFile=""
     local searchFile=""
     local dataFile=""
+    local storeFileShort=""
     local storeFile=""
     local searchMAC=""
     local deviceName=""
@@ -806,8 +818,6 @@ function drawDevicesStatus()
         htmlFile="$SummaryFolder""index.html"
         # TODO: Go on here...
         writeHtmlHead "$htmlFile" "Summary"
-        writeHtmlImage "$htmlFile" "Main Account" "sum_Costs.png" # See file name in section above "Write data to file"
-        writeHtmlFooter "$htmlFile"
         # Device exists and is not empty:
         lines=$(cat "$KnownDevicesFile")
         # Separation only by newline, not by any whitespaces (set -f turns off globbing, i.e. wildcard expansion):
@@ -821,8 +831,8 @@ function drawDevicesStatus()
             # Variable "searchFile" contains e.g. value "device_00-60-B5-44-A0-D6.txt"
             # File "searchFile" contains e.g. content "Raspberry Pi"
             dataFile=$(echo "$searchFile" | sed "s/\.txt/\.csv/g")
-            storeFile=$(echo "$searchFile" | sed "s/\.txt/\.html/g")
-            storeFile="$GraphFolder""$storeFile"
+            storeFileShort=$(echo "$searchFile" | sed "s/\.txt/\.html/g")
+            storeFile="$GraphFolder""$storeFileShort"
             deviceName=$(cat "$line")
             searchMAC=$(echo "$searchFile" | cut -d "_" -f 2 | cut -d "." -f 1 | sed "s/-/:/g")
             #echo "[$PROG_NAME:drawDevicesStatus:DEBUG] MAC address: '$line' '$searchMAC' '$searchFile' '$storeFile' '$deviceName'"
@@ -856,8 +866,8 @@ function drawDevicesStatus()
                 xArray="$xArray""\"$dataDate\""
                 yArray="$yArray""\"$dataStatus\""
             done
-            echo "[$PROG_NAME:drawDevicesStatus:DEBUG] xArray: '$xArray'"
-            echo "[$PROG_NAME:drawDevicesStatus:DEBUG] yArray: '$yArray'"
+            #echo "[$PROG_NAME:drawDevicesStatus:DEBUG] xArray: '$xArray'"
+            #echo "[$PROG_NAME:drawDevicesStatus:DEBUG] yArray: '$yArray'"
             echo "const xArray = [""$xArray""];" >> "$storeFile"
             echo "const yArray = [""$yArray""];" >> "$storeFile"
             # Write definition into file:
@@ -877,7 +887,10 @@ function drawDevicesStatus()
                   </script>
                   </body>
                   </html>" >> "$storeFile"
+            # Write summary file:
+            writeHtmlLink "$htmlFile" "$deviceName" "../_Graphs/$storeFileShort"
         done
+        writeHtmlFooter "$htmlFile"
         unset IFS
     else
         echo "[$PROG_NAME:drawDevicesStatus:STATUS] No known devices."
@@ -1018,6 +1031,7 @@ scanNetwork "$IP4SUBNET"
 
 echo "[$PROG_NAME:STATUS] Get MAC addresses ..."
 listMacAddresses
+echo "[$PROG_NAME:STATUS] Prepare status files ..."
 setDevicesStatus
 drawDevicesStatus  # <-- TODO - not yet finished.
 
