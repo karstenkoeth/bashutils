@@ -67,10 +67,11 @@
 # 2023-05-02 0.21 kdk Go on with drawDevicesStatus(), single files done. small test done.
 # 2023-05-04 0.22 kdk Go on with drawDevicesStatus(), see TODO
 # 2023-05-05 0.23 kdk Nearly done with draw
+# 2023-06-27 0.24 kdk Bug with multiple networks removed. 
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.23"
-PROG_DATE="2023-05-05"
+PROG_VERSION="0.24"
+PROG_DATE="2023-06-27"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -78,7 +79,13 @@ PROG_SCRIPTNAME="devicescan.sh"
 #
 # TODOs
 #
-# 
+# Support RunFile and LogFile
+#
+# getOwnMacAddress() - support full multiple networks
+#
+# Generated html file: src=\"https://cdn.plot.ly/plotly-latest.min.js\" will be loaded every time 
+# the html file is loaded. Maybe we include the js-file in the html file for poor internet connections.
+# Chrome caches the js file, therefore no urgent need to enhance this script.
 # 
 
 # #########################################
@@ -503,12 +510,27 @@ function listMacAddresses()
                 # File contains device name from "Devices File".
                 fileMAC=$(echo "$newLineMAC" | sed "s/:/-/g")
                 fileMAC="device_$fileMAC.txt"
+                # TODO BUG: If Device name was unknown by a first scan, the *.txt file has size 1 and no content.
+                # 
                 if [ ! -e "$DataFolder$fileMAC" ] ; then
-                    # New device found:
-                    echo "$newLineName" > "$DataFolder$fileMAC"
+                    # New device found. Do we have a correct, means not empty, name?
+                    if [ -n "$newLineName" ] ; then
+                        # Name is not empty.
+                        echo "$newLineName" > "$DataFolder$fileMAC"
+                    fi
+                else
+                    # File exists but maybe is empty and we have a new non empty name.
+                    if [ -n "$newLineName" ] ; then
+                        local ststemp=$(cat "$DataFolder$fileMAC")
+                        if [ -z "$ststemp" ] ; then
+                            # Update empty name with non empty name:
+                            echo "$newLineName" > "$DataFolder$fileMAC"
+                        fi
+                    fi
                 fi
             fi
             # TODO: In der Device List taucht der localhost, also das eigene Device, nicht auf.
+            #       Ist das noch ein TODO oder schon erledigt?
             if [ "$IP4ADDRESS" = "$newLineIP" ] ; then
                 # We have the own IP address in the list:
                 NoOwn="0"
@@ -516,7 +538,6 @@ function listMacAddresses()
             # Store information in relation to scan date and time:
             # csv file format:
             # 2023-01-25,14-18-00,1330,86825
-
         done
         
         if [ "$NoOwn" = "1" ] ; then
@@ -529,8 +550,20 @@ function listMacAddresses()
             fileMAC=$(echo "$newLineMAC" | sed "s/:/-/g")
             fileMAC="device_$fileMAC.txt"
             if [ ! -e "$DataFolder$fileMAC" ] ; then
-                # New device found:
-                echo "$newLineName" > "$DataFolder$fileMAC"
+                # New device found. Do we have a correct, means not empty, name?
+                if [ -n "$newLineName" ] ; then
+                    # Name is not empty.
+                    echo "$newLineName" > "$DataFolder$fileMAC"
+                fi
+            else
+                # File exists but maybe is empty and we have a new non empty name.
+                if [ -n "$newLineName" ] ; then
+                    local ststemp=$(cat "$DataFolder$fileMAC")
+                    if [ -z "$ststemp" ] ; then
+                        # Update empty name with non empty name:
+                        echo "$newLineName" > "$DataFolder$fileMAC"
+                    fi
+                fi
             fi
         fi
     fi
@@ -581,9 +614,7 @@ function scanNetwork()
     # Host: 192.168.0.1 (kabelbox.local)	Status: Up
     # Extract ip addresses into next file:
     cat "$TmpFile" | grep "Host" | cut -f 2 -d " " > "$TmpDir$ScanFile"
-    # Scan each device exactly
-    # for ...
-    echo "[$PROG_NAME:DEBUG] TODO"
+    # Scan each device exactly: See listMacAddresses()
 }
 
 # #########################################
@@ -596,11 +627,13 @@ function scanNetwork()
 function getOwnMacAddress()
 {
     # BUG TODO: Run into problems if more than one ethernet interface (e.g. LAN + WLAN) is active.
+    #           "tail" included to be able to run the program. But better solution would be to
+    #           scan both networks.
     if [ "$GetMacApp" = "ip" ] ; then
         if [ "$SYSTEM" = "LINUX" ] ;  then
-            MACADDRESS=$(cat /sys/class/net/eth0/address | tr "[:lower:]" "[:upper:]")
+            MACADDRESS=$(cat /sys/class/net/eth0/address | tr "[:lower:]" "[:upper:]" | tail -n 1)
         elif [ "$SYSTEM" = "MACOSX" ] ; then
-            MACADDRESS=$(ip -4 addr show | grep -i ether | sed "s/ether /;/g" | cut -d ";" -f 2 | tr "[:lower:]" "[:upper:]")
+            MACADDRESS=$(ip -4 addr show | grep -i ether | sed "s/ether /;/g" | cut -d ";" -f 2 | tr "[:lower:]" "[:upper:]" | tail -n 1)
         fi
         echo "[$PROG_NAME:getOwnMacAddress:STATUS] '$MACADDRESS'"
     fi
@@ -650,7 +683,7 @@ function getOwnIpAddress()
         #local tmpadr="0.0.0.0"
         if [ "$SYSTEM" = "LINUX" ] ;  then
             # Under "Raspbian GNU/Linux 9.13 (stretch)": Parameter -o is implemented and generates 1 line per interface:
-            IP4ADDRESS=$(ip -o -4 addr show | grep -i global | sed "s/  */;/g" | cut -f 4 -d ";" | cut -f 1 -d "/")
+            IP4ADDRESS=$(ip -o -4 addr show | grep -i global | tail -n 1 | sed "s/  */;/g" | cut -f 4 -d ";" | cut -f 1 -d "/")
             #tmpadr=$(ip -o -4 addr show | grep -i global | sed "s/  */;/g")
             #echo "[$PROG_NAME:getOwnIpAddress:DEBUG] '$tmpadr'"
             #tmpadr=$(echo "$tmpadr" | cut -f 4 -d ";")
@@ -659,13 +692,14 @@ function getOwnIpAddress()
             #echo "[$PROG_NAME:getOwnIpAddress:DEBUG] '$tmpadr'"
         elif [ "$SYSTEM" = "MACOSX" ] ; then
             # Under MACOSX "17.7.0": Parameter -o is not implemented
-            IP4ADDRESS=$(ip -4 addr show | grep -i brd | sed "s/  */;/g" | cut -f 2 -d ";" | cut -f 1 -d "/")
+            IP4ADDRESS=$(ip -4 addr show | grep -i brd | tail -n 1 | sed "s/  */;/g" | cut -f 2 -d ";" | cut -f 1 -d "/")
         fi
-        # TODO
-        # It is possible to have more than one line in the variable 'IP4ADDRESS'. Check and search the most important.
+        # BUG TODO
+        # It is possible to have more than one networks interfaces. "tail" is a work around. 
+        # Better is to scan all networks.
         # But also with 2 addresses it is possible to have no connection to the internet.
         echo "[$PROG_NAME:getOwnIpAddress:STATUS] '$IP4ADDRESS'"
-        # TODO
+        # Info
         # Under WSL openSuSE there are 6 addresses found:
         # eth0 + wifi1 + wifi2 in 169.254.* subnet
         # eth1 in local net for LAN
@@ -834,6 +868,10 @@ function drawDevicesStatus()
             storeFileShort=$(echo "$searchFile" | sed "s/\.txt/\.html/g")
             storeFile="$GraphFolder""$storeFileShort"
             deviceName=$(cat "$line")
+            if [ -z "$deviceName" ] ;  then
+                # If we use an empty string we have nothing to click on the link in the <a> element.
+                deviceName="No Name"
+            fi
             searchMAC=$(echo "$searchFile" | cut -d "_" -f 2 | cut -d "." -f 1 | sed "s/-/:/g")
             #echo "[$PROG_NAME:drawDevicesStatus:DEBUG] MAC address: '$line' '$searchMAC' '$searchFile' '$storeFile' '$deviceName'"
             # Plot the file with plotly
@@ -973,7 +1011,7 @@ function prepareConfig()
 function showHelp()
 {
     echo "[$PROG_NAME:STATUS] Program Parameter:"
-    echo "    -c     : Prepare configuration file"
+    echo "    -c     : Prepare configuration file and distribute it to all clients"
     echo "    -P     : Show Program Folder"
     echo "    -V     : Show Program Version"
     echo "    -h     : Show this help"
@@ -1036,6 +1074,8 @@ setDevicesStatus
 drawDevicesStatus  # <-- TODO - not yet finished.
 
 # Maybe TODO: Delete all created tmp files.
-# delFile "$KnownDevicesFile"
+# delFile "$KnownDevicesFile" # Created in listMacAddresses()
+# delFile "$TmpFile"          # Created in scanNetwork()
+# delFile "$TmpDir$ScanFile"  # Created in scanNetwork()
 
 echo "[$PROG_NAME:STATUS] Done."
