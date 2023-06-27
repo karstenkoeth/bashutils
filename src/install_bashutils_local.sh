@@ -69,10 +69,11 @@
 # 2023-04-12 0.47 kdk Sections introduced and caddy included
 # 2023-04-20 0.48 kdk Comments added for caddy
 # 2023-05-04 0.49 kdk Bug fixing for caddy install section on MAC OS X
+# 2023-06-27 0.50 kdk Comments added
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.49"
-PROG_DATE="2023-05-04"
+PROG_VERSION="0.50"
+PROG_DATE="2023-06-27"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -87,6 +88,7 @@ PROG_LIBRARYNAME="bashutils_common_functions.bash"
 # ^ Ist das nicht erledigt?
 #
 # gnuplot unter mac os x installieren
+# ^ Ist nicht mehr notwendig, da ohne gnuplot gearbeitet wird. Plotly wird genutzt.
 
 # #########################################
 #
