@@ -68,10 +68,11 @@
 # 2023-05-04 0.22 kdk Go on with drawDevicesStatus(), see TODO
 # 2023-05-05 0.23 kdk Nearly done with draw
 # 2023-06-27 0.24 kdk Bug with multiple networks removed. 
+# 2023-10-30 0.25 kdk Bug with wrong MAC addresses removed.
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.24"
-PROG_DATE="2023-06-27"
+PROG_VERSION="0.25"
+PROG_DATE="2023-10-30"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -383,6 +384,34 @@ function scanDevice()
 }
 
 # #########################################
+# isMacAddress()
+# Parameter
+#    MAC Address (in upper Case)
+# Return value
+#   0 = Parameter is a valid MAC address
+#   1 = An error occured
+# Checks if the parameter is a valid MAC address
+# Check return value e.g. with: if [ $? -eq 1 ] ; then echo "There was an error"; fi
+function isMacAddress()
+{
+    # A MAC address has 12 alphanumerical values and 5 double dashes. In summary 17 characters.
+    # Test strlen:
+    local testmac="$1"
+    strlen=${#testmac}
+    if [ $strlen -ne 17 ] ; then return 1; fi
+    #
+    if [ ${testmac:2:1} != ":" ] || [ ${testmac:5:1} != ":" ] || [ ${testmac:8:1} != ":" ] || \
+       [ ${testmac:11:1} != ":" ] || [ ${testmac:14:1} != ":" ] ; then return 1; fi
+    # All tests are fine:
+    return 0
+}
+# Function tested with:
+# isMacAddress "01:23:45:67:89:AB" ;  if [ $? -eq 1 ] ; then echo "[$PROG_NAME:WARNING] Invalid MAC address '1'.";  fi
+# isMacAddress "01:23:45:67:89:B" ;   if [ $? -eq 1 ] ; then echo "[$PROG_NAME:WARNING] Invalid MAC address '2'.";  fi
+# isMacAddress "01:23:45:67:89:ABc" ; if [ $? -eq 1 ] ; then echo "[$PROG_NAME:WARNING] Invalid MAC address '3'.";  fi
+# isMacAddress "" ;                   if [ $? -eq 1 ] ; then echo "[$PROG_NAME:WARNING] Invalid MAC address '4'.";  fi
+
+# #########################################
 # getHostname()
 # Parameter
 #    MAC Address (in upper Case)
@@ -391,6 +420,12 @@ function scanDevice()
 # The result will be written to stdout
 function getHostname()
 {
+    # First, we have to check if the parameter is a valid MAC address. 
+    # If the parameter is "", then all lines in the devicefile matches and the
+    # return value contains multiple lines.
+    isMacAddress "$1"
+        if [ $? -eq 1 ] ; then echo "[$PROG_NAME:WARNING] Invalid MAC address '$1'.";return ""; fi
+    # Parameter is ok. Get name:
     cat "$DevicesFile" | grep "$1" | cut -d ";" -f 2
 }
 

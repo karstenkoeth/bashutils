@@ -70,10 +70,11 @@
 # 2023-04-20 0.48 kdk Comments added for caddy
 # 2023-05-04 0.49 kdk Bug fixing for caddy install section on MAC OS X
 # 2023-06-27 0.50 kdk Comments added
+# 2023-07-06 0.51 kdk Comments added
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.50"
-PROG_DATE="2023-06-27"
+PROG_VERSION="0.51"
+PROG_DATE="2023-07-06"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -221,10 +222,13 @@ function packageManagerUpdate()
     # Here on Ubuntu:
     if [ -x "$aptgetPresent" ] ; then
         echo "[$PROG_NAME:STATUS] Update system package manager ..."
+        # Update the list of packages
         $appSudo apt-get -y update 
-    # Allways a good idea to update all installed packages. This is typically 
-    # called 'upgrade'.
+        # Allways a good idea to update all installed packages. This is typically 
+        # called 'upgrade'.
         $appSudo apt-get -y upgrade 
+        # Update all installed packages AND remove unneccessary things:
+        # $appSudo apt -y full-upgrade
     fi
 
     # Same on openSUSE:
