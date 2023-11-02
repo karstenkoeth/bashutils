@@ -69,10 +69,11 @@
 # 2023-05-05 0.23 kdk Nearly done with draw
 # 2023-06-27 0.24 kdk Bug with multiple networks removed. 
 # 2023-10-30 0.25 kdk Bug with wrong MAC addresses removed.
+# 2023-11-02 0.26 kdk Bug in getOwnMacAddress() for Ubuntu Linux removed
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.25"
-PROG_DATE="2023-10-30"
+PROG_VERSION="0.26"
+PROG_DATE="2023-11-02"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -420,18 +421,32 @@ function isMacAddress()
 # The result will be written to stdout
 function getHostname()
 {
+    local myreturnvalue=""
     # First, we have to check if the parameter is a valid MAC address. 
     # If the parameter is "", then all lines in the devicefile matches and the
     # return value contains multiple lines.
     isMacAddress "$1"
-        if [ $? -eq 1 ] ; then echo "[$PROG_NAME:WARNING] Invalid MAC address '$1'.";return ""; fi
+        if [ $? -eq 1 ] ; then 
+            echo "[$PROG_NAME:WARNING] Invalid MAC address '$1'."
+            myreturnvalue=""
+            return
+        fi
     # Parameter is ok. Get name:
-    cat "$DevicesFile" | grep "$1" | cut -d ";" -f 2
+    myreturnvalue=$(cat "$DevicesFile" | grep "$1" | cut -d ";" -f 2)
+
+    if [ "$myreturnvalue" == "" ] ; then
+        # MAC Address not in file of known MAC Addresses. Try to get Company of this MAC Address:
+        myreturnvalue=$(getCompany "$1")
+    fi
+    echo "$myreturnvalue"
 }
 
 # #########################################
 # getCompany()
-#
+# Parameter
+#    MAC Address
+# Return Value
+#    Company Name for this MAC Address
 # The MAC address ranges belongs to different companies.
 # E.g. https://macaddress.io/  or  https://macvendors.com/   
 # gives back the name of the company to a specific address.
@@ -446,6 +461,10 @@ function getHostname()
 # 00:06:77:00:00:00 --> Sick AG
 # B8:27:EB:00:00:00 --> Raspberry Pi Foundation
 # F8:DC:7A:00:00:00 --> Variscite Ltd ->- used by ->- Sick AG, Product TDC-E
+function getCompany()
+{
+    echo "[$PROG_NAME:getCompany:WARNING] Not yet implemented."
+}
 
 # #########################################
 # drawUptime()
@@ -666,7 +685,14 @@ function getOwnMacAddress()
     #           scan both networks.
     if [ "$GetMacApp" = "ip" ] ; then
         if [ "$SYSTEM" = "LINUX" ] ;  then
-            MACADDRESS=$(cat /sys/class/net/eth0/address | tr "[:lower:]" "[:upper:]" | tail -n 1)
+            if [ -r "/sys/class/net/eth0/address" ] ; then
+                MACADDRESS=$(cat /sys/class/net/eth0/address | tr "[:lower:]" "[:upper:]" | tail -n 1)
+            else
+                # Try nearly similar way as on MACOSX:
+                MACADDRESS=$(ip addr show | grep -i ether | sed "s/ether /;/g" | cut -d ";" -f 2 | sed "s/ /;/g" | cut -d ";" -f 1 | tr "[:lower:]" "[:upper:]" | tail -n 1)
+                # Alternative on ubuntu:
+                # nmcli | grep -i ether | cut -d "," -f 2
+            fi
         elif [ "$SYSTEM" = "MACOSX" ] ; then
             MACADDRESS=$(ip -4 addr show | grep -i ether | sed "s/ether /;/g" | cut -d ";" -f 2 | tr "[:lower:]" "[:upper:]" | tail -n 1)
         fi
