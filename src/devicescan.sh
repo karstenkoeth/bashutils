@@ -70,10 +70,11 @@
 # 2023-06-27 0.24 kdk Bug with multiple networks removed. 
 # 2023-10-30 0.25 kdk Bug with wrong MAC addresses removed.
 # 2023-11-02 0.26 kdk Bug in getOwnMacAddress() for Ubuntu Linux removed
+# 2023-11-03 0.27 kdk Comment added
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.26"
-PROG_DATE="2023-11-02"
+PROG_VERSION="0.27"
+PROG_DATE="2023-11-03"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -690,6 +691,10 @@ function getOwnMacAddress()
             else
                 # Try nearly similar way as on MACOSX:
                 MACADDRESS=$(ip addr show | grep -i ether | sed "s/ether /;/g" | cut -d ";" -f 2 | sed "s/ /;/g" | cut -d ";" -f 1 | tr "[:lower:]" "[:upper:]" | tail -n 1)
+                # E.g. output on Ubuntu from "ip addr show | grep -i ether" with one LAN and one WLAN device:
+                # ip addr show | grep -i ether
+                #    link/ether 1c:69:7a:66:6e:46 brd ff:ff:ff:ff:ff:ff
+                #    link/ether 0c:7a:15:88:32:18 brd ff:ff:ff:ff:ff:ff
                 # Alternative on ubuntu:
                 # nmcli | grep -i ether | cut -d "," -f 2
             fi
