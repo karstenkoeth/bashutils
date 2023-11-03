@@ -70,10 +70,10 @@
 # 2023-06-27 0.24 kdk Bug with multiple networks removed. 
 # 2023-10-30 0.25 kdk Bug with wrong MAC addresses removed.
 # 2023-11-02 0.26 kdk Bug in getOwnMacAddress() for Ubuntu Linux removed
-# 2023-11-03 0.27 kdk Comment added
+# 2023-11-03 0.28 kdk Comment added
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.27"
+PROG_VERSION="0.28"
 PROG_DATE="2023-11-03"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
@@ -462,8 +462,15 @@ function getHostname()
 # 00:06:77:00:00:00 --> Sick AG
 # B8:27:EB:00:00:00 --> Raspberry Pi Foundation
 # F8:DC:7A:00:00:00 --> Variscite Ltd ->- used by ->- Sick AG, Product TDC-E
+# 48:21:0B:00:00:00 --> Intel
+# 34:60:F9:00:00:00 --> TP-Link
+# CC:48:3A:00:00:00 --> Dell
+# C8:4B:D6:00:00:00 --> Dell
+# C4:B9:CD:00:00:00 --> Cisco
+# 34:98:B5:00:00:00 --> Netgear
 function getCompany()
 {
+    # TODO
     echo "[$PROG_NAME:getCompany:WARNING] Not yet implemented."
 }
 
@@ -474,6 +481,8 @@ function getCompany()
 # Return Value
 #    -
 # Draw with gnuplot a diagram about the uptime of one device
+#
+# Outdated: We will not use gnuplot. We draw directly in html.
 function drawUptime()
 {
     if [ "$GnuPlotBinary" = "-" ] ; then
