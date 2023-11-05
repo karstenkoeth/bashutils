@@ -71,10 +71,11 @@
 # 2023-10-30 0.25 kdk Bug with wrong MAC addresses removed.
 # 2023-11-02 0.26 kdk Bug in getOwnMacAddress() for Ubuntu Linux removed
 # 2023-11-03 0.28 kdk Comment added
+# 2023-11-05 0.29 kdk getCompany() implemented.
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.28"
-PROG_DATE="2023-11-03"
+PROG_VERSION="0.29"
+PROG_DATE="2023-11-05"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -452,6 +453,7 @@ function getHostname()
 # E.g. https://macaddress.io/  or  https://macvendors.com/   
 # gives back the name of the company to a specific address.
 # Some interesting companies:
+# 68:5B:35:00:00:00 --> Apple, Inc
 # 80:04:5F:00:00:00 --> Apple, Inc
 # 90:84:0D:00:00:00 --> Apple, Inc
 # 00:F7:6F:00:00:00 --> Apple, Inc
@@ -463,6 +465,7 @@ function getHostname()
 # B8:27:EB:00:00:00 --> Raspberry Pi Foundation
 # F8:DC:7A:00:00:00 --> Variscite Ltd ->- used by ->- Sick AG, Product TDC-E
 # 48:21:0B:00:00:00 --> Intel
+# 0a:59:50:00:00:00 --> Intel
 # 34:60:F9:00:00:00 --> TP-Link
 # CC:48:3A:00:00:00 --> Dell
 # C8:4B:D6:00:00:00 --> Dell
@@ -470,8 +473,27 @@ function getHostname()
 # 34:98:B5:00:00:00 --> Netgear
 function getCompany()
 {
-    # TODO
-    echo "[$PROG_NAME:getCompany:WARNING] Not yet implemented."
+    local testsmac="$1"
+    MacVendor=${testsmac:0:8}
+    if [ "$MacVendor" == "68:5B:35" ] ; then echo "Apple"; return; fi
+    if [ "$MacVendor" == "80:04:5F" ] ; then echo "Apple"; return; fi
+    if [ "$MacVendor" == "90:84:0D" ] ; then echo "Apple"; return; fi
+    if [ "$MacVendor" == "00:F7:6F" ] ; then echo "Apple"; return; fi
+    if [ "$MacVendor" == "A4:E9:75" ] ; then echo "Apple"; return; fi
+    if [ "$MacVendor" == "9C:35:EB" ] ; then echo "Apple"; return; fi
+    if [ "$MacVendor" == "40:B3:95" ] ; then echo "Apple"; return; fi
+    if [ "$MacVendor" == "F0:79:60" ] ; then echo "Apple"; return; fi
+    if [ "$MacVendor" == "00:06:77" ] ; then echo "Sick AG"; return; fi
+    if [ "$MacVendor" == "B8:27:EB" ] ; then echo "Raspberry Pi Foundation"; return; fi
+    if [ "$MacVendor" == "48:21:0B" ] ; then echo "Intel"; return; fi
+    if [ "$MacVendor" == "0a:59:50" ] ; then echo "Intel"; return; fi
+    if [ "$MacVendor" == "34:60:F9" ] ; then echo "TP-Link"; return; fi
+    if [ "$MacVendor" == "CC:48:3A" ] ; then echo "Dell"; return; fi
+    if [ "$MacVendor" == "C8:4B:D6" ] ; then echo "Dell"; return; fi
+    if [ "$MacVendor" == "C4:B9:CD" ] ; then echo "Cisco"; return; fi
+    if [ "$MacVendor" == "34:98:B5" ] ; then echo "Netgear"; return; fi
+    # Nothing found:
+    echo ""; return;
 }
 
 # #########################################
