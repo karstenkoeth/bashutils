@@ -62,10 +62,11 @@
 # 2023-03-10 0.30 kdk 21.3.0 added
 # 2023-04-20 0.31 kdk Serial Number on Linux
 # 2023-05-04 0.32 kdk 22.4.0 added
+# 2023-11-08 0.33 kdk Hopefully error on raspi removed.
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.32"
-PROG_DATE="2023-05-04"
+PROG_VERSION="0.33"
+PROG_DATE="2023-11-08"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -627,7 +628,7 @@ function getSystemID()
         #   Raspi:>  cat /proc/cpuinfo | grep -i serial
         # More general:
         # Linux:> cat /sys/firmware/devicetree/base/serial-number
-        if [ -r /sys/firmware/devicetree/base/serial-number ]; then
+        if [ -r /sys/firmware/devicetree/base/serial-number ] ; then
             SERIALNUMBER=$(cat /sys/firmware/devicetree/base/serial-number)
         else
             echo "[$PROG_NAME:getSystemID:LINUX:WARNING] Not yet implemented on this linux system."
