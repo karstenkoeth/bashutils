@@ -72,10 +72,11 @@
 # 2023-11-02 0.26 kdk Bug in getOwnMacAddress() for Ubuntu Linux removed
 # 2023-11-03 0.28 kdk Comment added
 # 2023-11-05 0.29 kdk getCompany() implemented.
+# 2023-11-13 0.30 kdk Another MAC Address for Dell included
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.29"
-PROG_DATE="2023-11-05"
+PROG_VERSION="0.30"
+PROG_DATE="2023-11-13"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -467,6 +468,7 @@ function getHostname()
 # 48:21:0B:00:00:00 --> Intel
 # 0a:59:50:00:00:00 --> Intel
 # 34:60:F9:00:00:00 --> TP-Link
+# B4:45:06:00:00:00 --> Dell
 # CC:48:3A:00:00:00 --> Dell
 # C8:4B:D6:00:00:00 --> Dell
 # C4:B9:CD:00:00:00 --> Cisco
@@ -488,6 +490,7 @@ function getCompany()
     if [ "$MacVendor" == "48:21:0B" ] ; then echo "Intel"; return; fi
     if [ "$MacVendor" == "0a:59:50" ] ; then echo "Intel"; return; fi
     if [ "$MacVendor" == "34:60:F9" ] ; then echo "TP-Link"; return; fi
+    if [ "$MacVendor" == "B4:45:06" ] ; then echo "Dell"; return; fi
     if [ "$MacVendor" == "CC:48:3A" ] ; then echo "Dell"; return; fi
     if [ "$MacVendor" == "C8:4B:D6" ] ; then echo "Dell"; return; fi
     if [ "$MacVendor" == "C4:B9:CD" ] ; then echo "Cisco"; return; fi

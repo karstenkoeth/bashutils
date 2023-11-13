@@ -63,10 +63,11 @@
 # 2023-04-20 0.31 kdk Serial Number on Linux
 # 2023-05-04 0.32 kdk 22.4.0 added
 # 2023-11-08 0.33 kdk Hopefully error on raspi removed.
+# 2023-11-13 0.34 kdk Remove \0 error, include "Ubuntu 22.04.03 LTS"
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.33"
-PROG_DATE="2023-11-08"
+PROG_VERSION="0.34"
+PROG_DATE="2023-11-13"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -143,6 +144,7 @@ SYSTEMDescription="" # Will be filled if possible
 SYSTEMTested="0" # If we detect a system, the script was tested on, we switch to "1"
 MACADDRESS="00:00:00:00:00:00"
 SERIALNUMBER="unknown"
+ARCHITECTURE="unknown"
 
 # Handle output of the different verbose levels - in combination with the 
 # "echo?" functions inside "bashutils_common_functions.bash":
@@ -463,6 +465,10 @@ function getSystem()
                         SYSTEMDescription="Ubuntu 22.04.01 LTS"
                         SYSTEMTested="1"
                     fi
+                    if [ "$SYSTEMDescription" = "Description:	Ubuntu 22.04.03 LTS" ] ; then
+                        SYSTEMDescription="Ubuntu 22.04.03 LTS"
+                        SYSTEMTested="1"
+                    fi
                     if [ "$SYSTEMDescription" = "Description:    Debian GNU/Linux 10 (buster)" ] ; then
                         # Chromebook
                         # Tested at 2022-04-08
@@ -625,22 +631,44 @@ function getSystemID()
         # Do we run on a raspi?
         #   Raspi:>  cat /proc/cpuinfo | grep -i hardware
         #   RETURN: Hardware	: BCM2835
+        # ##################
+        # Get Serial Number
         #   Raspi:>  cat /proc/cpuinfo | grep -i serial
         # More general:
         # Linux:> cat /sys/firmware/devicetree/base/serial-number
         if [ -r /sys/firmware/devicetree/base/serial-number ] ; then
-            SERIALNUMBER=$(cat /sys/firmware/devicetree/base/serial-number)
+            # This file contains a null terminated string. Therefore we have to treat it special:
+            # Remove leading "0"
+            # Remove trailing \0
+            # Example:
+            # hexdump -c /sys/firmware/devicetree/base/serial-number 
+            #    0000000   0   0   0   0   0   0   0   0   1   e   9   e   e   6   7   5
+            #    0000010  \0                     
+            # Our output: "1e9ee675"
+            SERIALNUMBER=$(cat /sys/firmware/devicetree/base/serial-number | sed "s/\0//g" | sed "s/\x00//g")
         else
             echo "[$PROG_NAME:getSystemID:LINUX:WARNING] Not yet implemented on this linux system."
         fi
+        # ##################
         # Get Product Name:
         # Linux:> cat /sys/firmware/devicetree/base/model 
         # RETURN: "Raspberry Pi 3 Model B Plus Rev 1.3"
         # Note: This is "ARMv7"
-        # Get Processor architecture:
-        # Linux:> uname -m
-        # RETURN: "armv7l"
+        # ##################
+        # Get Processor Architecture:
+        # "uname -m" on Raspi with Linux shows: "armv7l"
+        # "uname -m" on "Intel NUC", with "Ubuntu" shows: "x86_64"
+        ARCHITECTURE=$(uname -m)
+        # Which architecture to support?
+        # Useful combination of Architecture and OS:
+        #  - linux-armv7
+        #  - linux-x64
+        #  - windows-x64
+        #  - mac-x64
+        #  - ...
     elif [ "$SYSTEM" = "MACOSX" ] ; then
+        # ##################
+        # Get Serial Number
         local systemProfPresent=$(which system_profiler 2> /dev/zero)
         if [ ! -z "$systemProfPresent" ] ; then
             # Get complete System Information and use only the line with serial number.
@@ -648,6 +676,10 @@ function getSystemID()
             SERIALNUMBER=$(system_profiler SPHardwareDataType | grep "Serial Number" | cut -d ":" -f 2 | sed "s/^ *//g" | sed "s/$ *//g")
             # Tested on MAC OS X 22.3.0
         fi
+        # ##################
+        # Get Processor Architecture:
+        # "uname -m" on "Intel MacBookx86_64" shows: "x86_64"
+        ARCHITECTURE=$(uname -m)
     else
         echo "[$PROG_NAME:getSystemID:Unknown:WARNING] Not yet implemented."
     fi
@@ -671,6 +703,9 @@ function showInfo()
     echo "[$PROG_NAME:STATUS] Usage CPU Time        : $CPUUSAGE"
     if [ ! "$SERIALNUMBER" = "unknown" ] ; then
         echo "[$PROG_NAME:STATUS] Serial Number         : $SERIALNUMBER"
+    fi
+    if [ ! "$ARCHITECTURE" = "unknown" ] ; then
+        echo "[$PROG_NAME:STATUS] Architecture          : $ARCHITECTURE"
     fi
 }
 
