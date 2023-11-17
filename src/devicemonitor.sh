@@ -64,10 +64,11 @@
 # 2023-05-04 0.32 kdk 22.4.0 added
 # 2023-11-08 0.33 kdk Hopefully error on raspi removed.
 # 2023-11-13 0.34 kdk Remove \0 error, include "Ubuntu 22.04.03 LTS"
+# 2023-11-17 0.35 kdk Ubuntu 22.04.3 LTS and Ubuntu 20.04.6 LTS added
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.34"
-PROG_DATE="2023-11-13"
+PROG_VERSION="0.35"
+PROG_DATE="2023-11-17"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -461,12 +462,22 @@ function getSystem()
                         SYSTEMDescription="Ubuntu 20.04.4 LTS"
                         SYSTEMTested="1"
                     fi
+                    if [ "$SYSTEMDescription" = "Description:	Ubuntu 20.04.6 LTS" ] ; then
+                        # Inside AWS
+                        # Tested at 2023-11-17
+                        SYSTEMDescription="Ubuntu 20.04.6 LTS"
+                        SYSTEMTested="1"
+                    fi
                     if [ "$SYSTEMDescription" = "Description:	Ubuntu 22.04.01 LTS" ] ; then
                         SYSTEMDescription="Ubuntu 22.04.01 LTS"
                         SYSTEMTested="1"
                     fi
                     if [ "$SYSTEMDescription" = "Description:	Ubuntu 22.04.03 LTS" ] ; then
                         SYSTEMDescription="Ubuntu 22.04.03 LTS"
+                        SYSTEMTested="1"
+                    fi
+                    if [ "$SYSTEMDescription" = "Description:	Ubuntu 22.04.3 LTS" ] ; then
+                        SYSTEMDescription="Ubuntu 22.04.3 LTS"
                         SYSTEMTested="1"
                     fi
                     if [ "$SYSTEMDescription" = "Description:    Debian GNU/Linux 10 (buster)" ] ; then
