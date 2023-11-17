@@ -15,6 +15,7 @@
 # - MacBook - MAC OS X 13.3.1
 # - raspi
 # - EC2 - Ubuntu
+# - WSL - Ubuntu
 # - Lenovo - Ubuntu
 # - iPhone - ish
 
@@ -71,10 +72,11 @@
 # 2023-05-04 0.49 kdk Bug fixing for caddy install section on MAC OS X
 # 2023-06-27 0.50 kdk Comments added
 # 2023-07-06 0.51 kdk Comments added
+# 2023-11-17 0.52 kdk Comments added
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.51"
-PROG_DATE="2023-07-06"
+PROG_VERSION="0.52"
+PROG_DATE="2023-11-17"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
