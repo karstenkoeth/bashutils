@@ -25,6 +25,7 @@
 # 
 # In the configuration file '.devicemonitor.ini' there are defined:
 # - Server = Defines the server the values are send to as json
+# - SerialNumber = Store the serial number of the system
 
 # #########################################
 #
@@ -66,9 +67,10 @@
 # 2023-11-13 0.34 kdk Remove \0 error, include "Ubuntu 22.04.03 LTS"
 # 2023-11-17 0.35 kdk Ubuntu 22.04.3 LTS and Ubuntu 20.04.6 LTS added
 # 2023-11-24 0.36 kdk getSystem() mode more robust and added: MAC OS X Sonoma 14.1.1, comments added.
+# 2023-11-24 0.37 kdk Make it more stable and include getSerialNumber on more systems.
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.36"
+PROG_VERSION="0.37"
 PROG_DATE="2023-11-24"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
@@ -174,6 +176,7 @@ MainLoopResponseTime="1s"   # Reaction time of around 1 second to the "shut down
 
 ConfigFile="_"              # Set in adjustVariables()
 ConfServer=""               # Set in ConfigFile
+ConfSerialNumber=""         # Set in ConfigFile
 ConfInfoFile=""             # Set in adjustVariables()
 
 # #########################################
@@ -364,6 +367,7 @@ function getConfig()
     # Similar to the old Windows file format. Variable name and variable content is delimited with a equal sign.
     # Remove spaces before and after the variable content.
     ConfServer=$(cat "$ConfigFile" | grep -i "Server" | cut -d "=" -f 2 | sed "s/^ *//g" | sed "s/$ *//g")
+    ConfSerialNumber=$(cat "$ConfigFile" | grep -i "SerialNumber" | cut -d "=" -f 2 | sed "s/^ *//g" | sed "s/$ *//g")
 }
 
 # #########################################
@@ -705,10 +709,10 @@ function getMacAddress()
 # Return Value
 #    -
 # Get the individual ID we use to identify this system in an asset management system.
+# Something like getSerialNumber().
 function getSystemID()
 {
     if [ "$SYSTEM" = "LINUX" ] ; then
-        echo "[$PROG_NAME:getSystemID:LINUX:WARNING] Not yet implemented."
         # Do we run on a raspi?
         #   Raspi:>  cat /proc/cpuinfo | grep -i hardware
         #   RETURN: Hardware	: BCM2835
@@ -728,7 +732,36 @@ function getSystemID()
             # Our output: "1e9ee675"
             SERIALNUMBER=$(cat /sys/firmware/devicetree/base/serial-number | sed "s/\0//g" | sed "s/\x00//g")
         else
-            echo "[$PROG_NAME:getSystemID:LINUX:WARNING] Not yet implemented on this linux system."
+            dmidecodePresent=$(which dmidecode 2> /dev/zero)
+            if [ ! -z "$dmidecodePresent" ] ; then
+                # For that programm we need root rights!
+                # Under AWS EC2 this is no problem - no password is needed.
+                # Under WSL the password must be given.
+                # On Intel NUC with Ubuntu the password must be given.
+                # Because we would need a password, we will do it only once on each system and store the information:
+                # Variable set in getConfig()
+                # local tmpSerialNumber=$(cat "$ConfigFile" | grep SerialNumber | cut -f 2 -d "=" | sed "s/^[[:blank:]]*//g")
+                if [ ! -z "$ConfSerialNumber" ] ; then
+                    SERIALNUMBER="$ConfSerialNumber"
+                else
+                    # We need to search for the number:
+                    # Set the correct sudo, source code from install_bashutils_local.sh 
+                    appSudo="sudo"
+                    appUser=$(whoami)
+                    if [ "$appUser" = "root" ] ; then
+                        appSudo=""
+                    fi
+                    # Try to use dmidecode to get the serial number:
+                    SERIALNUMBER=$($appSudo dmidecode -s system-serial-number | sed "s/^[[:blank:]]*//g")
+                    if [ ! -z "$SERIALNUMBER" ] ; then
+                        # Store Serial Number:
+                        echo "SerialNumber = ""$SERIALNUMBER" >> "$ConfigFile"
+                    fi
+                fi
+            else
+                # We need another solution ...
+                echo "[$PROG_NAME:getSystemID:LINUX:WARNING] Not yet implemented on this linux system."
+            fi
         fi
         # ##################
         # Get Product Name:
@@ -901,6 +934,7 @@ getSystem
 # 
 getConfig
 
+# TODO: Check for robustness from here ongoing:
 checkStart
 updateRun
 
