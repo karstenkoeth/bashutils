@@ -74,9 +74,10 @@
 # 2023-11-05 0.29 kdk getCompany() implemented.
 # 2023-11-13 0.30 kdk Another MAC Address for Dell included
 # 2023-11-24 0.31 kdk Bug removed in listMacAddresses() regarding 'ls -1'
+# 2023-11-24 0.32 kdk Bug more removed
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.31"
+PROG_VERSION="0.32"
 PROG_DATE="2023-11-24"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
@@ -681,7 +682,9 @@ function listMacAddresses()
     # Create list of known devices:
     # Check if there are files.
     # Background:  :> ls -1 "$DataFolder"device_*.txt"  creates an error be empty directory
-    if [ -e  "$DataFolder"device_*.txt ] ; then
+    # Background:   -e  "$DataFolder"device_*.txt  generates by full directory an error of:  [: too many arguments
+    #if [ -e  "$DataFolder"device_*.txt ] ; then
+    if ls -A1q "$DataFolder" | grep -q . ; then
         ls -1 "$DataFolder"device_*.txt > "$KnownDevicesFile"
     else 
         echo "" > "$KnownDevicesFile"
