@@ -65,10 +65,11 @@
 # 2023-11-08 0.33 kdk Hopefully error on raspi removed.
 # 2023-11-13 0.34 kdk Remove \0 error, include "Ubuntu 22.04.03 LTS"
 # 2023-11-17 0.35 kdk Ubuntu 22.04.3 LTS and Ubuntu 20.04.6 LTS added
+# 2023-11-24 0.36 kdk getSystem() mode more robust and added: MAC OS X Sonoma 14.1.1, comments added.
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.35"
-PROG_DATE="2023-11-17"
+PROG_VERSION="0.36"
+PROG_DATE="2023-11-24"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -146,6 +147,10 @@ SYSTEMTested="0" # If we detect a system, the script was tested on, we switch to
 MACADDRESS="00:00:00:00:00:00"
 SERIALNUMBER="unknown"
 ARCHITECTURE="unknown"
+    # Known values:
+    # "uname -m" on "Raspi" with Linux shows: "armv7l"
+    # "uname -m" on "Intel NUC" with "Ubuntu" shows: "x86_64"
+    # "uname -m" on "Intel MacBook x86_64" shows: "x86_64"
 
 # Handle output of the different verbose levels - in combination with the 
 # "echo?" functions inside "bashutils_common_functions.bash":
@@ -389,6 +394,7 @@ function getSystem()
             #                     e.g. "22.1.0" = MAC OS X Ventura 13.0.1
             #                     e.g. "22.3.0" = MAC OS X Ventura 13.2
             #                     e.g. "22.4.0" = MAC OS X Ventura 13.3.1
+            #                     e.g. "23.1.0" = MAC OS X Sonoma 14.1.1
             #                     e.g. "4.20.69-ish" = iPhone SE 14.5.1 with ish-App
             #                     e.g. "4.20.69-ish" = iPad Air 2 14.7.1 with ish-App
             # https://de.wikipedia.org/wiki/Darwin_(Betriebssystem)
@@ -411,6 +417,9 @@ function getSystem()
                     SYSTEMTested="1"
                 fi
                 if [ "$SYSTEMDescription" = "22.4.0" ] ; then
+                    SYSTEMTested="1"
+                fi
+                if [ "$SYSTEMDescription" = "23.1.0" ] ; then
                     SYSTEMTested="1"
                 fi
                 # Normally, it is found under Linux, but maybe ... try it:
@@ -492,7 +501,68 @@ function getSystem()
                         SYSTEMTested="1"
                     fi
 
+                    # Newer version more tolerant against different systems: We do not compare the white spaces:
+                    # "Description weg nehmen:  
+                    SYSTEMDescription=$(echo "$SYSTEMDescription" | sed "s/Description://g" | sed "s/^[[:blank:]]*//g")
+
+                    # And now test also the systems above:
+                    if [ "$SYSTEMDescription" = "SUSE Linux Enterprise Server 15 SP1" ] ; then 
+                        # The Script collection was tested on this system:
+                        SYSTEMDescription="SUSE Linux Enterprise Server 15 SP1"
+                        SYSTEMTested="1"
+                    fi
+                    if [ "$SYSTEMDescription" = "Ubuntu 18.04.6 LTS" ] ; then
+                        SYSTEMDescription="Ubuntu 18.04.6 LTS"
+                        SYSTEMTested="1"
+                    fi
+                    if [ "$SYSTEMDescription" = "Ubuntu 20.04.3 LTS" ] ; then
+                        SYSTEMDescription="Ubuntu 20.04.3 LTS"
+                        SYSTEMTested="1"
+                    fi
+                    if [ "$SYSTEMDescription" = "Ubuntu 20.04.4 LTS" ] ; then
+                        # Inside Citrix Dedicated Desktop the "* Base WSL"
+                        # Tested at 2022-04-01
+                        SYSTEMDescription="Ubuntu 20.04.4 LTS"
+                        SYSTEMTested="1"
+                    fi
+                    if [ "$SYSTEMDescription" = "Ubuntu 20.04.6 LTS" ] ; then
+                        # Inside AWS
+                        # Tested at 2023-11-17
+                        SYSTEMDescription="Ubuntu 20.04.6 LTS"
+                        SYSTEMTested="1"
+                    fi
+                    if [ "$SYSTEMDescription" = "Ubuntu 22.04.01 LTS" ] ; then
+                        SYSTEMDescription="Ubuntu 22.04.01 LTS"
+                        SYSTEMTested="1"
+                    fi
+                    if [ "$SYSTEMDescription" = "Ubuntu 22.04.03 LTS" ] ; then
+                        SYSTEMDescription="Ubuntu 22.04.03 LTS"
+                        SYSTEMTested="1"
+                    fi
+                    if [ "$SYSTEMDescription" = "Ubuntu 22.04.3 LTS" ] ; then
+                        SYSTEMDescription="Ubuntu 22.04.3 LTS"
+                        SYSTEMTested="1"
+                    fi
+                    if [ "$SYSTEMDescription" = "Debian GNU/Linux 10 (buster)" ] ; then
+                        # Chromebook
+                        # Tested at 2022-04-08
+                        SYSTEMDescription="Debian GNU/Linux 10 (buster)"
+                        SYSTEMTested="1"
+                    fi
+                    if [ "$SYSTEMDescription" = "Debian GNU/Linux 11 (bullseye)" ] ; then
+                        # Chromebook
+                        # Added at 2023-11-24
+                        SYSTEMDescription="Debian GNU/Linux 11 (bullseye)"
+                        SYSTEMTested="1"
+                    fi
+                    if [ "$SYSTEMDescription" = "Raspbian GNU/Linux 9.13 (stretch)" ] ; then
+                        # Tested at 2022-05-13
+                        SYSTEMDescription="Raspbian GNU/Linux 9.13 (stretch)"
+                        SYSTEMTested="1"
+                    fi
+
                     # ... Add more known and tested systems.
+
                 fi
                 # Be paranoid: If nothing found, be sure the string is clean:
                 if [ "$SYSTEMTested" = "0" ] ; then

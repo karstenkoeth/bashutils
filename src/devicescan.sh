@@ -73,10 +73,11 @@
 # 2023-11-03 0.28 kdk Comment added
 # 2023-11-05 0.29 kdk getCompany() implemented.
 # 2023-11-13 0.30 kdk Another MAC Address for Dell included
+# 2023-11-24 0.31 kdk Bug removed in listMacAddresses() regarding 'ls -1'
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.30"
-PROG_DATE="2023-11-13"
+PROG_VERSION="0.31"
+PROG_DATE="2023-11-24"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -678,8 +679,14 @@ function listMacAddresses()
 
     # Prepare for subsequent functions, e.g. setDevicesStatus, drawDevicesStatus
     # Create list of known devices:
-    ls -1 "$DataFolder"device_*.txt > "$KnownDevicesFile"
-    
+    # Check if there are files.
+    # Background:  :> ls -1 "$DataFolder"device_*.txt"  creates an error be empty directory
+    if [ -e  "$DataFolder"device_*.txt ] ; then
+        ls -1 "$DataFolder"device_*.txt > "$KnownDevicesFile"
+    else 
+        echo "" > "$KnownDevicesFile"
+    fi
+
     # TODO: Remove "#"
     # Clean up:
     #delFile "$TmpDir$MacFile.arp"

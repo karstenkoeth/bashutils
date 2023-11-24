@@ -73,10 +73,11 @@
 # 2023-06-27 0.50 kdk Comments added
 # 2023-07-06 0.51 kdk Comments added
 # 2023-11-17 0.52 kdk Comments added
+# 2023-11-24 0.53 kdk wget for MAC OS X
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.52"
-PROG_DATE="2023-11-17"
+PROG_VERSION="0.53"
+PROG_DATE="2023-11-24"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -258,6 +259,22 @@ function packageManagerUpdate()
 }
 
 # #########################################
+# packageManagerCleaning()
+# Parameter
+#    -
+# Return Value
+#    -
+# Delete the no more needed packages.
+# This can take a long time. Therefore this function should not be use every time.
+function packageManagerCleaning()
+{
+    if [ -x "$aptPresent" ] ; then
+        echo "[$PROG_NAME:STATUS] Cleaning system package manager databases ..."
+        $appSudo apt -y autoremove
+    fi
+}
+
+# #########################################
 # osUpgrade()
 # Parameter
 #    -
@@ -278,6 +295,9 @@ function osUpgrade()
     # After reboot:
     $appSudo do-release-upgrade
     # Not yet done because of some warnings...
+
+    # Under Alpine Linux
+    $appSudo apt -y autoremove
 }
 
 # #########################################
@@ -451,10 +471,11 @@ getSystem
 
 # No idea on which system we are - but we could check which package manager we could use:
 aptgetPresent=$(which apt-get 2> /dev/zero)
+aptPresent=$(which apt 2> /dev/zero)
 zypperPresent=$(which zypper 2> /dev/zero)
 brewPresent=$(which brew 2> /dev/zero)
 apkPresent=$(which apk 2> /dev/zero)
-# TODO: Which package manager for debian on chrome book?
+# Question: Which package manager for debian on chrome book? Answer: apt
 
 # Maybe we haven't found a package manager. This could happen on a MAC OS X System without brew.
 # Therefore check the system and try to install brew.
@@ -495,6 +516,7 @@ fi
 # package manager caches:
 if [ "$SHORT" = "0" ] ; then
     packageManagerUpdate
+    packageManagerCleaning
 fi
 
 # Sometimes we should use an alternative package manager: snap
@@ -672,6 +694,27 @@ if [ -z "$socatPresent" ] ; then
 #        $appSudo apk add TODOFillInPackageName
 #    fi
 fi
+
+# 'wget' is not standard on MAC OS X
+wgetPresent=$(which wget)
+if [ -z "$wgetPresent" ] ; then
+    # TODO: aptgetPresent
+#    if [ -x "$aptgetPresent" ] ;  then
+#        $appSudo apt-get -y install TODOFillInPackageName
+#    fi
+    # TODO: zypperPresent
+#    if [ -x "$zypperPresent" ] ; then
+#        $appSudo zypper --non-interactive install TODOFillInPackageName
+#    fi
+    if [ -x "$brewPresent" ] ; then
+        $appSudo brew install wget
+    fi
+    # TODO: apkPresent
+#    if [ -x "$apkPresent" ] ; then
+#        $appSudo apk add TODOFillInPackageName
+#    fi
+fi
+
 
 # oidc-agent is useful to connect to web services from bash scripts.
 # https://indigo-dc.gitbook.io/oidc-agent/
@@ -969,6 +1012,10 @@ if [ -z "$ipPresent" ] ; then
 #        $appSudo apk add TODOFillInPackageName
 #    fi
 fi
+
+# Cool Program to work with websockets: https://github.com/websockets/wscat
+# Install with: npm install -g wscat
+# At the moment we dont't care about node.js components.
 
 # caddy is a open source web server and reverse proxy
 # See: https://caddyserver.com/
