@@ -74,10 +74,11 @@
 # 2023-07-06 0.51 kdk Comments added
 # 2023-11-17 0.52 kdk Comments added
 # 2023-11-24 0.53 kdk wget for MAC OS X
+# 2023-11-28 0.54 kdk Test
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.53"
-PROG_DATE="2023-11-24"
+PROG_VERSION="0.54"
+PROG_DATE="2023-11-28"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
