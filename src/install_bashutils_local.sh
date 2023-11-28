@@ -75,9 +75,10 @@
 # 2023-11-17 0.52 kdk Comments added
 # 2023-11-24 0.53 kdk wget for MAC OS X
 # 2023-11-28 0.54 kdk Test
+# 2023-11-28 0.55 kdk Auto detect install location
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.54"
+PROG_VERSION="0.55"
 PROG_DATE="2023-11-28"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
@@ -92,8 +93,20 @@ PROG_LIBRARYNAME="bashutils_common_functions.bash"
 # Hinter jedes "which" ein " 2> /dev/zero" hängen.
 # ^ Ist das nicht erledigt?
 #
-# gnuplot unter mac os x installieren
-# ^ Ist nicht mehr notwendig, da ohne gnuplot gearbeitet wird. Plotly wird genutzt.
+
+# #########################################
+#
+# Updates
+#
+# Use cron, anacron or systemd/system to trigger daily update checks.
+# /etc/systemd/system
+# See:
+# https://wiki.ubuntuusers.de/Cron/
+# https://linux.die.net/man/1/crontab
+# https://wiki.ubuntuusers.de/systemd/Timer_Units/
+#
+# One time jobs could be defined as user with e.g.:
+#  >: systemd-run --user --on-calendar="2023-11-28 15:50:00" --unit="BashUtils" --description="BashUtils Updater" touch ~/tmp/calendarTouchMe
 
 # #########################################
 #
@@ -180,6 +193,7 @@ PROG_LIBRARYNAME="bashutils_common_functions.bash"
 # Constants
 #
 
+product="bashutils"
 
 # #########################################
 #
@@ -203,6 +217,19 @@ SYSTEM="Unknown"
 SourceDir="-"
 DestDir="-"
 TmpDir="-"
+
+
+# Standard Folders and Files
+
+MainFolder="_"              # Set in adjustVariables()
+DownloadsFolder="_"         # Set in adjustVariables()
+ControlFolder="_"           # Set in adjustVariables()
+ProcessFolder="_"           # Set in adjustVariables()
+
+RunFile="_"
+LogFile="_"
+
+ConfigFile="_"              # Set in adjustVariables()
 
 # Script specific Apps:
 appSudo="sudo"
@@ -330,6 +357,70 @@ function getSystem()
 }
 
 # #########################################
+# adjustVariables()
+# Parameter
+# Sets the global variables 
+function adjustVariables()
+{
+    # Linux like we should install e.g. under /opt/ or /usr/local/ - but we complete act inside home directory:
+    MainFolder="$HOME/$product/"
+
+    DownloadsFolder="$MainFolder""_Downloads/"
+
+    ControlFolder="$MainFolder""_Control/"
+        RunFile="$ControlFolder""RUNNING"
+        LogFile="$ControlFolder""LOG"
+
+    ProcessFolder="$MainFolder""_Process/"
+
+    ConfigFile="$HOME/.$product.ini"
+}
+
+# #########################################
+# checkEnvironment()
+# Parameter
+#    -
+# Return Value
+#    -
+# Check for necessary programs and folders.
+function checkEnvironment()
+{
+    checkOrCreateFile "$ConfigFile" "Configuration"
+    if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Configuration file '$ConfigFile' not usable. Exit"; exit; fi
+
+    checkOrCreateFolder "$MainFolder" "Main Program"
+        if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Can't create main folder. Exit"; exit; fi
+    checkOrCreateFolder "$DownloadsFolder" "Downloads"
+        if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Can't create downloads folder. Exit"; exit; fi
+    checkOrCreateFolder "$ControlFolder" "Control"
+        if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Can't create control folder. Exit"; exit; fi
+    checkOrCreateFolder "$ProcessFolder" "Process"
+        if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Can't create process folder. Exit"; exit; fi
+}
+
+# #########################################
+# checkOrCreateFile()
+# Parameter
+#   1: file name
+#   2: file description
+# Return
+#   1: 1 = An error occured
+# This function checks if a file exists. If not, it creates the file.
+# Check return value e.g. with: if [ $? -eq 1 ] ; then echo "There was an error"; fi
+function checkOrCreateFile()
+{
+    if [ ! -f "$1" ] ; then        
+        touch "$1"
+        if [ -f "$1" ] ; then
+            echo "[$PROG_NAME:DEBUG] $2 file created."
+        else
+            echo "[$PROG_NAME:ERROR] $2 file could not be created."
+            return 1
+        fi        
+    fi        
+}
+
+# #########################################
 # checkOrCreateFolder()
 # Parameter
 #   1: folder name
@@ -404,12 +495,50 @@ if [ $# -eq 1 ] ; then
     fi
 fi
 
+# Create our own environment:
+adjustVariables
+checkEnvironment
+
 # Check if we are in the source directory:
 SourceDir=$(dirname "$0")
 InstallScript="$SourceDir/$PROG_SCRIPTNAME"
+# TODO Dies ist nicht eindeutig - kann auch sein, dass nur das install script da ist und nichts mehr.
 if [ ! -f "$InstallScript" ] ; then
-    echo "[$PROG_NAME:ERROR] Source directory not found. Exit."
-    exit
+    # We are not in our download directory. Maybe we have to give up or we are able to use the standard way.
+    # There are as minimum 2 different possible directories:
+    #  1: For manual update any directory created with: git clone https://github.com/karstenkoeth/bashutils.git
+    #  2: The standard directory created in adjustVariables()
+    # We therefore check if we find the standard directory:
+    if [ -d "$DownloadsFolder" ] ; then
+        # Is git installed?
+        gitPresent=$(which git 2> /dev/zero)
+        if [ ! -z "$gitPresent" ] ; then
+            cd "$DownloadsFolder"
+            git clone https://github.com/karstenkoeth/bashutils.git
+        else
+            # We have no idea where to find the files and we can't download them. --> We give up.
+            echo "[$PROG_NAME:ERROR] Source directory not found and 'git' program not found. Exit."
+            exit
+        fi
+        # We are now in the correct directory AND should have all files here.
+        # 'git' should have created our directory:
+        if [ -d "$product" ] && [ -d "$product/src" ] ; then
+            cd "$product/src"
+            SourceDir=$(pwd)
+            # Now, we should be in the correct directoy. Test again:
+            InstallScript="$SourceDir/$PROG_SCRIPTNAME"
+            if [ ! -f "$InstallScript" ] ; then
+                echo "[$PROG_NAME:ERROR] Source directory not found. Exit."
+                exit
+            fi
+        else
+            echo "[$PROG_NAME:ERROR] Download not successful. Exit."
+            exit
+        fi
+    else
+        echo "[$PROG_NAME:ERROR] Source and download directory not found. Exit."
+        exit
+    fi
 fi
 
 # Prepare destination directory:
