@@ -76,9 +76,10 @@
 # 2023-11-24 0.53 kdk wget for MAC OS X
 # 2023-11-28 0.54 kdk Test
 # 2023-11-28 0.55 kdk Auto detect install location
+# 2023-11-28 0.56 kdk Go on with auto update
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.55"
+PROG_VERSION="0.56"
 PROG_DATE="2023-11-28"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
@@ -502,8 +503,8 @@ checkEnvironment
 # Check if we are in the source directory:
 SourceDir=$(dirname "$0")
 InstallScript="$SourceDir/$PROG_SCRIPTNAME"
-# TODO Dies ist nicht eindeutig - kann auch sein, dass nur das install script da ist und nichts mehr.
-if [ ! -f "$InstallScript" ] ; then
+TestAnotherFile="$SourceDir/bash-script-template.sh"
+if [ ! -f "$InstallScript" ] || [ ! -f "$TestAnotherFile" ] ; then
     # We are not in our download directory. Maybe we have to give up or we are able to use the standard way.
     # There are as minimum 2 different possible directories:
     #  1: For manual update any directory created with: git clone https://github.com/karstenkoeth/bashutils.git
@@ -514,7 +515,18 @@ if [ ! -f "$InstallScript" ] ; then
         gitPresent=$(which git 2> /dev/zero)
         if [ ! -z "$gitPresent" ] ; then
             cd "$DownloadsFolder"
-            git clone https://github.com/karstenkoeth/bashutils.git
+            # We are in the correct download directory to clone the git repo.
+            # Maybe it is not the first time for git in this directory - therefore we have to run git pull in bashutils.
+            if [ ! -d "$product" ] ; then
+                # First time for git here.
+                git clone https://github.com/karstenkoeth/bashutils.git
+            else
+                # It is still cloned. We only need to pull new content:
+                # We also could test more detailed, e.g. if "README.md" is present...
+                cd "$product"
+                git pull
+                cd ..
+            fi
         else
             # We have no idea where to find the files and we can't download them. --> We give up.
             echo "[$PROG_NAME:ERROR] Source directory not found and 'git' program not found. Exit."
@@ -527,7 +539,8 @@ if [ ! -f "$InstallScript" ] ; then
             SourceDir=$(pwd)
             # Now, we should be in the correct directoy. Test again:
             InstallScript="$SourceDir/$PROG_SCRIPTNAME"
-            if [ ! -f "$InstallScript" ] ; then
+            TestAnotherFile="$SourceDir/bash-script-template.sh"
+            if [ ! -f "$InstallScript" ] || [ ! -f "$TestAnotherFile" ] ; then
                 echo "[$PROG_NAME:ERROR] Source directory not found. Exit."
                 exit
             fi
