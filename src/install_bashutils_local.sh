@@ -77,10 +77,11 @@
 # 2023-11-28 0.54 kdk Test
 # 2023-11-28 0.55 kdk Auto detect install location
 # 2023-11-28 0.56 kdk Go on with auto update
+# 2023-11-30 0.57 kdk Added: cleanUp(), Deleted the including of $PROG_LIBRARYNAME
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.56"
-PROG_DATE="2023-11-28"
+PROG_VERSION="0.57"
+PROG_DATE="2023-11-30"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -91,8 +92,6 @@ PROG_LIBRARYNAME="bashutils_common_functions.bash"
 #
 # https://trello.com/c/5bsK792K/409-bashutils-ish
 #
-# Hinter jedes "which" ein " 2> /dev/zero" hängen.
-# ^ Ist das nicht erledigt?
 #
 
 # #########################################
@@ -212,6 +211,7 @@ ECHONORMAL="1"
 ECHOWARNING="1"
 ECHOERROR="1"
 
+DEPENDENCIES="0"
 SHORT="0"
 SYSTEM="Unknown"
 
@@ -340,7 +340,7 @@ function osUpgrade()
 function getSystem()
 {
     # Check, if program is available:
-    local unamePresent=$(which uname)
+    local unamePresent=$(which uname 2> /dev/zero)
     if [ -z "$unamePresent" ] ; then
         echo "[$PROG_NAME:getSystem:WARNING] 'uname' not available."
         SYSTEM="Unknown"
@@ -447,6 +447,51 @@ function checkOrCreateFolder()
 }
 
 # #########################################
+# copyFiles()
+# Parameter
+#    -
+# Return Value
+#    -
+# Copy all files of this all temporary files.
+function copyFiles()
+{
+    # Normally, it is save to go with a file to support file names with spaces inside the name.
+    # But here, we only care about shell scripts - these we write without spaces in the name.
+    # ls -1 $SourceDir/*.sh > "$TmpFile"
+    lines=$(ls -1 $SourceDir/*.sh)
+
+    for line in $lines
+    do
+        pureLine=$(basename "$line")
+        case $pureLine in 
+            "install_bashutils_local.sh"|"bash-script-template.sh")
+                echo "[$PROG_NAME:STATUS] Exclude of copy '$pureLine' "
+            ;;
+            *)
+                #echo "[$PROG_NAME:STATUS] Line:        Copy '$line' "
+                # TODO Think about "Copy": It's ok to overwrite all files?
+                cp "$line" "$DestDir"
+                chmod u+x "$DestDir$pureLine"    
+            ;;
+        esac
+    done
+}
+
+# #########################################
+# cleanUp()
+# Parameter
+#    -
+# Return Value
+#    -
+# Delete all temporary files.
+function cleanUp()
+{
+    if [ -f "$TmpFile" ] ; then
+        rm "$TmpFile"
+    fi
+}
+
+# #########################################
 # showHelp()
 # Parameter
 #    -
@@ -456,6 +501,7 @@ function checkOrCreateFolder()
 function showHelp()
 {
     echo "[$PROG_NAME:STATUS] Program Parameter:"
+    echo "    -d     : Do not care about the dependencies"
     echo "    -s     : Do not update the packages descriptions and the package manager"
     echo "    -V     : Show Program Version"
     echo "    -h     : Show this help"
@@ -487,7 +533,9 @@ echo "[$PROG_NAME:STATUS] Starting installer ..."
 
 # Check for program parameters:
 if [ $# -eq 1 ] ; then
-    if [ "$1" = "-s" ] ; then
+    if [ "$1" = "-d" ] ; then
+        DEPENDENCIES="1"
+    elif [ "$1" = "-s" ] ; then
         SHORT="1"
     elif [ "$1" = "-V" ] ; then
         showVersion ; exit;
@@ -565,6 +613,9 @@ checkOrCreateFolder "$TmpDir" "Temporary"
 # Some scripts need to store secrets:
 checkOrCreateFolder "$HOME/.ssh" "Secure Shell"
 checkOrCreateFolder "$HOME/.oidc-agent" "OIDC Agent"
+
+# Main function of this script:
+copyFiles
 
 # On ubuntu 18.04 in docker: Here we are acting as root and therefore "sudo" is unknown.
 #   --> First, we have to look, if we are running as "root" or not:
@@ -655,6 +706,13 @@ fi
 #    fi
 #fi
 
+if [ "$DEPENDENCIES" = "1" ] ; then
+    # We have copied all files and don't care about the dependencies:
+    cleanUp
+    echo "[$PROG_NAME:STATUS] Done."
+    exit
+fi
+
 # Allways good idea to update the system, update typically updates the 
 # package manager caches:
 if [ "$SHORT" = "0" ] ; then
@@ -684,7 +742,7 @@ fi
 lsbreleasePresent=$(which lsb-release 2> /dev/zero)
 if [ -z "$lsbreleasePresent" ] ; then
     # Sometimes a little bit different spelling:
-    lsbreleasePresent=$(which lsb_release)
+    lsbreleasePresent=$(which lsb_release 2> /dev/zero)
 fi
 if [ -z "$lsbreleasePresent" ] ; then
     if [ -x "$aptgetPresent" ] ; then
@@ -839,7 +897,7 @@ if [ -z "$socatPresent" ] ; then
 fi
 
 # 'wget' is not standard on MAC OS X
-wgetPresent=$(which wget)
+wgetPresent=$(which wget 2> /dev/zero)
 if [ -z "$wgetPresent" ] ; then
     # TODO: aptgetPresent
 #    if [ -x "$aptgetPresent" ] ;  then
@@ -1237,43 +1295,11 @@ if [ -z "$ffmpegPresent" ] ; then
 #    fi
 fi
 
-# At the moment not needed - but a good function:
-# getFunctionsFile()
-FunctionLibrary="$SourceDir/$PROG_LIBRARYNAME"
-if [ ! -f "$FunctionLibrary" ] ; then
-    echo "[$PROG_NAME:WARNING] Function Library not found. Working with reduced functionality."
-else
-    source "$FunctionLibrary"
-    echod "Main" "Function Library found."
-fi
 
-# Normally, it is save to go with a file to support file names with spaces inside the name.
-# But here, we only care about shell scripts - these we write without spaces in the name.
-# ls -1 $SourceDir/*.sh > "$TmpFile"
-lines=$(ls -1 $SourceDir/*.sh)
-
-for line in $lines
-do
-    pureLine=$(basename "$line")
-    case $pureLine in 
-        "install_bashutils_local.sh"|"bash-script-template.sh")
-            echo "[$PROG_NAME:STATUS] Exclude of copy '$pureLine' "
-        ;;
-        *)
-            #echo "[$PROG_NAME:STATUS] Line:        Copy '$line' "
-            # TODO Think about "Copy": It's ok to overwrite all files?
-            cp "$line" "$DestDir"
-            chmod u+x "$DestDir$pureLine"    
-        ;;
-    esac
-done
 
 # TODO
 # Maybe we want to inform a server to have all necessary things installed?
 
-# Cleaning up:
-if [ -f "$TmpFile" ] ; then
-    rm "$TmpFile"
-fi
+cleanUp
 
 echo "[$PROG_NAME:STATUS] Done."

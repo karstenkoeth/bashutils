@@ -7,6 +7,20 @@
 #  - image_viewer_server.sh as image_viewer_common_func.bash
 #  - html_collect_pictures.sh as image_viewer_common_func.bash
 #  - bash-script-template.sh as bashutils_common_functions.bash 
+#
+#
+# Usage
+#
+# Include this in a shell script:
+#PROG_LIBRARYNAME="bashutils_common_functions.bash"
+#FunctionLibrary="$SourceDir/$PROG_LIBRARYNAME"
+#if [ ! -f "$FunctionLibrary" ] ; then
+#    echo "[$PROG_NAME:WARNING] Function Library not found. Exit."
+#    exit
+#else
+#    source "$FunctionLibrary"
+#    echod "Main" "Function Library found."
+#fi
 
 # #########################################
 #
@@ -23,12 +37,13 @@
 # 2022-02-04 0.26 kdk With filesize()
 # 2022-02-23 0.27 kdk ShellCheck adaptions
 # 2022-12-11 0.28 kdk With deleteLeadingAndTrailingSpaces()
+# 2023-11-30 0.29 kdk Comments added how to use this file
 
 # #########################################
 #
 # MIT license (MIT)
 #
-# Copyright 2022 - 2021 Karsten Köth
+# Copyright 2023 - 2021 Karsten Köth
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal

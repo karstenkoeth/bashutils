@@ -6,6 +6,13 @@ Check out with:
 
 `git clone` https://github.com/karstenkoeth/bashutils.git
 
+## Install
+
+Install all files as normal user with:
+
+`./bashutils/src/install_bashutils_local.sh`
+
+
 # REST API Server in bash
 
 ## Content
@@ -83,7 +90,7 @@ There is no other shield to protect the data. All persons knowing the unique uui
 
 ## Prototype
 
-This server is in prototype state. Therefore, all data and all created clipboards could be lost, if the main server process (http-echo.sh) is killed. 
+This server is in prototype state. Therefore, all data and all created clipboards could be lost, if the main server process (http-echo.sh) is killed.
 
 ## Help
 
@@ -93,7 +100,7 @@ Get all program parameters with:
 
 ## Hints
 
-Chosing the correct port to run a server is essential. Therefore, before starting a server, it is a good task to check the actua used ports.
+Chosing the correct port to run a server is essential. Therefore, before starting a server, it is a good task to check the actual used ports.
 This could be done with:
 
 `lsof -i -P -n | grep LISTEN`
