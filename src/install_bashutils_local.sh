@@ -78,10 +78,11 @@
 # 2023-11-28 0.55 kdk Auto detect install location
 # 2023-11-28 0.56 kdk Go on with auto update
 # 2023-11-30 0.57 kdk Added: cleanUp(), Deleted the including of $PROG_LIBRARYNAME
+# 2024-01-09 0.58 kdk Links added
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.57"
-PROG_DATE="2023-11-30"
+PROG_VERSION="0.58"
+PROG_DATE="2024-01-09"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -167,7 +168,7 @@ PROG_LIBRARYNAME="bashutils_common_functions.bash"
 #
 # MIT license (MIT)
 #
-# Copyright 2023 - 2020 Karsten Köth
+# Copyright 2024 - 2020 Karsten Köth
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -737,6 +738,10 @@ fi
 #
 # snap didn't work in docker: "System has not been booted with systemd as init system (PID 1). Can't operate."
 # https://snapcraft.io/docs/troubleshooting
+#
+# More about snap:
+# https://snapcraft.io/
+# https://de.wikipedia.org/wiki/Snappy_(Paketverwaltung)
 
 # 'lsb-release' is needed to detect on which Linux version we are running.
 lsbreleasePresent=$(which lsb-release 2> /dev/zero)
@@ -823,6 +828,9 @@ fi
 #        MAC OS X: So standard, there seems no need to install it. No brew formulae exists.
 #
 
+# readline may be interesting
+# See: https://tiswww.case.edu/php/chet/readline/rluserman.html
+
 # Take care the bashutils core unix dependencies are present:
 sedPresent=$(which sed 2> /dev/zero)
 if [ -z "$sedPresent" ] ; then
@@ -877,6 +885,7 @@ fi
 # We try to do all things with socat to install only one tool.
 # SOcket CAT: netcat on steroids
 # http://www.dest-unreach.org/socat/
+# MultiCast with UDP:  http://www.dest-unreach.org/socat/doc/socat-multicast.html
 socatPresent=$(which socat 2> /dev/zero)
 if [ -z "$socatPresent" ] ; then
     # TODO: aptgetPresent
@@ -888,6 +897,7 @@ if [ -z "$socatPresent" ] ; then
 #        $appSudo zypper --non-interactive install TODOFillInPackageName
 #    fi
     if [ -x "$brewPresent" ] ; then
+        # https://formulae.brew.sh/formula/socat#default
         $appSudo brew install socat
     fi
     # TODO: apkPresent
@@ -1095,6 +1105,13 @@ fi
 # TODO
 # Maybe we want to distribute software via ansible.
 # https://docs.ansible.com/ansible/latest/getting_started/index.html
+# https://docs.ansible.com/ansible/latest/getting_started/get_started_inventory.html
+# https://docs.ansible.com/ansible/latest/user_guide/index.html
+# https://docs.ansible.com/ansible/latest/reference_appendices/YAMLSyntax.html#yaml-syntax
+# https://docs.ansible.com/ansible/latest/installation_guide/intro_configuration.html
+# https://docs.ansible.com/ansible/latest/reference_appendices/config.html#environment-variables
+# https://packages.ubuntu.com/jammy/python-ansible-runner-doc
+# 
 # python3 -m pip install --user ansible
 # Installation under MacOS X is shitty: Will installed outside the path in: /Users/USERNAME/Library/Python/3.9/bin
 #
@@ -1192,10 +1209,7 @@ if [ -z "$nmapPresent" ] ; then
 #    fi
 fi
 
-# TODO
 # network scan with nmap and arp OR with ip
-# SuSE: arp is in package "net-tools-deprecated"
-# MAC: ip like:  brew install iproute2mac --> See: https://github.com/brona/iproute2mac
 ipPresent=$(which ip 2> /dev/zero)
 if [ -z "$ipPresent" ] ; then
     if [ -x "$aptgetPresent" ] ;  then
@@ -1203,9 +1217,12 @@ if [ -z "$ipPresent" ] ; then
     fi
     # TODO: zypperPresent
 #    if [ -x "$zypperPresent" ] ; then
+        # SuSE: arp is in package "net-tools-deprecated"
 #        $appSudo zypper --non-interactive install TODOFillInPackageName
 #    fi
     if [ -x "$brewPresent" ] ; then
+        # https://formulae.brew.sh/formula/iproute2mac#default
+        # MAC: ip like:  brew install iproute2mac --> See: https://github.com/brona/iproute2mac
         $appSudo brew install iproute2mac
     fi
     # TODO: apkPresent
@@ -1219,7 +1236,9 @@ fi
 # At the moment we dont't care about node.js components.
 
 # caddy is a open source web server and reverse proxy
-# See: https://caddyserver.com/
+# See: 
+#    https://caddyserver.com/
+#    https://caddyserver.com/docs/quick-starts/api
 caddyPresent=$(which caddy 2> /dev/zero)
 if [ -z "$caddyPresent" ] ; then
     # Download to tmp dir:
@@ -1267,6 +1286,10 @@ if [ -z "$caddyPresent" ] ; then
     cd "$sActDir"
 fi
 
+# If we have MQTT or a webserver running, maybe we need something to authorize:
+# OAuth 2
+# https://snapcraft.io/moauth
+# https://snapcraft.io/install/moauth/ubuntu
 
 # ############# Multi Media Section #############
 
