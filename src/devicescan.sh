@@ -75,10 +75,11 @@
 # 2023-11-13 0.30 kdk Another MAC Address for Dell included
 # 2023-11-24 0.31 kdk Bug removed in listMacAddresses() regarding 'ls -1'
 # 2023-11-24 0.32 kdk Bug more removed
+# 2024-01-17 0.33 kdk More Bugs removed
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.32"
-PROG_DATE="2023-11-24"
+PROG_VERSION="0.33"
+PROG_DATE="2024-01-17"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -122,7 +123,7 @@ PROG_SCRIPTNAME="devicescan.sh"
 #
 # MIT license (MIT)
 #
-# Copyright 2023 - 2021 Karsten Köth
+# Copyright 2024 - 2021 Karsten Köth
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -793,7 +794,10 @@ function getOwnIpAddress()
         #local tmpadr="0.0.0.0"
         if [ "$SYSTEM" = "LINUX" ] ;  then
             # Under "Raspbian GNU/Linux 9.13 (stretch)": Parameter -o is implemented and generates 1 line per interface:
-            IP4ADDRESS=$(ip -o -4 addr show | grep -i global | tail -n 1 | sed "s/  */;/g" | cut -f 4 -d ";" | cut -f 1 -d "/")
+            # If we use "head -n 1" instead of "tail -n 1" it will look for the build-in network card 
+            # before looking for the USB network adapter - hopefully mostly ;-)
+            IP4ADDRESS=$(ip -o -4 addr show | grep -i global | head -n 1 | sed "s/  */;/g" | cut -f 4 -d ";" | cut -f 1 -d "/")
+            # IP4ADDRESS=$(ip -o -4 addr show | grep -i global | tail -n 1 | sed "s/  */;/g" | cut -f 4 -d ";" | cut -f 1 -d "/")
             #tmpadr=$(ip -o -4 addr show | grep -i global | sed "s/  */;/g")
             #echo "[$PROG_NAME:getOwnIpAddress:DEBUG] '$tmpadr'"
             #tmpadr=$(echo "$tmpadr" | cut -f 4 -d ";")

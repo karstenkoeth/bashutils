@@ -26,6 +26,7 @@
 # In the configuration file '.devicemonitor.ini' there are defined:
 # - Server = Defines the server the values are send to as json
 # - SerialNumber = Store the serial number of the system
+# - DiskEncryption = Store the status of the disk encryption
 
 # #########################################
 #
@@ -68,10 +69,11 @@
 # 2023-11-17 0.35 kdk Ubuntu 22.04.3 LTS and Ubuntu 20.04.6 LTS added
 # 2023-11-24 0.36 kdk getSystem() mode more robust and added: MAC OS X Sonoma 14.1.1, comments added.
 # 2023-11-24 0.37 kdk Make it more stable and include getSerialNumber on more systems.
+# 2024-01-17 0.38 kdk Disk Encryption under Ubuntu added
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.37"
-PROG_DATE="2023-11-24"
+PROG_VERSION="0.38"
+PROG_DATE="2024-01-17"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -94,7 +96,7 @@ PROG_SCRIPTNAME="devicemonitor.sh"
 #
 # MIT license (MIT)
 #
-# Copyright 2023 - 2021 Karsten Köth
+# Copyright 2024 - 2021 Karsten Köth
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -177,6 +179,7 @@ MainLoopResponseTime="1s"   # Reaction time of around 1 second to the "shut down
 ConfigFile="_"              # Set in adjustVariables()
 ConfServer=""               # Set in ConfigFile
 ConfSerialNumber=""         # Set in ConfigFile
+ConfDiskEncryption=""       # Set in ConfigFile
 ConfInfoFile=""             # Set in adjustVariables()
 
 # #########################################
@@ -365,9 +368,11 @@ function checkEnvironment()
 function getConfig()
 {
     # Similar to the old Windows file format. Variable name and variable content is delimited with a equal sign.
+    # If more than one line of same variable: Take the latest.
     # Remove spaces before and after the variable content.
-    ConfServer=$(cat "$ConfigFile" | grep -i "Server" | cut -d "=" -f 2 | sed "s/^ *//g" | sed "s/$ *//g")
-    ConfSerialNumber=$(cat "$ConfigFile" | grep -i "SerialNumber" | cut -d "=" -f 2 | sed "s/^ *//g" | sed "s/$ *//g")
+    ConfServer=$(cat "$ConfigFile" | grep -i "Server" | tail -n 1 | cut -d "=" -f 2 | sed "s/^ *//g" | sed "s/$ *//g")
+    ConfSerialNumber=$(cat "$ConfigFile" | grep -i "SerialNumber" | tail -n 1 | cut -d "=" -f 2 | sed "s/^ *//g" | sed "s/$ *//g")
+    ConfDiskEncryption=$(cat "$ConfigFile" | grep -i "DiskEncryption" | tail -n 1 | cut -d "=" -f 2 | sed "s/^ *//g" | sed "s/$ *//g")
 }
 
 # #########################################
@@ -625,6 +630,36 @@ function getDiskSpace()
             # Runs on "openSUSE Leap 15.2":
             # Runs on "Ubuntu 20.04.4 LTS"
             DISKSPACE=$(df -h / --output=pcent | tail -n 1 | xargs)
+            # We are looking also for encryption status of the disk:
+            # Disk Encryption could be also monitored with: sudo dmsetup status
+            # Could maybe also shown with: sudo ufw status
+            # But always 'sudo' is required :-( 
+            if [ ! -z "$ConfDiskEncryption" ] ; then
+                DISKENCRYPTION="$ConfDiskEncryption"
+            else
+                # We need to search for the status:
+                # Set the correct sudo, source code from install_bashutils_local.sh 
+                appSudo="sudo"
+                appUser=$(whoami)
+                if [ "$appUser" = "root" ] ; then
+                    appSudo=""
+                fi
+                # Try to use cryptsetup to get the status:
+                local dEncrypt=$($appSudo cryptsetup status /dev/mapper/vgubuntu-root | head -n 1 | cut -d " " -f 3)
+                if [ "$dEncrypt" = "active" ] ; then
+                    # Store Status:
+                    echo "DiskEncryption = ""On" >> "$ConfigFile"
+                    # If we run in a loop:
+                    ConfDiskEncryption="On"
+                elif [ "$dEncrypt" = "inactive" ] ; then
+                    # Store Status:
+                    echo "DiskEncryption = ""Off" >> "$ConfigFile"
+                    # If we run in a loop:
+                    ConfDiskEncryption="Off"
+                else
+                    echo "[$PROG_NAME:getDiskSpace:DiskEncryption:WARNING] Status code unknown"
+                fi
+            fi
         fi
     elif [ "$SYSTEM" = "MACOSX" ] ; then
         # Example:
@@ -756,6 +791,8 @@ function getSystemID()
                     if [ ! -z "$SERIALNUMBER" ] ; then
                         # Store Serial Number:
                         echo "SerialNumber = ""$SERIALNUMBER" >> "$ConfigFile"
+                        # If we run in a loop:
+                        ConfSerialNumber="$SERIALNUMBER"
                     fi
                 fi
             else
