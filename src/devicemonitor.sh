@@ -8,8 +8,8 @@
 # - OS System Type
 # - Used disk Space
 # - CPU Usage
-# - Memory Usage
-# - Last Update 
+# - Memory Usage   <-- TODO
+# - Last Update    <-- TODO
 #
 # The values could be:
 # - printed on stdout
@@ -71,10 +71,11 @@
 # 2023-11-24 0.37 kdk Make it more stable and include getSerialNumber on more systems.
 # 2024-01-17 0.38 kdk Disk Encryption under Ubuntu added
 # 2024-01-21 0.39 kdk MAC OS X 23.2.0 added, GetDiskSpace-Linux-Encryption extended
+# 2024-01-24 0.40 kdk Comments added.
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.39"
-PROG_DATE="2024-01-21"
+PROG_VERSION="0.40"
+PROG_DATE="2024-01-24"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -984,6 +985,30 @@ function sendInfo()
     # 1.) Develop a server process listen to the value set.
     # 2.) Send data from here with curl or wget
     # 3.) Comment in the call of this function in the main loop
+    #
+    # Concept
+    # How to secure the connection? Could be done by using 'croc'.
+    # Maybe 'scp' fits better. It is used by devicescan.sh - prepareConfig()
+    # But: Then, every client needs write access to the server - unsecure. Not really:
+    # If on the server every client has an own access, it is secure. --> create access pairs automatically.
+    # Maybe its better, the client has an output folder and the server polls the clients.
+    # But it should copied in a sub directory input folder in the server.
+    # The client file is "$ConfInfoFile".
+    # The server file should has a uuid as filename.
+    # The server will find the file, move it from input to working and update his database.
+    # The server will move it from working in done.
+    # The 'asset management system' Server is defined in .devicemonitor.ini
+    # 
+    # Check, if $ConfServer is reachable
+    #
+    # Concept - Server with multiple access
+    # Linux Server, e.g. Ubuntu on Intel NUC or on EC2
+    # On Server: Create user with loginname and password
+    # On Server: Create ~/devicemonitor/_Input
+    # On Client: Use 'ssh-copy-id' to connect to server
+    # On Client: Add server to .ssh/config
+    # Client use 'scp' to store file on server. E.g. scp "$ConfInfoFile" ServerName:devicemonitor/_Input/"$UUIDFileName"
+    # ServerName is the name of the server mentioned in ~/.ssh/config 
 }
 
 # #########################################
@@ -1052,9 +1077,7 @@ adjustVariables
 checkEnvironment
 # Check, on which system we are running:
 getSystem
-# 
 getConfig
-
 checkStart
 updateRun
 

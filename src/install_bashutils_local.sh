@@ -80,10 +80,11 @@
 # 2023-11-30 0.57 kdk Added: cleanUp(), Deleted the including of $PROG_LIBRARYNAME
 # 2024-01-09 0.58 kdk Links added
 # 2024-01-21 0.59 kdk Bash Prompt added
+# 2024-01-24 0.60 kdk Bash alias added
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.59"
-PROG_DATE="2024-01-21"
+PROG_VERSION="0.60"
+PROG_DATE="2024-01-24"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -1060,6 +1061,14 @@ if [ ! -f "$HOME/.bashrc" ] ; then
     # \h : Short version of hostname
     # \H : Full version of hostname
     echo "export PS1='\u@\h:\W>'" >> "$HOME/.bashrc"
+    # Prepare for alias:
+    echo "if [ -f ~/.bash_aliases ] ; then" >> "$HOME/.bashrc"
+    echo "  . ~/.bash_aliases" >> "$HOME/.bashrc"
+    echo "fi" >> "$HOME/.bashrc"
+    # Generate alias file:
+    if [ ! -f "$HOME/.bash_aliases" ] ; then
+        echo "alias cd..=\"cd ..\"" > "$HOME/.bash_aliases"
+    fi
 fi
 # Set path to directly work with:
 export PATH="$PATH:$HOME/bin"
