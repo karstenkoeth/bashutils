@@ -729,6 +729,7 @@ function getOwnMacAddress()
     # BUG TODO: Run into problems if more than one ethernet interface (e.g. LAN + WLAN) is active.
     #           "tail" included to be able to run the program. But better solution would be to
     #           scan both networks.
+    # Changes: All changes done here must be also done at: devicemonitor.sh - getMacAddress()
     if [ "$GetMacApp" = "ip" ] ; then
         if [ "$SYSTEM" = "LINUX" ] ;  then
             if [ -r "/sys/class/net/eth0/address" ] ; then
@@ -742,9 +743,16 @@ function getOwnMacAddress()
                 #    link/ether 0c:7a:15:88:32:18 brd ff:ff:ff:ff:ff:ff
                 # Alternative on ubuntu:
                 # nmcli | grep -i ether | cut -d "," -f 2
+                # See: https://developer-old.gnome.org/NetworkManager/stable/nmcli.html
             fi
         elif [ "$SYSTEM" = "MACOSX" ] ; then
             MACADDRESS=$(ip -4 addr show | grep -i ether | sed "s/ether /;/g" | cut -d ";" -f 2 | tr "[:lower:]" "[:upper:]" | tail -n 1)
+            # E.g. output on 23.2.0 from :
+            # lo0: flags=8049<UP,LOOPBACK,RUNNING,MULTICAST> mtu 16384
+            #	inet 127.0.0.1/8 lo0
+            # en0: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500
+	        #   ether 3c:22:fb:2c:cb:3f
+	        #   inet 172.18.186.246/16 brd 172.18.255.255 en0
         fi
         echo "[$PROG_NAME:getOwnMacAddress:STATUS] '$MACADDRESS'"
     fi
@@ -790,6 +798,17 @@ function isMultiCastMacAddress()
 # Try to find the most important ip address and write it to the global variable IP4ADDRESS
 function getOwnIpAddress()
 {
+    # Note about Changes
+    #
+    # All changes done here must be also done at: devicemonitor.sh - getIpAddress()
+    #
+    # Enhancements
+    #
+    # Test first with :> route get 8.8.8.8 | grep -i interface | sed "s/[[:blank:]]*//g"
+    # Return on MAC OS X 23.2.0: "interface:en0"
+    # Take this interface for ip -4 addr show:>  ip -4 addr show en0
+    # TODO: Test on other MAC an on Ubuntu and Raspi.  
+    #
     if [ "$GetMacApp" = "ip" ] ; then
         #local tmpadr="0.0.0.0"
         if [ "$SYSTEM" = "LINUX" ] ;  then

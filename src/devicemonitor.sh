@@ -70,17 +70,13 @@
 # 2023-11-24 0.36 kdk getSystem() mode more robust and added: MAC OS X Sonoma 14.1.1, comments added.
 # 2023-11-24 0.37 kdk Make it more stable and include getSerialNumber on more systems.
 # 2024-01-17 0.38 kdk Disk Encryption under Ubuntu added
+# 2024-01-21 0.39 kdk MAC OS X 23.2.0 added, GetDiskSpace-Linux-Encryption extended
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.38"
-PROG_DATE="2024-01-17"
+PROG_VERSION="0.39"
+PROG_DATE="2024-01-21"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
-
-# #########################################
-#
-# TODOs
-#
 
 # #########################################
 # 
@@ -149,12 +145,14 @@ SYSTEM="unknown"
 SYSTEMDescription="" # Will be filled if possible
 SYSTEMTested="0" # If we detect a system, the script was tested on, we switch to "1"
 MACADDRESS="00:00:00:00:00:00"
+IP4ADDRESS="0.0.0.0"
 SERIALNUMBER="unknown"
 ARCHITECTURE="unknown"
     # Known values:
     # "uname -m" on "Raspi" with Linux shows: "armv7l"
     # "uname -m" on "Intel NUC" with "Ubuntu" shows: "x86_64"
     # "uname -m" on "Intel MacBook x86_64" shows: "x86_64"
+RASPI="0"  # If we detect a raspberry, the script was tested on, we switch to "1"
 
 # Handle output of the different verbose levels - in combination with the 
 # "echo?" functions inside "bashutils_common_functions.bash":
@@ -404,6 +402,7 @@ function getSystem()
             #                     e.g. "22.3.0" = MAC OS X Ventura 13.2
             #                     e.g. "22.4.0" = MAC OS X Ventura 13.3.1
             #                     e.g. "23.1.0" = MAC OS X Sonoma 14.1.1
+            #                     e.g. "23.2.0" = MAC OS X Sonoma 14.2.1
             #                     e.g. "4.20.69-ish" = iPhone SE 14.5.1 with ish-App
             #                     e.g. "4.20.69-ish" = iPad Air 2 14.7.1 with ish-App
             # https://de.wikipedia.org/wiki/Darwin_(Betriebssystem)
@@ -429,6 +428,9 @@ function getSystem()
                     SYSTEMTested="1"
                 fi
                 if [ "$SYSTEMDescription" = "23.1.0" ] ; then
+                    SYSTEMTested="1"
+                fi
+                if [ "$SYSTEMDescription" = "23.2.0" ] ; then
                     SYSTEMTested="1"
                 fi
                 # Normally, it is found under Linux, but maybe ... try it:
@@ -635,6 +637,7 @@ function getDiskSpace()
             # Could maybe also shown with: sudo ufw status
             # But always 'sudo' is required :-( 
             if [ ! -z "$ConfDiskEncryption" ] ; then
+                # We take the Encryption status from the config file to avoid using sudo:
                 DISKENCRYPTION="$ConfDiskEncryption"
             else
                 # We need to search for the status:
@@ -651,11 +654,13 @@ function getDiskSpace()
                     echo "DiskEncryption = ""On" >> "$ConfigFile"
                     # If we run in a loop:
                     ConfDiskEncryption="On"
+                    DISKENCRYPTION="$ConfDiskEncryption"
                 elif [ "$dEncrypt" = "inactive" ] ; then
                     # Store Status:
                     echo "DiskEncryption = ""Off" >> "$ConfigFile"
                     # If we run in a loop:
                     ConfDiskEncryption="Off"
+                    DISKENCRYPTION="$ConfDiskEncryption"
                 else
                     echo "[$PROG_NAME:getDiskSpace:DiskEncryption:WARNING] Status code unknown"
                 fi
@@ -693,6 +698,7 @@ function getDiskSpace()
 # Tested on:
 #     System Type : MACOSX   +   System Version : 17.7.0
 #     System Type : LINUX    +   System Version : Raspbian GNU/Linux 9.13 (stretch)
+# TODO: Test on Ubuntu 
 function getCpuUsage()
 {
     local cputmp
@@ -732,9 +738,52 @@ function getCpuUsage()
 # Get MAC address from ... ethernet interface - Change the global variable MACADDRESS
 function getMacAddress()
 {
-    # With 'ip addr show' we see all mac addresses and the corresponding ip addresses.
-    # Works under: WSL - Linux - SuSE
-    echo "[$PROG_NAME:getMacAddress:WARNING] Not yet implemented."
+    local GetMacApp=$(which ip)
+    if [ ! -z "$GetMacApp" ] ; then
+        # "ip" installed, go on ...
+        # This code is from bashutils - devicescan.sh -getOwnMacAddress()
+        # We take only the code, not the comments.
+        # With 'ip addr show' we see all mac addresses and the corresponding ip addresses.
+        if [ "$SYSTEM" = "LINUX" ] ;  then
+            if [ -r "/sys/class/net/eth0/address" ] ; then
+                MACADDRESS=$(cat /sys/class/net/eth0/address | tr "[:lower:]" "[:upper:]" | tail -n 1)
+            else
+                MACADDRESS=$(ip addr show | grep -i ether | sed "s/ether /;/g" | cut -d ";" -f 2 | sed "s/ /;/g" | cut -d ";" -f 1 | tr "[:lower:]" "[:upper:]" | tail -n 1)
+            fi
+        elif [ "$SYSTEM" = "MACOSX" ] ; then
+            MACADDRESS=$(ip -4 addr show | grep -i ether | sed "s/ether /;/g" | cut -d ";" -f 2 | tr "[:lower:]" "[:upper:]" | tail -n 1)
+        else
+            echo "[$PROG_NAME:getMacAddress:WARNING] System type unknown. Can't get own MAC address."
+        fi
+    else
+        echo "[$PROG_NAME:getMacAddress:WARNING] 'ip' not found. With 'arp' not yet implemented. Can't get own MAC address."
+    fi
+}
+
+# #########################################
+# getIpAddress()
+# Parameter
+#    -
+# Return Value
+#    -
+# Get IP address from ... ethernet interface - Change the global variable IP4ADDRESS
+function getIpAddress()
+{
+    local GetMacApp=$(which ip)
+    if [ ! -z "$GetMacApp" ] ; then
+        # "ip" installed, go on ...
+        # This code is from bashutils - devicescan.sh -getOwnIpAddress()
+        # We take only the code, not the comments.
+        if [ "$SYSTEM" = "LINUX" ] ;  then
+            IP4ADDRESS=$(ip -o -4 addr show | grep -i global | head -n 1 | sed "s/  */;/g" | cut -f 4 -d ";" | cut -f 1 -d "/")
+        elif [ "$SYSTEM" = "MACOSX" ] ; then
+            IP4ADDRESS=$(ip -4 addr show | grep -i brd | tail -n 1 | sed "s/  */;/g" | cut -f 2 -d ";" | cut -f 1 -d "/")
+        else
+            echo "[$PROG_NAME:getIpAddress:WARNING] System type unknown. Can't get own IP address."
+        fi
+    else
+        echo "[$PROG_NAME:getIpAddress:WARNING] 'ip' not found. With 'arp' not yet implemented. Can't get own IP address."
+    fi
 }
 
 # #########################################
@@ -754,6 +803,14 @@ function getSystemID()
         # ##################
         # Get Serial Number
         #   Raspi:>  cat /proc/cpuinfo | grep -i serial
+        if [ -r /proc/cpuinfo ] ; then
+            local RaspiCPU=$(cat /proc/cpuinfo | grep -i hardware | sed "s/[[:blank:]]*//g" | cut -d ':' -f 2)
+            if [ "$RaspiCPU" = "BCM2835" ] ; then
+                RASPI="1"
+            fi
+            # TODO: Test line above!
+            # Test on big Raspi and on small Raspi.
+        fi
         # More general:
         # Linux:> cat /sys/firmware/devicetree/base/serial-number
         if [ -r /sys/firmware/devicetree/base/serial-number ] ; then
@@ -793,6 +850,8 @@ function getSystemID()
                         echo "SerialNumber = ""$SERIALNUMBER" >> "$ConfigFile"
                         # If we run in a loop:
                         ConfSerialNumber="$SERIALNUMBER"
+                    else
+                        echo "[$PROG_NAME:getSystemID:LINUX:WARNING] No serial number found with 'dmidecode'."
                     fi
                 fi
             else
@@ -826,11 +885,21 @@ function getSystemID()
             # Remove trailing and leading spaces.
             SERIALNUMBER=$(system_profiler SPHardwareDataType | grep "Serial Number" | cut -d ":" -f 2 | sed "s/^ *//g" | sed "s/$ *//g")
             # Tested on MAC OS X 22.3.0
+        else
+            echo "[$PROG_NAME:getSystemID:LINUX:WARNING] No serial number found with 'system_profiler'."
         fi
         # ##################
         # Get Processor Architecture:
         # "uname -m" on "Intel MacBookx86_64" shows: "x86_64"
         ARCHITECTURE=$(uname -m)
+        # Which strings with new Apple M* MACs?
+        # With ':>sysctl -n machdep.cpu.brand_string'
+        # Output:
+        #   Intel based MacBook Air: 'Intel(R) Core(TM) i7-1060NG7 CPU @ 1.20GHz'
+        #   Intel based Macbook Pro: 'Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz'
+        #   M1-based Macbook Air: 'Apple M1' 
+        #   Macbook Pro 2021: 'Apple M1 Pro'
+        #   Maybe other: 'Apple processor'
     else
         echo "[$PROG_NAME:getSystemID:Unknown:WARNING] Not yet implemented."
     fi
@@ -858,6 +927,15 @@ function showInfo()
     if [ ! "$ARCHITECTURE" = "unknown" ] ; then
         echo "[$PROG_NAME:STATUS] Architecture          : $ARCHITECTURE"
     fi
+    if [ "$RASPI" = "1" ] ; then
+        echo "[$PROG_NAME:STATUS] Raspberry CPU"
+    fi
+    if [ ! "$MACADDRESS" = "00:00:00:00:00:00" ] ; then
+        echo "[$PROG_NAME:STATUS] MAC Address           : $MACADDRESS"
+    fi
+    if [ ! "$IP4ADDRESS" = "0.0.0.0" ] ; then
+        echo "[$PROG_NAME:STATUS] IP Address            : $IP4ADDRESS"
+    fi
 }
 
 # #########################################
@@ -879,7 +957,12 @@ function createJSON()
     if [ ! "$SERIALNUMBER" = "unknown" ] ; then
         jstr="$jstr""\"Serial Number\":\"$SERIALNUMBER\","
     fi
-
+    if [ ! "$MACADDRESS" = "00:00:00:00:00:00" ] ; then
+        jstr="$jstr""\"MAC Address\":\"$MACADDRESS\","
+    fi
+    if [ ! "$IP4ADDRESS" = "0.0.0.0" ] ; then
+        jstr="$jstr""\"IpAddress\":\"$IP4ADDRESS\","
+    fi
                                                                 # Here some values from plugins could be integrated
     local vstr
     vstr=$(showVersion)                                                               
@@ -897,9 +980,10 @@ function createJSON()
 function sendInfo()
 {
     echo "[$PROG_NAME:sendInfo:WARNING] Not yet implemented. Send to '$ConfServer'"
-    # TODO
+    # TODO sendInfo()
     # 1.) Develop a server process listen to the value set.
     # 2.) Send data from here with curl or wget
+    # 3.) Comment in the call of this function in the main loop
 }
 
 # #########################################
@@ -971,7 +1055,6 @@ getSystem
 # 
 getConfig
 
-# TODO: Check for robustness from here ongoing:
 checkStart
 updateRun
 
@@ -979,13 +1062,14 @@ updateRun
 actDateTime=$(date "+%Y-%m-%d +%H:%M:%S")
 getDiskSpace
 getCpuUsage
-#getMacAddress
+getMacAddress
+getIpAddress
 getSystemID
 
 # Show Info:
 showInfo
 writeInfo
-sendInfo
+#sendInfo # Not yet implemented.
 
 if [ "$RUNONCE" = "1" ] ; then
     removeRun
@@ -993,6 +1077,7 @@ if [ "$RUNONCE" = "1" ] ; then
     exit
 fi
 
+# TODO: Check for robustness: Do all mentioned TODOs.
 
 echo "[$PROG_NAME:STATUS] Enter main loop. Monitor script with ':> ls --full-time $LogFile'. Stop script by deleting '$RunFile'."
 
@@ -1006,11 +1091,12 @@ do
     getDiskSpace
     getCpuUsage # This command needs some seconds to be executed.
     updateLog
-    #getMacAddress
+    getMacAddress
+    getIpAddress
     getSystemID
     showInfo
     writeInfo
-    sendInfo
+    #sendInfo # Not yet implemented.
     updateLog
     checkExit
 done

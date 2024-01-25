@@ -79,10 +79,11 @@
 # 2023-11-28 0.56 kdk Go on with auto update
 # 2023-11-30 0.57 kdk Added: cleanUp(), Deleted the including of $PROG_LIBRARYNAME
 # 2024-01-09 0.58 kdk Links added
+# 2024-01-21 0.59 kdk Bash Prompt added
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.58"
-PROG_DATE="2024-01-09"
+PROG_VERSION="0.59"
+PROG_DATE="2024-01-21"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -93,7 +94,8 @@ PROG_LIBRARYNAME="bashutils_common_functions.bash"
 #
 # https://trello.com/c/5bsK792K/409-bashutils-ish
 #
-#
+# devicemonitor.sh - getCpuUsage() : Test on Ubuntu
+# devicescan.sh - getOwnMacAddress() : For Ubuntu maybe change to 'nmcli' instead 'ip addr show' 
 
 # #########################################
 #
@@ -864,6 +866,10 @@ if [ -z "$gitPresent" ] ; then
     fi
     # TODO: apkPresent
 fi
+# If we want to contribute to this bashutils script on git, we have to set up
+# the personnel git credentils by hand in ~/.ssh/
+# TODO: Insert as comment the necessary steps which must be done manually.
+
 
 # 'curl' we need for a lot of networking things --> Install it:
 # iPad-von-Kasa:~# rki.sh # The program show these errors:
@@ -1044,8 +1050,16 @@ fi
 # .bashrc
 # export PATH=$PATH:/root/bin
 if [ ! -f "$HOME/.bashrc" ] ; then
+    # Set default Path:
     tmpHome="$HOME"
     echo "export PATH=\$PATH:$tmpHome/bin" > "$HOME/.bashrc"
+    # Set default Prompt:
+    # \u : Username
+    # \w : Working directory
+    # \W : Last part of working directory
+    # \h : Short version of hostname
+    # \H : Full version of hostname
+    echo "export PS1='\u@\h:\W>'" >> "$HOME/.bashrc"
 fi
 # Set path to directly work with:
 export PATH="$PATH:$HOME/bin"
