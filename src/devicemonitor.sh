@@ -72,10 +72,11 @@
 # 2024-01-17 0.38 kdk Disk Encryption under Ubuntu added
 # 2024-01-21 0.39 kdk MAC OS X 23.2.0 added, GetDiskSpace-Linux-Encryption extended
 # 2024-01-24 0.40 kdk Comments added.
+# 2024-01-25 0.41 kdk Encryption optimised.
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.40"
-PROG_DATE="2024-01-24"
+PROG_VERSION="0.41"
+PROG_DATE="2024-01-25"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -649,7 +650,7 @@ function getDiskSpace()
                     appSudo=""
                 fi
                 # Try to use cryptsetup to get the status:
-                local dEncrypt=$($appSudo cryptsetup status /dev/mapper/vgubuntu-root | head -n 1 | cut -d " " -f 3)
+                local dEncrypt=$($appSudo cryptsetup status /dev/mapper/vgubuntu-root | head -n 1 | cut -d " " -f 3 | sed "s/\.//g")
                 if [ "$dEncrypt" = "active" ] ; then
                     # Store Status:
                     echo "DiskEncryption = ""On" >> "$ConfigFile"
