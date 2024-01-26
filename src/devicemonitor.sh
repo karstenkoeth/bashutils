@@ -6,10 +6,13 @@
 #
 # This script looks for the specific values of a device:
 # - OS System Type
-# - Used disk Space
-# - CPU Usage
+# - Used Disk Space in Percent
+# - Absolute Disk Space (e.g. 32 GB)   <-- TODO
+# - CPU Usage in Percent
 # - Memory Usage   <-- TODO
 # - Last Update    <-- TODO
+# - Actual Date and Time absolute   <-- TODO
+# - NTP Status   <-- TODO
 #
 # The values could be:
 # - printed on stdout
@@ -73,10 +76,11 @@
 # 2024-01-21 0.39 kdk MAC OS X 23.2.0 added, GetDiskSpace-Linux-Encryption extended
 # 2024-01-24 0.40 kdk Comments added.
 # 2024-01-25 0.41 kdk Encryption optimised.
+# 2024-01-26 0.42 kdk Raspbian GNU/Linux 10.13 (buster) added
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.41"
-PROG_DATE="2024-01-25"
+PROG_VERSION="0.42"
+PROG_DATE="2024-01-26"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -573,7 +577,12 @@ function getSystem()
                         SYSTEMDescription="Raspbian GNU/Linux 9.13 (stretch)"
                         SYSTEMTested="1"
                     fi
-
+                    if [ "$SYSTEMDescription" = "Raspbian GNU/Linux 10.13 (buster)" ] ; then
+                        # Tested at 2024-01-26
+                        SYSTEMDescription="Raspbian GNU/Linux 10.13 (buster)"
+                        SYSTEMTested="1"
+                    fi
+                        
                     # ... Add more known and tested systems.
 
                 fi

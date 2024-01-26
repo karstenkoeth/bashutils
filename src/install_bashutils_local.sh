@@ -81,10 +81,11 @@
 # 2024-01-09 0.58 kdk Links added
 # 2024-01-21 0.59 kdk Bash Prompt added
 # 2024-01-24 0.60 kdk Bash alias added
+# 2024-01-26 0.61 kdk apt-get improved for Cleaning and OS Update
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.60"
-PROG_DATE="2024-01-24"
+PROG_VERSION="0.61"
+PROG_DATE="2024-01-26"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -305,6 +306,11 @@ function packageManagerCleaning()
         echo "[$PROG_NAME:STATUS] Cleaning system package manager databases ..."
         $appSudo apt -y autoremove
     fi
+    # Here on Ubuntu:
+    if [ -x "$aptgetPresent" ] ; then
+        echo "[$PROG_NAME:STATUS] Cleaning system package manager databases ..."
+        $appSudo apt-get -y autoremove
+    fi
 }
 
 # #########################################
@@ -315,6 +321,9 @@ function packageManagerCleaning()
 #    -
 # Updates the OS version e.g. from Ubuntu 18 to Ubuntu 20.
 # This can take a long time. Therefore this function should not be use every time.
+#
+# Update von OS Raspian stretch to buster.
+# See: https://devdrik.de/upgrade-stretch-auf-buster/
 function osUpgrade()
 {
     # TODO: Not yet finalized: How to care about the save reboot process?
@@ -323,10 +332,21 @@ function osUpgrade()
     $appSudo apt -y autoremove
     $appSudo apt -y update
     $appSudo apt -y upgrade
+    $appSudo apt-get -y dist-upgrade
+    # Change apt sources:
+    $appSudo sed -i 's/stretch/buster/g' /etc/apt/sources.list    
+    $appSudo sed -i 's/stretch/buster/g' /etc/apt/sources.list.d/raspi.list
+    # OS Change:
+    $appSudo apt-get -y update
+    $appSudo apt-get full-upgrade
     # Check, if all other programs are clean shut down!
     $appSudo reboot
     # After reboot:
-    $appSudo do-release-upgrade
+    $appSudo do-release-upgrade  # <-- For Ubuntu, not for Raspbian
+    # Clean up:
+    $appSudo apt-get autoremove
+    $appSudo apt-get autoclean
+    
     # Not yet done because of some warnings...
 
     # Under Alpine Linux
