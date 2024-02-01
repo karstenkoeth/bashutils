@@ -78,10 +78,11 @@
 # 2024-01-25 0.41 kdk Encryption optimised.
 # 2024-01-26 0.42 kdk Raspbian GNU/Linux 10.13 (buster) added
 # 2024-01-26 0.43 kdk Raspbian GNU/Linux 10 (buster) added
+# 2024-02-01 0.44 kdk kernel added
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.43"
-PROG_DATE="2024-01-26"
+PROG_VERSION="0.44"
+PROG_DATE="2024-02-01"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -151,6 +152,7 @@ SYSTEM="unknown"
     # - SUSE
 SYSTEMDescription="" # Will be filled if possible
 SYSTEMTested="0" # If we detect a system, the script was tested on, we switch to "1"
+KERNEL="" # With this value we could detect e.g. the latest update on Ubuntu
 MACADDRESS="00:00:00:00:00:00"
 IP4ADDRESS="0.0.0.0"
 SERIALNUMBER="unknown"
@@ -628,6 +630,19 @@ function getSystem()
 }
 
 # #########################################
+# getKernel()
+# Parameter
+#    -
+# Return Value
+#    -
+# Identifies the system kernel and changes the global variables: KERNEL
+# Must be called after getSystem(). The test of presence of uname is not done here.
+function getKernel()
+{
+    KERNEL=$(uname -r)
+}
+
+# #########################################
 # getDiskSpace()
 # Parameter
 #    -
@@ -935,6 +950,9 @@ function showInfo()
     if [ "$SYSTEMTested" = "1" ] ; then
         echo "[$PROG_NAME:STATUS] System Version        : $SYSTEMDescription"
     fi
+    if [ ! "$KERNEL" = "" ] ; then
+        echo "[$PROG_NAME:STATUS] Kernel Version        : $KERNEL"
+    fi
     echo "[$PROG_NAME:STATUS] Usage Disk Space      : $DISKSPACE"
     echo "[$PROG_NAME:STATUS]       Disk Encryption : $DISKENCRYPTION"
     echo "[$PROG_NAME:STATUS] Usage CPU Time        : $CPUUSAGE"
@@ -968,6 +986,7 @@ function createJSON()
     jstr="{\"Date and Time\":\"$actDateTime\","                 # First line contains actual Date and Time
     jstr="$jstr""\"System Type\":\"$SYSTEM\","
     jstr="$jstr""\"System Version\":\"$SYSTEMDescription\","
+    jstr="$jstr""\"Kernel Version\":\"$KERNEL\","
     jstr="$jstr""\"Disk Space used\":\"$DISKSPACE\","
     jstr="$jstr""\"Disk Encryption\":\"$DISKENCRYPTION\","
     jstr="$jstr""\"CPU Time Usage\":\"$CPUUSAGE\","
@@ -1093,6 +1112,7 @@ adjustVariables
 checkEnvironment
 # Check, on which system we are running:
 getSystem
+getKernel
 getConfig
 checkStart
 updateRun
@@ -1130,9 +1150,9 @@ do
     getDiskSpace
     getCpuUsage # This command needs some seconds to be executed.
     updateLog
-    getMacAddress
+    #getMacAddress # Typically no change
     getIpAddress
-    getSystemID
+    #getSystemID # Typically no change
     showInfo
     writeInfo
     #sendInfo # Not yet implemented.
