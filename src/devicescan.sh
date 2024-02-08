@@ -76,10 +76,11 @@
 # 2023-11-24 0.31 kdk Bug removed in listMacAddresses() regarding 'ls -1'
 # 2023-11-24 0.32 kdk Bug more removed
 # 2024-01-17 0.33 kdk More Bugs removed
+# 2024-02-08 0.34 kdk Scan tasks improved, $LinesFile added.
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.33"
-PROG_DATE="2024-01-17"
+PROG_VERSION="0.34"
+PROG_DATE="2024-02-08"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -191,6 +192,7 @@ TmpDir="_"
 TmpFile="_"
 ScanFile="_"
 MacFile="_"
+LinesFile="_"
 KnownDevicesFile="" # We test with '-s'. Therefore the useless string should be empty.
 DevicesFile="_"
 ConfigFile="_"
@@ -285,6 +287,7 @@ function adjustVariables()
     TmpFile="$TmpDir""devicescan_nmap_$actDateTime.txt"
     ScanFile="devicescan_devices_$actDateTime.txt"
     MacFile="devicescan_mac_$actDateTime.txt"
+    LinesFile="devicescan_lines_$actDateTime.txt"
     KnownDevicesFile="$TmpDir""devicescan_knowndevices_$actDateTime.txt"
 
     ConfigFile="$HOME/.$product.ini"
@@ -594,7 +597,8 @@ function listMacAddresses()
             # The MAC address used for broadcast (broadcast MAC address) is ff:ff:ff:ff:ff:ff. 
             # Broadcast MAC address is a MAC address consisting of all binary 1s.
             if [ "$newLineMAC" != "FF:FF:FF:FF:FF:FF" ] && [ "$MultiCast" != "1" ] ; then
-                echo "'$newLine'"
+                echo "$newLine"
+                echo "$newLine" >> "$LinesFile"
                 # We found this device. Store in database of known devices:
                 # "database" is the standard data folder with filename corresponding to MAC address.
                 # MAC address has form: FF:FF:FF:FF:FF:FF
@@ -602,7 +606,7 @@ function listMacAddresses()
                 # File contains device name from "Devices File".
                 fileMAC=$(echo "$newLineMAC" | sed "s/:/-/g")
                 fileMAC="device_$fileMAC.txt"
-                # TODO BUG: If Device name was unknown by a first scan, the *.txt file has size 1 and no content.
+                # If Device name was unknown by a first scan, the *.txt file has size 1 and no content.
                 # 
                 if [ ! -e "$DataFolder$fileMAC" ] ; then
                     # New device found. Do we have a correct, means not empty, name?
@@ -621,8 +625,7 @@ function listMacAddresses()
                     fi
                 fi
             fi
-            # TODO: In der Device List taucht der localhost, also das eigene Device, nicht auf.
-            #       Ist das noch ein TODO oder schon erledigt?
+            # In der Device List taucht der localhost, also das eigene Device, nicht auf.
             if [ "$IP4ADDRESS" = "$newLineIP" ] ; then
                 # We have the own IP address in the list:
                 NoOwn="0"
@@ -638,7 +641,8 @@ function listMacAddresses()
             newLineIP="$IP4ADDRESS"
             newLineName=$(getHostname "$newLineMAC")
             newLine="$newLineMAC;$newLineIP;$newLineName;"
-            echo "'$newLine'"
+            echo "$newLine"
+            echo "$newLine" >> "$LinesFile"
             fileMAC=$(echo "$newLineMAC" | sed "s/:/-/g")
             fileMAC="device_$fileMAC.txt"
             if [ ! -e "$DataFolder$fileMAC" ] ; then
@@ -1198,7 +1202,7 @@ fi
 getOwnMacAddress
 getOwnIpAddress
 getOwnIpSubnet "$IP4ADDRESS"
-scanNetwork "$IP4SUBNET" 
+scanNetwork "$IP4SUBNET" # This function creates 2 tmp files. These files are not used by listMacAddresses()
 
 echo "[$PROG_NAME:STATUS] Get MAC addresses ..."
 listMacAddresses
