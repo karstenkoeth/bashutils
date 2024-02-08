@@ -287,7 +287,7 @@ function adjustVariables()
     TmpFile="$TmpDir""devicescan_nmap_$actDateTime.txt"
     ScanFile="devicescan_devices_$actDateTime.txt"
     MacFile="devicescan_mac_$actDateTime.txt"
-    LinesFile="devicescan_lines_$actDateTime.txt"
+    LinesFile="$TmpDir""devicescan_lines_$actDateTime.txt"
     KnownDevicesFile="$TmpDir""devicescan_knowndevices_$actDateTime.txt"
 
     ConfigFile="$HOME/.$product.ini"
@@ -342,6 +342,7 @@ function checkEnvironment()
         else
             # We have "arp":
             GetMacApp="arp"
+            echo "[$PROG_NAME:ERROR] Using program 'arp' no more supported. Exit"; exit;
         fi
     else
         # We have "ip":
@@ -553,7 +554,7 @@ function listMacAddresses()
     # MAC Address: cut -d " " -f 5   <-- Could be non present, check for "contains 5 : ", see above
     if [ "$GetMacApp" = "ip" ] ; then
         # The new way with "ip", works under MACOSX and LINUX
-        echo "[$PROG_NAME:listMacAddresses:STATUS] Searching by 'ip' ..."
+        #echo "[$PROG_NAME:listMacAddresses:STATUS] Searching by 'ip' ..."
         if [ "$SYSTEM" = "LINUX" ] ;  then
             ip -4 neigh | grep ":" | tr "[:lower:]" "[:upper:]" | sed "s/ /;/g"> "$TmpDir$MacFile.ip"
         elif [ "$SYSTEM" = "MACOSX" ] ;  then
@@ -570,7 +571,7 @@ function listMacAddresses()
             sed "s/:\(.\):/:0\1:/g" | sed "s/:\(.\):/:0\1:/g" | sed "s/:\(.\):/:0\1:/g" | sed "s/:\(.\):/:0\1:/g" |\
             mac_converter.sh -L > "$TmpDir$MacFile.ip"
         fi
-        # TODO
+        # TODO - OpenSuSE is no more supported.
         # Under WSL openSuSE the function "neigh" is not supported by ip
 
         lines=$(cat "$TmpDir$MacFile.ip")
@@ -666,22 +667,23 @@ function listMacAddresses()
 
     # #####################################
     # arp - Version
-
-    if [ "$GetMacApp" = "arp" ] ; then
-        # The old way with "arp"
-        echo "[$PROG_NAME:listMacAddresses:STATUS] Searching by 'arp' ..."
-
-        # If first the network was scanned, the arp cache is filled.
-        arp -a > "$TmpDir$MacFile.arp"
-        # Filter the output to have only a list of MAC addresses:
-        cat "$TmpDir$MacFile.arp" | cut -f 4 -d " " | grep ":" > "$TmpDir$MacFile.mac"
-        # Make clean:
-        # Enhance at the beginning from 1 char to 2 chars:   sed "s/^\(.\):/0\1:/g"
-        # Enhance in the middle from 1 char to 2 chars:      sed "s/:\(.\):/:0\1:/g"
-        # Enhance at the end from 1 char to 2 chars:         sed "s/:\(.\)$/:0\1/g"
-        cat "$TmpDir$MacFile.mac" | sed "s/^\(.\):/0\1:/g" | sed "s/:\(.\)$/:0\1/g" | sed "s/:\(.\):/:0\1:/g" | sed "s/:\(.\):/:0\1:/g" | mac_converter.sh -L -x > "$TmpDir$MacFile"
-    
-    fi
+    #
+    # This code is no more supported. Only for documentation reason placed here.
+    # 
+    #if [ "$GetMacApp" = "arp" ] ; then
+    #    # The old way with "arp"
+    #    echo "[$PROG_NAME:listMacAddresses:STATUS] Searching by 'arp' ..."
+    #
+    #    # If first the network was scanned, the arp cache is filled.
+    #    arp -a > "$TmpDir$MacFile.arp"
+    #    # Filter the output to have only a list of MAC addresses:
+    #    cat "$TmpDir$MacFile.arp" | cut -f 4 -d " " | grep ":" > "$TmpDir$MacFile.mac"
+    #    # Make clean:
+    #    # Enhance at the beginning from 1 char to 2 chars:   sed "s/^\(.\):/0\1:/g"
+    #    # Enhance in the middle from 1 char to 2 chars:      sed "s/:\(.\):/:0\1:/g"
+    #    # Enhance at the end from 1 char to 2 chars:         sed "s/:\(.\)$/:0\1/g"
+    #    cat "$TmpDir$MacFile.mac" | sed "s/^\(.\):/0\1:/g" | sed "s/:\(.\)$/:0\1/g" | sed "s/:\(.\):/:0\1:/g" | sed "s/:\(.\):/:0\1:/g" | mac_converter.sh -L -x > "$TmpDir$MacFile"
+    #fi
 
     # Prepare for subsequent functions, e.g. setDevicesStatus, drawDevicesStatus
     # Create list of known devices:
@@ -700,6 +702,7 @@ function listMacAddresses()
     #delFile "$TmpDir$MacFile.arp"
     #delFile "$TmpDir$MacFile.mac"
     #delFile "$TmpDir$MacFile.ip"
+    #delFile "$LinesFile"
 }
 
 # #########################################
