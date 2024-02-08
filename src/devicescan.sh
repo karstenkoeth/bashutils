@@ -1211,6 +1211,7 @@ echo "[$PROG_NAME:STATUS] Get MAC addresses ..."
 listMacAddresses
 echo "[$PROG_NAME:STATUS] Prepare status files ..."
 setDevicesStatus
+echo "[$PROG_NAME:STATUS] Prepare html files ..."
 drawDevicesStatus  # <-- TODO - not yet finished.
 
 # Maybe TODO: Delete all created tmp files.
