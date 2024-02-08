@@ -82,10 +82,11 @@
 # 2024-01-21 0.59 kdk Bash Prompt added
 # 2024-01-24 0.60 kdk Bash alias added
 # 2024-01-26 0.61 kdk apt-get improved for Cleaning and OS Update
+# 2024-02-08 0.62 kdk cryptsetup added
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.61"
-PROG_DATE="2024-01-26"
+PROG_VERSION="0.62"
+PROG_DATE="2024-02-08"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
