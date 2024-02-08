@@ -82,7 +82,7 @@
 # 2024-01-21 0.59 kdk Bash Prompt added
 # 2024-01-24 0.60 kdk Bash alias added
 # 2024-01-26 0.61 kdk apt-get improved for Cleaning and OS Update
-# 2024-02-08 0.62 kdk cryptsetup added
+# 2024-02-08 0.62 kdk cryptsetup added, tested under Ubuntu 22.04.3 LTS with Kernel 5.15.133.1-microsoft-standard-WSL2
 
 PROG_NAME="Bash Utils Installer (local)"
 PROG_VERSION="0.62"
@@ -980,6 +980,23 @@ if [ -z "$oidcPresent" ] ; then
 #        $appSudo apk add TODOFillInPackageName
 #    fi
 fi
+
+cryptPresent=$(which cryptsetup)
+if [ -z "$cryptPresent" ] ; then
+    if [ -x "$aptgetPresent" ] ;  then
+        $appSudo apt-get -y install cryptsetup
+    fi
+    # TODO: zypperPresent
+#    if [ -x "$zypperPresent" ] ; then
+#        $appSudo zypper --non-interactive install TODOFillInPackageName
+#    fi
+    # brewPresent: No need for cryptsetup under MAC, see devicemonitor.sh - getDiskSpace()
+    # TODO: apkPresent
+#    if [ -x "$apkPresent" ] ; then
+#        $appSudo apk add TODOFillInPackageName
+#    fi
+fi
+
 
 # 'jq' is often needed to deal with json data from REST-APIs.
 # iPad-von-Kasa:~# rki.sh # The program show these errors:
