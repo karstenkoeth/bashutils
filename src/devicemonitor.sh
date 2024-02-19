@@ -79,10 +79,11 @@
 # 2024-01-26 0.42 kdk Raspbian GNU/Linux 10.13 (buster) added
 # 2024-01-26 0.43 kdk Raspbian GNU/Linux 10 (buster) added
 # 2024-02-01 0.44 kdk kernel added
+# 2024-02-19 0.45 kdk Ubuntu 22.04.4 ready an with HOSTNAME
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.44"
-PROG_DATE="2024-02-01"
+PROG_VERSION="0.45"
+PROG_DATE="2024-02-19"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -563,6 +564,10 @@ function getSystem()
                         SYSTEMDescription="Ubuntu 22.04.3 LTS"
                         SYSTEMTested="1"
                     fi
+                    if [ "$SYSTEMDescription" = "Ubuntu 22.04.4 LTS" ] ; then
+                        SYSTEMDescription="Ubuntu 22.04.4 LTS"
+                        SYSTEMTested="1"
+                    fi
                     if [ "$SYSTEMDescription" = "Debian GNU/Linux 10 (buster)" ] ; then
                         # Chromebook
                         # Tested at 2022-04-08
@@ -640,6 +645,7 @@ function getSystem()
 function getKernel()
 {
     KERNEL=$(uname -r)
+    # uname -v could also be used, but we stay with -r
 }
 
 # #########################################
@@ -953,6 +959,7 @@ function showInfo()
     if [ ! "$KERNEL" = "" ] ; then
         echo "[$PROG_NAME:STATUS] Kernel Version        : $KERNEL"
     fi
+    echo "[$PROG_NAME:STATUS] Hostname              : $HOSTNAME"
     echo "[$PROG_NAME:STATUS] Usage Disk Space      : $DISKSPACE"
     echo "[$PROG_NAME:STATUS]       Disk Encryption : $DISKENCRYPTION"
     echo "[$PROG_NAME:STATUS] Usage CPU Time        : $CPUUSAGE"
@@ -987,6 +994,7 @@ function createJSON()
     jstr="$jstr""\"System Type\":\"$SYSTEM\","
     jstr="$jstr""\"System Version\":\"$SYSTEMDescription\","
     jstr="$jstr""\"Kernel Version\":\"$KERNEL\","
+    jstr="$jstr""\"Hostname\":\"$HOSTNAME\","
     jstr="$jstr""\"Disk Space used\":\"$DISKSPACE\","
     jstr="$jstr""\"Disk Encryption\":\"$DISKENCRYPTION\","
     jstr="$jstr""\"CPU Time Usage\":\"$CPUUSAGE\","

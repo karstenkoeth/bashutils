@@ -83,10 +83,11 @@
 # 2024-01-24 0.60 kdk Bash alias added
 # 2024-01-26 0.61 kdk apt-get improved for Cleaning and OS Update
 # 2024-02-08 0.62 kdk cryptsetup added, tested under Ubuntu 22.04.3 LTS with Kernel 5.15.133.1-microsoft-standard-WSL2
+# 2024-02-19 0.63 kdk gnuplot comment
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.62"
-PROG_DATE="2024-02-08"
+PROG_VERSION="0.63"
+PROG_DATE="2024-02-19"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -168,6 +169,9 @@ PROG_LIBRARYNAME="bashutils_common_functions.bash"
 # git               *
 #
 # *These programs are checked inside this script.
+#
+# Usage-Scripts:
+# gnuplot
 
 # #########################################
 #
@@ -219,6 +223,7 @@ ECHOERROR="1"
 
 DEPENDENCIES="0"
 SHORT="0"
+RASPUPGRADE=""
 SYSTEM="Unknown"
 
 SourceDir="-"
@@ -266,7 +271,7 @@ function packageManagerUpdate()
         # called 'upgrade'.
         $appSudo apt-get -y upgrade 
         # Update all installed packages AND remove unneccessary things:
-        # $appSudo apt -y full-upgrade
+        $appSudo apt -y full-upgrade
     fi
 
     # Same on openSUSE:
@@ -306,25 +311,31 @@ function packageManagerCleaning()
     if [ -x "$aptPresent" ] ; then
         echo "[$PROG_NAME:STATUS] Cleaning system package manager databases ..."
         $appSudo apt -y autoremove
+        $appSudo apt-get -y autoclean
     fi
     # Here on Ubuntu:
     if [ -x "$aptgetPresent" ] ; then
         echo "[$PROG_NAME:STATUS] Cleaning system package manager databases ..."
         $appSudo apt-get -y autoremove
+        $appSudo apt-get -y autoclean
     fi
 }
 
 # #########################################
 # osUpgrade()
 # Parameter
-#    -
+#    UpgradeType
 # Return Value
 #    -
 # Updates the OS version e.g. from Ubuntu 18 to Ubuntu 20.
 # This can take a long time. Therefore this function should not be use every time.
+# UpgradeType = "u": Update Ubuntu
 #
 # Update von OS Raspian stretch to buster.
 # See: https://devdrik.de/upgrade-stretch-auf-buster/
+# UpgradeType = "s2b": stretch --> buster
+# UpgradeType = "b2b": buster --> bullseye
+# UpgradeType = "b2o": bullseye --> bookworm
 function osUpgrade()
 {
     # TODO: Not yet finalized: How to care about the save reboot process?
@@ -334,24 +345,37 @@ function osUpgrade()
     $appSudo apt -y update
     $appSudo apt -y upgrade
     $appSudo apt-get -y dist-upgrade
-    # Change apt sources:
-    $appSudo sed -i 's/stretch/buster/g' /etc/apt/sources.list    
-    $appSudo sed -i 's/stretch/buster/g' /etc/apt/sources.list.d/raspi.list
+    # Different Raspberry OS Upgrades:
+    if [ $# -gt 0 ] ; then
+        # Change apt sources:
+        if [ "$1" = "s2b" ] ; then
+            $appSudo sed -i 's/stretch/buster/g' /etc/apt/sources.list    
+            $appSudo sed -i 's/stretch/buster/g' /etc/apt/sources.list.d/raspi.list
+        elif [ "$1" = "b2b" ] ; then
+            $appSudo sed -i 's/buster/bullseye/g' /etc/apt/sources.list    
+            $appSudo sed -i 's/buster/bullseye/g' /etc/apt/sources.list.d/raspi.list
+        elif [ "$1" = "b2o" ] ; then
+            $appSudo sed -i 's/bullseye/bookworm/g' /etc/apt/sources.list    
+            $appSudo sed -i 's/bullseye/bookworm/g' /etc/apt/sources.list.d/raspi.list
+        fi
+    fi
     # OS Change:
     $appSudo apt-get -y update
-    $appSudo apt-get full-upgrade
+    $appSudo apt-get -y full-upgrade
     # Check, if all other programs are clean shut down!
-    $appSudo reboot
+    if [ $# -gt 0 ] ; then
+        echo "[$PROG_NAME:osUpgrade:STATUS] Please do a '$appSudo reboot'"
+    fi
     # After reboot:
-    $appSudo do-release-upgrade  # <-- For Ubuntu, not for Raspbian
+    #$appSudo do-release-upgrade  # <-- For Ubuntu, not for Raspbian
     # Clean up:
-    $appSudo apt-get autoremove
-    $appSudo apt-get autoclean
+    #$appSudo apt-get -y autoremove
+    #$appSudo apt-get -y autoclean
     
     # Not yet done because of some warnings...
 
     # Under Alpine Linux
-    $appSudo apt -y autoremove
+    #$appSudo apt -y autoremove
 }
 
 # #########################################
@@ -528,6 +552,9 @@ function showHelp()
     echo "[$PROG_NAME:STATUS] Program Parameter:"
     echo "    -d     : Do not care about the dependencies"
     echo "    -s     : Do not update the packages descriptions and the package manager"
+    echo "    -s2b   : Upgrade Raspberry OS from stretch to buster"
+    echo "    -b2b   : Upgrade Raspberry OS from buster to bullseye"
+    echo "    -b2o   : Upgrade Raspberry OS from bullseye to bookworm"
     echo "    -V     : Show Program Version"
     echo "    -h     : Show this help"
     echo "Copy all script files from the source directoy"
@@ -562,6 +589,12 @@ if [ $# -eq 1 ] ; then
         DEPENDENCIES="1"
     elif [ "$1" = "-s" ] ; then
         SHORT="1"
+    elif [ "$1" = "-s2b" ] ; then
+        RASPUPGRADE="s2b"
+    elif [ "$1" = "-b2b" ] ; then
+        RASPUPGRADE="b2b"
+    elif [ "$1" = "-b2o" ] ; then
+        RASPUPGRADE="b2o"
     elif [ "$1" = "-V" ] ; then
         showVersion ; exit;
     elif [ "$1" = "-h" ] ; then
@@ -743,6 +776,10 @@ fi
 if [ "$SHORT" = "0" ] ; then
     packageManagerUpdate
     packageManagerCleaning
+fi
+
+if [ ! "$RASPUPGRADE" = "" ] ; then
+    osUpgrade "$RASPUPGRADE"
 fi
 
 # Sometimes we should use an alternative package manager: snap
