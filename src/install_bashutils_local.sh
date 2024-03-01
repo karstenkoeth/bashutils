@@ -84,10 +84,11 @@
 # 2024-01-26 0.61 kdk apt-get improved for Cleaning and OS Update
 # 2024-02-08 0.62 kdk cryptsetup added, tested under Ubuntu 22.04.3 LTS with Kernel 5.15.133.1-microsoft-standard-WSL2
 # 2024-02-19 0.63 kdk gnuplot comment
+# 2024-03-01 0.64 kdk Comments added
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.63"
-PROG_DATE="2024-02-19"
+PROG_VERSION="0.64"
+PROG_DATE="2024-03-01"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -114,6 +115,36 @@ PROG_LIBRARYNAME="bashutils_common_functions.bash"
 #
 # One time jobs could be defined as user with e.g.:
 #  >: systemd-run --user --on-calendar="2023-11-28 15:50:00" --unit="BashUtils" --description="BashUtils Updater" touch ~/tmp/calendarTouchMe
+
+# #########################################
+#
+# printf
+#
+# See:
+# https://phoenixnap.com/kb/bash-printf
+#
+# Store string in a variable "$bla": >: printf -v bla "hallo"
+#
+# Localisation
+#
+# See: 
+# https://www.gnu.org/software/bash/manual/bash.html#Locale-Translation
+# https://www.baeldung.com/linux/locale-environment-variables
+# https://man7.org/linux/man-pages/man1/locale.1.html
+#
+# Default: LANG=C.UTF-8
+# >: env LC_NUMERIC=en_US.UTF8 printf '%f\n' 1233.14
+# 1233.140000
+# >: env LC_NUMERIC=de_DE.UTF8 printf '%f\n' 1233.14
+# 1233,140000
+#
+# Shows the different variables:
+#   >: locale 
+# Shows the different constants for the possible languages on that specific system instance:
+#   >: locale -a
+# Shows the value of the keyword "decimal_point":
+#   >: locale -k decimal_point
+#   e.g.: decimal_point=","
 
 # #########################################
 #

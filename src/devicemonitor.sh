@@ -80,10 +80,11 @@
 # 2024-01-26 0.43 kdk Raspbian GNU/Linux 10 (buster) added
 # 2024-02-01 0.44 kdk kernel added
 # 2024-02-19 0.45 kdk Ubuntu 22.04.4 ready an with HOSTNAME
+# 2024-03-01 0.46 kdk LANG replaced by LC_ALL and more with locale
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.45"
-PROG_DATE="2024-02-19"
+PROG_VERSION="0.46"
+PROG_DATE="2024-03-01"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -763,8 +764,15 @@ function getCpuUsage()
         echo "[$PROG_NAME:getDiskSpace:WARNING] System type unknown. Can't get disk space."
         cputmp=0
     fi
-    cputmp=$(echo $cputmp | sed s/,/./g)
-    CPUUSAGE=$(LANG=C printf "%.0f%%" $cputmp)
+    #cputmp=$(echo $cputmp | sed s/,/./g)
+    # Be more save and askfor the correct decimal point:
+    # >: locale -k decimal_point   returns e.g.: decimal_point=","
+    local decpoint
+    decpoint=$(locale -k decimal_point | cut -d "=" -f 2 | sed s/\"//g)
+    cputmp=$(echo $cputmp | sed "s/,/$decpoint/g" | sed "s/\./$decpoint/g")
+    #CPUUSAGE=$(LANG=C printf "%.0f%%" $cputmp)  # Seems to have not the wished effect...
+    #CPUUSAGE=$(LC_ALL="C" printf "%.0f%%" $cputmp)
+    CPUUSAGE=$(printf "%.0f%%" $cputmp)
 }
 
 # #########################################
