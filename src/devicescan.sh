@@ -77,10 +77,11 @@
 # 2023-11-24 0.32 kdk Bug more removed
 # 2024-01-17 0.33 kdk More Bugs removed
 # 2024-02-08 0.34 kdk Scan tasks improved, $LinesFile added.
+# 2024-03-18 0.35 kdk Status message in prepareConfig()
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.34"
-PROG_DATE="2024-02-08"
+PROG_VERSION="0.35"
+PROG_DATE="2024-03-18"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -1130,6 +1131,7 @@ function prepareConfig()
             if [ -z "$targetFound" ] ; then
                 echo "[$PROG_NAME:prepareConfig:WARNING] Client '$target' not found in ssh config."
             else
+                echo "[$PROG_NAME:prepareConfig:STATUS] Copy configuration to client '$target' ..."
                 # Not sure, if its a good idea to copy the config file ...
                 scp "$ConfigFile" "$target":
                 # This file contains the link between hostname and MAC address:
