@@ -85,10 +85,12 @@
 # 2024-02-08 0.62 kdk cryptsetup added, tested under Ubuntu 22.04.3 LTS with Kernel 5.15.133.1-microsoft-standard-WSL2
 # 2024-02-19 0.63 kdk gnuplot comment
 # 2024-03-01 0.64 kdk Comments added
+# 2024-03-21 0.65 kdk mDNS comments added
+# 2024-03-25 0.66 kdk lesspipe
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.64"
-PROG_DATE="2024-03-01"
+PROG_VERSION="0.66"
+PROG_DATE="2024-03-25"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -1065,6 +1067,25 @@ if [ -z "$cryptPresent" ] ; then
 #    fi
 fi
 
+# mDNS - Bonjour - ZeroConf
+# See:
+# https://atwillys.de/content/linux/mdns-on-debian-ubuntu-installation/
+# https://andrewdupont.net/2022/01/27/using-mdns-aliases-within-your-home-network/
+#
+# Apple:  Bonjour
+# Linux:  avahi
+#
+# Install:
+# >: sudo apt-get install avahi-daemon
+# >: sudo apt-get install avahi-utils
+#
+# Configure:
+# /etc/avahi/avahi-daemon.conf
+#
+# After changing config: Restart service:
+# >: sudo service avahi-daemon restart
+# Showing status:
+# >: sudo service avahi-daemon status
 
 # 'jq' is often needed to deal with json data from REST-APIs.
 # iPad-von-Kasa:~# rki.sh # The program show these errors:
@@ -1091,6 +1112,10 @@ if [ -z "$jqPresent" ] ; then
     # TODO: apkPresent
 fi
 
+# lesspipe and lessfile shows information on files.
+# See:
+# c't 2024-07, page 92
+# https://manpages.ubuntu.com/manpages/focal/man1/lessfile.1.html
 
 # I love 'joe' for fast text editing --> Install it:
 joePresent=$(which joe 2> /dev/zero)
