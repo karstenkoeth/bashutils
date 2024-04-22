@@ -81,10 +81,11 @@
 # 2024-02-01 0.44 kdk kernel added
 # 2024-02-19 0.45 kdk Ubuntu 22.04.4 ready an with HOSTNAME
 # 2024-03-01 0.46 kdk LANG replaced by LC_ALL and more with locale
+# 2024-04-22 0.47 kdk getRaspiData() added
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.46"
-PROG_DATE="2024-03-01"
+PROG_VERSION="0.47"
+PROG_DATE="2024-04-22"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -164,6 +165,7 @@ ARCHITECTURE="unknown"
     # "uname -m" on "Intel NUC" with "Ubuntu" shows: "x86_64"
     # "uname -m" on "Intel MacBook x86_64" shows: "x86_64"
 RASPI="0"  # If we detect a raspberry, the script was tested on, we switch to "1"
+CPUTEMP="0"
 
 # Handle output of the different verbose levels - in combination with the 
 # "echo?" functions inside "bashutils_common_functions.bash":
@@ -952,6 +954,25 @@ function getSystemID()
 }
 
 # #########################################
+# getRaspiData()
+# Parameter
+#    -
+# Return Value
+#    -
+# The function  must be called before!
+# This function read out some specific info available at a Raspi board.
+function getRaspiData()
+{
+    if [ "$RASPI" != "1" ] ; then
+        return
+    fi
+    # vcgencmd should be available on every Raspi:
+    # See: https://www.raspberrypi.com/documentation/computers/os.html
+    # Example: "temp=52.1'C"
+    CPUTEMP=$(vcgencmd measure_temp | cut -f 2 -d "=" | cut -f1 -d "'")
+}
+
+# #########################################
 # showInfo()
 # Parameter
 #    -
@@ -979,6 +1000,7 @@ function showInfo()
     fi
     if [ "$RASPI" = "1" ] ; then
         echo "[$PROG_NAME:STATUS] Raspberry CPU"
+        echo "[$PROG_NAME:STATUS] SoC Temperature       : ""$CPUTEMP""°C"
     fi
     if [ ! "$MACADDRESS" = "00:00:00:00:00:00" ] ; then
         echo "[$PROG_NAME:STATUS] MAC Address           : $MACADDRESS"
@@ -1140,6 +1162,7 @@ getCpuUsage
 getMacAddress
 getIpAddress
 getSystemID
+getRaspiData
 
 # Show Info:
 showInfo
@@ -1169,6 +1192,7 @@ do
     #getMacAddress # Typically no change
     getIpAddress
     #getSystemID # Typically no change
+    getRaspiData
     showInfo
     writeInfo
     #sendInfo # Not yet implemented.

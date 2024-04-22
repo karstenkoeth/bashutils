@@ -78,10 +78,11 @@
 # 2024-01-17 0.33 kdk More Bugs removed
 # 2024-02-08 0.34 kdk Scan tasks improved, $LinesFile added.
 # 2024-03-18 0.35 kdk Status message in prepareConfig()
+# 2024-04-22 0.36 kdk Temp dir changed from TmpDir="$HOME/tmp/" to TmpDir="$HOME/tmp/$product/"
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.35"
-PROG_DATE="2024-03-18"
+PROG_VERSION="0.36"
+PROG_DATE="2024-04-22"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -284,7 +285,7 @@ function adjustVariables()
     GraphFolder="$MainFolder""_Graphs/"
     ScriptFolder="$MainFolder""src/"
 
-    TmpDir="$HOME/tmp/"
+    TmpDir="$HOME/tmp/$product/"
     TmpFile="$TmpDir""devicescan_nmap_$actDateTime.txt"
     ScanFile="devicescan_devices_$actDateTime.txt"
     MacFile="devicescan_mac_$actDateTime.txt"
