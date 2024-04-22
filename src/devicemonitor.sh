@@ -166,6 +166,7 @@ ARCHITECTURE="unknown"
     # "uname -m" on "Intel MacBook x86_64" shows: "x86_64"
 RASPI="0"  # If we detect a raspberry, the script was tested on, we switch to "1"
 CPUTEMP="0"
+MEMORY="0"
 
 # Handle output of the different verbose levels - in combination with the 
 # "echo?" functions inside "bashutils_common_functions.bash":
@@ -968,8 +969,14 @@ function getRaspiData()
     fi
     # vcgencmd should be available on every Raspi:
     # See: https://www.raspberrypi.com/documentation/computers/os.html
+
+    # SoC Temperature
     # Example: "temp=52.1'C"
     CPUTEMP=$(vcgencmd measure_temp | cut -f 2 -d "=" | cut -f1 -d "'")
+
+    # RAM
+    # Example: "total_mem=512"
+    MEMORY=$(vcgencmd get_config total_mem | cut -f 2 -d "=")
 }
 
 # #########################################
@@ -1001,6 +1008,7 @@ function showInfo()
     if [ "$RASPI" = "1" ] ; then
         echo "[$PROG_NAME:STATUS] Raspberry CPU"
         echo "[$PROG_NAME:STATUS] SoC Temperature       : ""$CPUTEMP""°C"
+        echo "[$PROG_NAME:STATUS] Memory                : $MEMORY MByte"
     fi
     if [ ! "$MACADDRESS" = "00:00:00:00:00:00" ] ; then
         echo "[$PROG_NAME:STATUS] MAC Address           : $MACADDRESS"
