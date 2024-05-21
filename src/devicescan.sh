@@ -79,10 +79,12 @@
 # 2024-02-08 0.34 kdk Scan tasks improved, $LinesFile added.
 # 2024-03-18 0.35 kdk Status message in prepareConfig()
 # 2024-04-22 0.36 kdk Temp dir changed from TmpDir="$HOME/tmp/" to TmpDir="$HOME/tmp/$product/"
+# 2024-05-07 0.37 kdk drawDeviceStatus year automated
+# 2024-05-21 0.38 kdk Comments added
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.36"
-PROG_DATE="2024-04-22"
+PROG_VERSION="0.38"
+PROG_DATE="2024-05-21"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -163,6 +165,7 @@ product="devicescan"
 actDateTime=$(date "+%Y-%m-%d_%H:%M:%S")
 actDate=$(date "+%Y-%m-%d") # Corresponds to format inside gnuplot script
 actTime=$(date "+%H:%M:%S")
+actYear=$(date "+%Y")
 
 # Handle output of the different verbose levels - in combination with the 
 # "echo?" functions inside "bashutils_common_functions.bash":
@@ -1058,7 +1061,7 @@ function drawDevicesStatus()
                   }];" >> "$storeFile"
             # Write layout into file:
             echo "const layout = {
-                  xaxis: {range: [\"2023-01-01\", \"2023-12-31\"], title: \"Date\"},
+                  xaxis: {range: [\""$actYear"-01-01\", \""$actYear"-12-31\"], title: \"Date\"},
                   yaxis: {range: [0, 1], title: \"Status\"},  
                   title: \"$deviceName\"
                   };" >> "$storeFile"
@@ -1075,7 +1078,6 @@ function drawDevicesStatus()
     else
         echo "[$PROG_NAME:drawDevicesStatus:STATUS] No known devices."
     fi
-
 }
 
 # #########################################
@@ -1209,6 +1211,12 @@ getOwnMacAddress
 getOwnIpAddress
 getOwnIpSubnet "$IP4ADDRESS"
 scanNetwork "$IP4SUBNET" # This function creates 2 tmp files. These files are not used by listMacAddresses()
+    # TODO: combine scanNetwork() and listMacAddresses()
+    # scan...() generates: "$TmpDir$ScanFile"   --> devicescan_devices_2024-...txt
+    # list...() generates: "$TmpDir$MacFile.ip" --> devicescan_mac_2024-....txt.ip
+    #
+    # list...() output file has not own ip inside
+    # list...() has unreacheable ip inside
 
 echo "[$PROG_NAME:STATUS] Get MAC addresses ..."
 listMacAddresses
