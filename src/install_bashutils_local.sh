@@ -87,10 +87,11 @@
 # 2024-03-01 0.64 kdk Comments added
 # 2024-03-21 0.65 kdk mDNS comments added
 # 2024-03-25 0.66 kdk lesspipe
+# 2024-06-14 0.67 kdk Comments changed
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.66"
-PROG_DATE="2024-03-25"
+PROG_VERSION="0.67"
+PROG_DATE="2024-06-14"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -731,7 +732,7 @@ fi
 #            Or use the program 'apt show' to show package details
 # On Alpine Linux, the program 'apk search -v --description' could answer in which software package a program is included.
 # On MAC OS X, the program 'brew info' could answer in which software package a program is included.
-#              Or a look at: https://brew.sh/index_de
+#              Or a look at: https://brew.sh
 
 # Before update the system: detect the system we are running on:
 # TODO: If Linux, which linux?
