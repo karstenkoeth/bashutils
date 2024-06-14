@@ -1175,6 +1175,7 @@ if [ -z "$gnuplotPresent" ] ; then
 fi
 
 # qpdf to anaylse pdf files at command line
+# https://github.com/qpdf/qpdf
 # qpdf --qdf --object-streams=disable orig.pdf expanded.pdf
 # Ubuntu: install qpdf
 # MAC OS X: brew install qpdf
