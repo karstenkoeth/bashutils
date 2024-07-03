@@ -88,10 +88,11 @@
 # 2024-03-21 0.65 kdk mDNS comments added
 # 2024-03-25 0.66 kdk lesspipe
 # 2024-06-14 0.67 kdk Comments changed
+# 2024-07-03 0.68 kdk differentiate between apt and aptget
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.67"
-PROG_DATE="2024-06-14"
+PROG_VERSION="0.68"
+PROG_DATE="2024-07-03"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -304,6 +305,9 @@ function packageManagerUpdate()
         # Allways a good idea to update all installed packages. This is typically 
         # called 'upgrade'.
         $appSudo apt-get -y upgrade 
+    fi
+    if [ -x "$aptPresent" ] ; then
+        echo "[$PROG_NAME:STATUS] Update system package manager ..."
         # Update all installed packages AND remove unneccessary things:
         $appSudo apt -y full-upgrade
     fi
@@ -345,6 +349,9 @@ function packageManagerCleaning()
     if [ -x "$aptPresent" ] ; then
         echo "[$PROG_NAME:STATUS] Cleaning system package manager databases ..."
         $appSudo apt -y autoremove
+    fi
+    if [ -x "$aptgetPresent" ] ; then
+        echo "[$PROG_NAME:STATUS] Cleaning system package manager databases ..."
         $appSudo apt-get -y autoclean
     fi
     # Here on Ubuntu:
