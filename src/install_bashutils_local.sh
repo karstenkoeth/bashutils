@@ -89,10 +89,11 @@
 # 2024-03-25 0.66 kdk lesspipe
 # 2024-06-14 0.67 kdk Comments changed
 # 2024-07-03 0.68 kdk differentiate between apt and aptget
+# 2024-07-13 0.69 kdk http included
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.68"
-PROG_DATE="2024-07-03"
+PROG_VERSION="0.69"
+PROG_DATE="2024-07-13"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -1397,6 +1398,36 @@ if [ -z "$ipPresent" ] ; then
 #        $appSudo apk add TODOFillInPackageName
 #    fi
 fi
+
+# CLI to debug REST-API with http or https
+# See:
+#   https://httpie.io/docs/cli/macos
+#   https://httpie.io/docs/cli/linux
+httpPresent=$(which http)
+if [ -z "$httpPresent" ] ; then
+    if [ -x "$aptgetPresent" ] ;  then
+        gpgPresent=$(which gpg)
+        curlPresent=$(which curl)
+        if [ -x "$gpgPresent" ] && [ -x "$curlPresent" ] ; then
+            curl -SsL https://packages.httpie.io/deb/KEY.gpg | sudo gpg --dearmor -o /usr/share/keyrings/httpie.gpg
+            echo "deb [arch=amd64 signed-by=/usr/share/keyrings/httpie.gpg] https://packages.httpie.io/deb ./" | sudo tee /etc/apt/sources.list.d/httpie.list > /dev/null
+        fi
+        $appSudo apt update
+        $appSudo apt-get -y install httpie
+    fi
+    # TODO: zypperPresent
+#    if [ -x "$zypperPresent" ] ; then
+#        $appSudo zypper --non-interactive install TODOFillInPackageName
+#    fi
+    if [ -x "$brewPresent" ] ; then
+        $appSudo brew install httpie
+    fi
+    # TODO: apkPresent
+#    if [ -x "$apkPresent" ] ; then
+#        $appSudo apk add TODOFillInPackageName
+#    fi
+#fi
+
 
 # Cool Program to work with websockets: https://github.com/websockets/wscat
 # Install with: npm install -g wscat

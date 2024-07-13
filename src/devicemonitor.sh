@@ -82,10 +82,11 @@
 # 2024-02-19 0.45 kdk Ubuntu 22.04.4 ready an with HOSTNAME
 # 2024-03-01 0.46 kdk LANG replaced by LC_ALL and more with locale
 # 2024-04-22 0.47 kdk getRaspiData() added
+# 2024-07-14 0.48 kdk MAC OS X 23.5.0 added
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.47"
-PROG_DATE="2024-04-22"
+PROG_VERSION="0.48"
+PROG_DATE="2024-07-13"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -175,7 +176,7 @@ ECHOVERBOSE="0"
 ECHONORMAL="1"
 ECHOWARNING="1"
 ECHOERROR="1"
-RUNONCE="0"
+RUNONCE="1"
 
 # Standard Folders and Files
 
@@ -417,6 +418,7 @@ function getSystem()
             #                     e.g. "22.4.0" = MAC OS X Ventura 13.3.1
             #                     e.g. "23.1.0" = MAC OS X Sonoma 14.1.1
             #                     e.g. "23.2.0" = MAC OS X Sonoma 14.2.1
+            #                     e.g. "23.5.0" = MAC OS X Sonoma 14.5
             #                     e.g. "4.20.69-ish" = iPhone SE 14.5.1 with ish-App
             #                     e.g. "4.20.69-ish" = iPad Air 2 14.7.1 with ish-App
             # https://de.wikipedia.org/wiki/Darwin_(Betriebssystem)
@@ -445,6 +447,9 @@ function getSystem()
                     SYSTEMTested="1"
                 fi
                 if [ "$SYSTEMDescription" = "23.2.0" ] ; then
+                    SYSTEMTested="1"
+                fi
+                if [ "$SYSTEMDescription" = "23.5.0" ] ; then
                     SYSTEMTested="1"
                 fi
                 # Normally, it is found under Linux, but maybe ... try it:
@@ -1114,7 +1119,8 @@ function writeInfo()
 function showHelp()
 {
     echo "[$PROG_NAME:STATUS] Program Parameter:"
-    echo "    -1     : Run script only once, not ongoing"
+    echo "    -1     : Run script only once (default), not ongoing"
+    echo "    -i     : Run script infinite, also ongoing"
     echo "    -P     : Show Program Folder"
     echo "    -V     : Show Program Version"
     echo "    -h     : Show this help"
@@ -1144,6 +1150,8 @@ echo "[$PROG_NAME:STATUS] Starting ..."
 if [ $# -eq 1 ] ; then
     if [ "$1" = "-1" ] ; then
         RUNONCE="1"
+    elif [ "$1" = "-i" ] ; then
+        RUNONCE="0"
     elif [ "$1" = "-P" ] ; then
         echo "ProgramName=$product" ; exit;
     elif [ "$1" = "-V" ] ; then
