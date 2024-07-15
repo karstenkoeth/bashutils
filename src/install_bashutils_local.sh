@@ -90,10 +90,11 @@
 # 2024-06-14 0.67 kdk Comments changed
 # 2024-07-03 0.68 kdk differentiate between apt and aptget
 # 2024-07-13 0.69 kdk http included
+# 2024-07-15 0.70 kdk Bug removed "missing fi"
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.69"
-PROG_DATE="2024-07-13"
+PROG_VERSION="0.70"
+PROG_DATE="2024-07-15"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -1426,7 +1427,7 @@ if [ -z "$httpPresent" ] ; then
 #    if [ -x "$apkPresent" ] ; then
 #        $appSudo apk add TODOFillInPackageName
 #    fi
-#fi
+fi
 
 
 # Cool Program to work with websockets: https://github.com/websockets/wscat
