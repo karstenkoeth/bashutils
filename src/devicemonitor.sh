@@ -1052,7 +1052,7 @@ function showInfo()
     fi
     if [ "$RASPI" = "1" ] ; then
         echo "[$PROG_NAME:STATUS] Raspberry CPU"
-        echo "[$PROG_NAME:STATUS] Temperature       : ""$CPUTEMP""°C"
+        echo "[$PROG_NAME:STATUS] Temperature           : ""$CPUTEMP""°C"
         echo "[$PROG_NAME:STATUS] Memory                : $MEMORY MByte"
     fi
     if [ "$SYSTEM" = "MACOSX" ] ; then
