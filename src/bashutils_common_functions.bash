@@ -38,12 +38,13 @@
 # 2022-02-23 0.27 kdk ShellCheck adaptions
 # 2022-12-11 0.28 kdk With deleteLeadingAndTrailingSpaces()
 # 2023-11-30 0.29 kdk Comments added how to use this file
+# 2024-07-18 0.30 kdk deleteLeadingAndTrailingSpaces() optimized a little bit
 
 # #########################################
 #
 # MIT license (MIT)
 #
-# Copyright 2023 - 2021 Karsten Köth
+# Copyright 2024 - 2021 Karsten Köth
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -253,7 +254,8 @@ function deleteQuotationMark()
 # Leading and trailing spaces will be removed.
 function deleteLeadingAndTrailingSpaces()
 {
-    s=$(echo "$1" | sed "s/^ *//g" | sed "s/$ *//g")
+    # s=$(echo "$1" | sed "s/^ *//g" | sed "s/$ *//g")
+    s=$(echo "$1" | sed -e "s/^ *//g" -e "s/$ *//g")
     echo "$s"
 }
 

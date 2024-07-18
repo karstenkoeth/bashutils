@@ -10,12 +10,14 @@
 # This script installs the bashutils in the user directory.
 #
 # Tested at:
+# - iMac - MAC OS X 14.5
 # - MacBook - MAC OS X 10.13.6
 # - MacBook - MAC OS X 12.6
 # - MacBook - MAC OS X 13.3.1
 # - raspi
 # - EC2 - Ubuntu
 # - WSL - Ubuntu
+# - Intel NUC - Ubuntu
 # - Lenovo - Ubuntu
 # - iPhone - ish
 
@@ -91,10 +93,11 @@
 # 2024-07-03 0.68 kdk differentiate between apt and aptget
 # 2024-07-13 0.69 kdk http included
 # 2024-07-15 0.70 kdk Bug removed "missing fi"
+# 2024-07-18 0.71 kdk Better adapted to MAC OS X
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.70"
-PROG_DATE="2024-07-15"
+PROG_VERSION="0.71"
+PROG_DATE="2024-07-18"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -320,11 +323,9 @@ function packageManagerUpdate()
         $appSudo zypper --non-interactive refresh
     fi
 
-    # Same on MAC OS X (here, sudo brew is no more supported):
+    # Same on MAC OS X:
     if [ -x "$brewPresent" ] ; then
         echo "[$PROG_NAME:STATUS] Update brew installer part ..."
-        # 2022: brew should no longer be used as root. Therefore do not use sudo:
-        appSudo=""
         $appSudo brew update
         $appSudo brew upgrade
     fi
@@ -727,7 +728,6 @@ fi
 
 # TODO
 #
-#
 # Here first to check if "sudo" is available:  - Why? Have had problems?
 #tmp=$(which sudo)
 #if [ -z "$tmp" ] ; then
@@ -737,9 +737,12 @@ fi
 #fi
 
 # On SUSE, the program 'cnf' could answer in which software package a program is included.
+#
 # On Ubuntu, the website https://packages.ubuntu.com/ could answer in which software package a program is included.
 #            Or use the program 'apt show' to show package details
+#
 # On Alpine Linux, the program 'apk search -v --description' could answer in which software package a program is included.
+#
 # On MAC OS X, the program 'brew info' could answer in which software package a program is included.
 #              Or a look at: https://brew.sh
 
@@ -784,6 +787,17 @@ if [ "$SYSTEM" = "MACOSX" ] && [ ! -x "$brewPresent" ] ; then
     # -S When used with -s, it makes curl show an error message if it fails.
     # If you want a non-interactive run of the Homebrew installer that doesn’t prompt for passwords (e.g. in automation scripts), 
     # prepend NONINTERACTIVE=1 to the installation command.
+fi
+
+if [ "$SYSTEM" = "MACOSX" ] ; then
+    # 2022: brew should no longer be used as root. Therefore do not use sudo:
+    appSudo=""
+    # On MAC OS X 14.5 a "bash:> which apt" works and points to: "/usr/bin/apt". 
+    # But by calling this, missing Java is mentioned and we can use brew. Therefore: 
+    aptgetPresent=""
+    aptPresent=""
+    zypperPresent=""
+    apkPresent=""
 fi
 
 # Template for installing packages for different systems:

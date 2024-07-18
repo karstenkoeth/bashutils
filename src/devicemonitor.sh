@@ -6,10 +6,19 @@
 #
 # This script looks for the specific values of a device:
 # - OS System Type
+# - System Version
+# - Kernel Version
+# - Hostname
 # - Used Disk Space in Percent
 # - Absolute Disk Space (e.g. 32 GB)   <-- TODO
 # - CPU Usage in Percent
+# - Absolute Memory (Only on Raspi)
 # - Memory Usage   <-- TODO
+# - Serial Number
+# - CPU Architecture
+# - Temperature  (Only on Raspi, Apple)
+# - MAC Address
+# - IP Address
 # - Last Update    <-- TODO
 # - Actual Date and Time absolute   <-- TODO
 # - NTP Status   <-- TODO
@@ -30,6 +39,9 @@
 # - Server = Defines the server the values are send to as json
 # - SerialNumber = Store the serial number of the system
 # - DiskEncryption = Store the status of the disk encryption
+# 
+# On the server, a devicemonitor.sh must be run before sending data to.
+# The data is transfered with secure copy (scp).
 
 # #########################################
 #
@@ -83,10 +95,11 @@
 # 2024-03-01 0.46 kdk LANG replaced by LC_ALL and more with locale
 # 2024-04-22 0.47 kdk getRaspiData() added
 # 2024-07-14 0.48 kdk MAC OS X 23.5.0 added
+# 2024-07-18 0.49 kdk Comments added
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.48"
-PROG_DATE="2024-07-13"
+PROG_VERSION="0.49"
+PROG_DATE="2024-07-18"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -166,7 +179,7 @@ ARCHITECTURE="unknown"
     # "uname -m" on "Intel NUC" with "Ubuntu" shows: "x86_64"
     # "uname -m" on "Intel MacBook x86_64" shows: "x86_64"
 RASPI="0"  # If we detect a raspberry, the script was tested on, we switch to "1"
-CPUTEMP="0"
+CPUTEMP="-0"
 MEMORY="0"
 
 # Handle output of the different verbose levels - in combination with the 
@@ -183,6 +196,7 @@ RUNONCE="1"
 MainFolder="_"
 ControlFolder="_"
 ProcessFolder="_"
+DataFolder="_"
 
 RunFile="_"
 LogFile="_"
@@ -215,6 +229,8 @@ function adjustVariables()
 
     ProcessFolder="$MainFolder""_Process/"
         ConfInfoFile="$ProcessFolder""devicestatus.json"
+
+    DataFolder="$MainFolder""_Data/"
 
     ConfigFile="$HOME/.$product.ini"
 }
@@ -369,6 +385,8 @@ function checkEnvironment()
         if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Can't create control folder. Exit"; exit; fi
     checkOrCreateFolder "$ProcessFolder" "Process"
         if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Can't create process folder. Exit"; exit; fi
+    checkOrCreateFolder "$DataFolder" "Data"
+        if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Can't create data folder. Exit"; exit; fi
 }
 
 # #########################################
@@ -383,9 +401,9 @@ function getConfig()
     # Similar to the old Windows file format. Variable name and variable content is delimited with a equal sign.
     # If more than one line of same variable: Take the latest.
     # Remove spaces before and after the variable content.
-    ConfServer=$(cat "$ConfigFile" | grep -i "Server" | tail -n 1 | cut -d "=" -f 2 | sed "s/^ *//g" | sed "s/$ *//g")
-    ConfSerialNumber=$(cat "$ConfigFile" | grep -i "SerialNumber" | tail -n 1 | cut -d "=" -f 2 | sed "s/^ *//g" | sed "s/$ *//g")
-    ConfDiskEncryption=$(cat "$ConfigFile" | grep -i "DiskEncryption" | tail -n 1 | cut -d "=" -f 2 | sed "s/^ *//g" | sed "s/$ *//g")
+    ConfServer=$(cat "$ConfigFile" | grep -i "Server" | tail -n 1 | cut -d "=" -f 2 | sed -e "s/^ *//g" -e "s/$ *//g")
+    ConfSerialNumber=$(cat "$ConfigFile" | grep -i "SerialNumber" | tail -n 1 | cut -d "=" -f 2 | sed -e "s/^ *//g" -e "s/$ *//g")
+    ConfDiskEncryption=$(cat "$ConfigFile" | grep -i "DiskEncryption" | tail -n 1 | cut -d "=" -f 2 | sed -e "s/^ *//g" -e "s/$ *//g")
 }
 
 # #########################################
@@ -854,6 +872,8 @@ function getSystemID()
         # Do we run on a raspi?
         #   Raspi:>  cat /proc/cpuinfo | grep -i hardware
         #   RETURN: Hardware	: BCM2835
+        #   Raspi:>  cat /proc/cpuinfo | grep -i hardware
+        #   RETURN: Model		: Raspberry Pi 3 Model B Plus Rev 1.3
         # ##################
         # Get Serial Number
         #   Raspi:>  cat /proc/cpuinfo | grep -i serial
@@ -862,8 +882,8 @@ function getSystemID()
             if [ "$RaspiCPU" = "BCM2835" ] ; then
                 RASPI="1"
             fi
-            # TODO: Test line above!
-            # Test on big Raspi and on small Raspi.
+            # Tested on: Raspberry Pi Zero Rev 1.3
+            # Tested on: Raspberry Pi 3 Model B Plus Rev 1.3
         fi
         # More general:
         # Linux:> cat /sys/firmware/devicetree/base/serial-number
@@ -940,7 +960,7 @@ function getSystemID()
             SERIALNUMBER=$(system_profiler SPHardwareDataType | grep "Serial Number" | cut -d ":" -f 2 | sed "s/^ *//g" | sed "s/$ *//g")
             # Tested on MAC OS X 22.3.0
         else
-            echo "[$PROG_NAME:getSystemID:LINUX:WARNING] No serial number found with 'system_profiler'."
+            echo "[$PROG_NAME:getSystemID:MACOSX:WARNING] No serial number found with 'system_profiler'."
         fi
         # ##################
         # Get Processor Architecture:
@@ -985,6 +1005,26 @@ function getRaspiData()
 }
 
 # #########################################
+# getAppleData()
+# Parameter
+#    -
+# Return Value
+#    -
+# The function getSystem() must be called before!
+# This function read out some specific info available at a Raspi board.
+function getAppleData()
+{
+    if [ "$SYSTEM" != "MACOSX" ] ; then
+        return
+    fi
+    appSudo="sudo"
+    # sudo powermetrics -n 1 --samplers smc | grep -i temperature
+    # Return Value: CPU die temperature: 44.22 C
+    # Tested on iMac:
+    CPUTEMP=$($appSudo powermetrics -n 1 --samplers smc | grep -i temperature | cut -d ":" -f 2 | sed -e "s/^ *//g" -e "s/C//g" -e "s/$ *//g")
+}
+
+# #########################################
 # showInfo()
 # Parameter
 #    -
@@ -1012,8 +1052,13 @@ function showInfo()
     fi
     if [ "$RASPI" = "1" ] ; then
         echo "[$PROG_NAME:STATUS] Raspberry CPU"
-        echo "[$PROG_NAME:STATUS] SoC Temperature       : ""$CPUTEMP""°C"
+        echo "[$PROG_NAME:STATUS] Temperature       : ""$CPUTEMP""°C"
         echo "[$PROG_NAME:STATUS] Memory                : $MEMORY MByte"
+    fi
+    if [ "$SYSTEM" = "MACOSX" ] ; then
+        echo "[$PROG_NAME:STATUS] Apple Hardware"
+        #echo "[$PROG_NAME:STATUS] Temperature           : ""$CPUTEMP""°C"  # TODO: At the moment "sudo" needed.
+        #echo "[$PROG_NAME:STATUS] Memory                : $MEMORY MByte"   # TODO: Not yet realized.
     fi
     if [ ! "$MACADDRESS" = "00:00:00:00:00:00" ] ; then
         echo "[$PROG_NAME:STATUS] MAC Address           : $MACADDRESS"
@@ -1044,6 +1089,13 @@ function createJSON()
     if [ ! "$SERIALNUMBER" = "unknown" ] ; then
         jstr="$jstr""\"Serial Number\":\"$SERIALNUMBER\","
     fi
+    if [ ! "$ARCHITECTURE" = "unknown" ] ; then
+        jstr="$jstr""\"Architecture\":\"$ARCHITECTURE\""
+    fi
+    if [ "$CPUTEMP" != "-0" ] ; then
+        jstr="$jstr""\"Temperature\":\"$CPUTEMP\","
+        jstr="$jstr""\"Temperature Unit\":\"°C\","
+    fi
     if [ ! "$MACADDRESS" = "00:00:00:00:00:00" ] ; then
         jstr="$jstr""\"MAC Address\":\"$MACADDRESS\","
     fi
@@ -1066,7 +1118,7 @@ function createJSON()
 # Send the status information to an asset management system or to a monitoring solution
 function sendInfo()
 {
-    echo "[$PROG_NAME:sendInfo:WARNING] Not yet implemented. Send to '$ConfServer'"
+    #echo "[$PROG_NAME:sendInfo:WARNING] Not yet implemented. Send to '$ConfServer'"
     # TODO sendInfo()
     # 1.) Develop a server process listen to the value set.
     # 2.) Send data from here with curl or wget
@@ -1090,11 +1142,24 @@ function sendInfo()
     # Concept - Server with multiple access
     # Linux Server, e.g. Ubuntu on Intel NUC or on EC2
     # On Server: Create user with loginname and password
-    # On Server: Create ~/devicemonitor/_Input
+    # On Server: Create ~/devicemonitor/_Data
     # On Client: Use 'ssh-copy-id' to connect to server
     # On Client: Add server to .ssh/config
-    # Client use 'scp' to store file on server. E.g. scp "$ConfInfoFile" ServerName:devicemonitor/_Input/"$UUIDFileName"
+    # Client use 'scp' to store file on server. E.g. scp "$ConfInfoFile" ServerName:devicemonitor/_Data/"$UUIDFileName"
     # ServerName is the name of the server mentioned in ~/.ssh/config 
+
+    # Prepare file name on server. Name contains the pre string "device_" followed by the MAC Address
+    if [ ! "$MACADDRESS" = "00:00:00:00:00:00" ] && [ -n "$ConfServer" ] ; then
+        MacStr=$(echo "$MACADDRESS" | sed "s/:/-/g")
+    
+        targetFound=$(cat "$HOME/.ssh/config" | grep "$ConfServer")
+        if [ -z "$targetFound" ] ; then
+            echo "[$PROG_NAME:sendInfo:WARNING] Server '$ConfServer' not found in ssh config."
+        else
+            echo "[$PROG_NAME:sendInfo:STATUS] Copy data to server '$ConfServer' ..."
+            scp "$ConfInfoFile" "$ConfServer":"$product""/""_Data/""device_""$MacStr""_""devicestatus.json"
+        fi
+    fi
 }
 
 # #########################################
@@ -1179,11 +1244,12 @@ getMacAddress
 getIpAddress
 getSystemID
 getRaspiData
+#getAppleData # TODO: At the moment "sudo" needed.
 
 # Show Info:
 showInfo
 writeInfo
-#sendInfo # Not yet implemented.
+sendInfo 
 
 if [ "$RUNONCE" = "1" ] ; then
     removeRun
@@ -1208,10 +1274,11 @@ do
     #getMacAddress # Typically no change
     getIpAddress
     #getSystemID # Typically no change
-    getRaspiData
+    getRaspiData # Temperature
+    #getAppleData # Temperature  # TODO: At the moment "sudo" needed.
     showInfo
     writeInfo
-    #sendInfo # Not yet implemented.
+    sendInfo 
     updateLog
     checkExit
 done
