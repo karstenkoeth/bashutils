@@ -41,7 +41,14 @@
 # - DiskEncryption = Store the status of the disk encryption
 # 
 # On the server, a devicemonitor.sh must be run before sending data to.
-# The data is transfered with secure copy (scp).
+# The data is transfered with secure copy (scp). Therefore, the $HOME/.ssh/config file must be prepared.
+#
+# Example for ~/.ssh/config :
+# Host raspi
+#   Hostname 192.168.0.23
+#   User pi
+#   IdentityFile ~/.ssh/id_raspi
+
 
 # #########################################
 #
@@ -1151,11 +1158,20 @@ function sendInfo()
     # Prepare file name on server. Name contains the pre string "device_" followed by the MAC Address
     if [ ! "$MACADDRESS" = "00:00:00:00:00:00" ] && [ -n "$ConfServer" ] ; then
         MacStr=$(echo "$MACADDRESS" | sed "s/:/-/g")
-    
-        targetFound=$(cat "$HOME/.ssh/config" | grep "$ConfServer")
-        if [ -z "$targetFound" ] ; then
-            echo "[$PROG_NAME:sendInfo:WARNING] Server '$ConfServer' not found in ssh config."
+        targetFound=""
+        if [ -d "$HOME/.ssh" ] ; then
+            if [ -f "$HOME/.ssh/config" ] ; then
+                targetFound=$(cat "$HOME/.ssh/config" | grep "$ConfServer")
+                if [ -z "$targetFound" ] ; then
+                    echo "[$PROG_NAME:sendInfo:WARNING] Server '$ConfServer' not found in ssh config."
+                fi
+            else
+                echo "[$PROG_NAME:sendInfo:WARNING] '$HOME/.ssh/config' didn't exist."
+            fi
         else
+            echo "[$PROG_NAME:sendInfo:WARNING] '$HOME/.ssh' directory didn't exist."
+        fi
+        if [ -n "$targetFound" ] ; then
             echo "[$PROG_NAME:sendInfo:STATUS] Copy data to server '$ConfServer' ..."
             scp "$ConfInfoFile" "$ConfServer":"$product""/""_Data/""device_""$MacStr""_""devicestatus.json"
         fi
