@@ -103,10 +103,11 @@
 # 2024-04-22 0.47 kdk getRaspiData() added
 # 2024-07-14 0.48 kdk MAC OS X 23.5.0 added
 # 2024-07-18 0.49 kdk Comments added
+# 2024-08-12 0.50 kdk Comments added
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.49"
-PROG_DATE="2024-07-18"
+PROG_VERSION="0.50"
+PROG_DATE="2024-08-12"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -435,7 +436,8 @@ function getSystem()
             SYSTEM="MACOSX"
             # More specific: 
             # The variable $OSTYPE contains more precisely the system version, e.g. "darwin17"
-            # Or use uname -r for e.g. "17.7.0" = MAC OS X High Sierra 10.13.6
+            # Or use uname -r for e.g.            MAC OS X Yosemite 10.10.5 on Mac mini (End 2014), 1,4 GHz Dual-Core Intel Core i5 4 GByte RAM 500 GByte HDD https://support.apple.com/de-de/111931
+            #                     e.g. "17.7.0" = MAC OS X High Sierra 10.13.6
             #                     e.g. "21.3.0" = MAC OS X 
             #                     e.g. "21.6.0" = MAC OS X Monterey 12.6
             #                     e.g. "22.1.0" = MAC OS X Ventura 13.0.1
