@@ -436,7 +436,9 @@ function getSystem()
             SYSTEM="MACOSX"
             # More specific: 
             # The variable $OSTYPE contains more precisely the system version, e.g. "darwin17"
-            # Or use uname -r for e.g.            MAC OS X Yosemite 10.10.5 on Mac mini (End 2014), 1,4 GHz Dual-Core Intel Core i5 4 GByte RAM 500 GByte HDD https://support.apple.com/de-de/111931
+            # Or use uname -r for e.g.            MAC OS X Yosemite 10.10.5 on Mac mini (End 2014), 1,4 GHz Dual-Core Intel Core i5 4 GByte RAM 500 GByte HDD 
+            #                                               https://support.apple.com/de-de/111931
+            #                                               Update possible to 10.15 Catalina or 11 Big Sur or 12 Monterey, see https://support.apple.com/de-de/108382 
             #                     e.g. "17.7.0" = MAC OS X High Sierra 10.13.6
             #                     e.g. "21.3.0" = MAC OS X 
             #                     e.g. "21.6.0" = MAC OS X Monterey 12.6
