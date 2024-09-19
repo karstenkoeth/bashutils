@@ -104,10 +104,11 @@
 # 2024-07-14 0.48 kdk MAC OS X 23.5.0 added
 # 2024-07-18 0.49 kdk Comments added
 # 2024-08-12 0.50 kdk Comments added
+# 2024-09-19 0.51 kdk createJSON() bug removed
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.50"
-PROG_DATE="2024-08-12"
+PROG_VERSION="0.51"
+PROG_DATE="2024-09-19"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -1101,7 +1102,7 @@ function createJSON()
         jstr="$jstr""\"Serial Number\":\"$SERIALNUMBER\","
     fi
     if [ ! "$ARCHITECTURE" = "unknown" ] ; then
-        jstr="$jstr""\"Architecture\":\"$ARCHITECTURE\""
+        jstr="$jstr""\"Architecture\":\"$ARCHITECTURE\","
     fi
     if [ "$CPUTEMP" != "-0" ] ; then
         jstr="$jstr""\"Temperature\":\"$CPUTEMP\","
