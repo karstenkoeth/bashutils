@@ -449,6 +449,7 @@ function getSystem()
             #                     e.g. "23.1.0" = MAC OS X Sonoma 14.1.1
             #                     e.g. "23.2.0" = MAC OS X Sonoma 14.2.1
             #                     e.g. "23.5.0" = MAC OS X Sonoma 14.5
+            #                     e.g. "23.6.0" = MAC OS X Sonoma 14.6.1
             #                     e.g. "4.20.69-ish" = iPhone SE 14.5.1 with ish-App
             #                     e.g. "4.20.69-ish" = iPad Air 2 14.7.1 with ish-App
             # https://de.wikipedia.org/wiki/Darwin_(Betriebssystem)
@@ -480,6 +481,9 @@ function getSystem()
                     SYSTEMTested="1"
                 fi
                 if [ "$SYSTEMDescription" = "23.5.0" ] ; then
+                    SYSTEMTested="1"
+                fi
+                if [ "$SYSTEMDescription" = "23.6.0" ] ; then
                     SYSTEMTested="1"
                 fi
                 # Normally, it is found under Linux, but maybe ... try it:
