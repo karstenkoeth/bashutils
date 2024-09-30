@@ -105,10 +105,11 @@
 # 2024-07-18 0.49 kdk Comments added
 # 2024-08-12 0.50 kdk Comments added
 # 2024-09-19 0.51 kdk createJSON() bug removed
+# 2024-09-30 0.52 kdk Ubuntu 22.04.5 LTS added
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.51"
-PROG_DATE="2024-09-19"
+PROG_VERSION="0.52"
+PROG_DATE="2024-09-30"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -553,6 +554,10 @@ function getSystem()
                         SYSTEMDescription="Ubuntu 22.04.3 LTS"
                         SYSTEMTested="1"
                     fi
+                    if [ "$SYSTEMDescription" = "Description:	Ubuntu 22.04.5 LTS" ] ; then
+                        SYSTEMDescription="Ubuntu 22.04.5 LTS"
+                        SYSTEMTested="1"
+                    fi
                     if [ "$SYSTEMDescription" = "Description:    Debian GNU/Linux 10 (buster)" ] ; then
                         # Chromebook
                         # Tested at 2022-04-08
@@ -609,6 +614,10 @@ function getSystem()
                     fi
                     if [ "$SYSTEMDescription" = "Ubuntu 22.04.4 LTS" ] ; then
                         SYSTEMDescription="Ubuntu 22.04.4 LTS"
+                        SYSTEMTested="1"
+                    fi
+                    if [ "$SYSTEMDescription" = "Ubuntu 22.04.5 LTS" ] ; then
+                        SYSTEMDescription="Ubuntu 22.04.5 LTS"
                         SYSTEMTested="1"
                     fi
                     if [ "$SYSTEMDescription" = "Debian GNU/Linux 10 (buster)" ] ; then
