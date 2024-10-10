@@ -115,15 +115,25 @@ PROG_LIBRARYNAME="bashutils_common_functions.bash"
 #
 # Updates
 #
-# Use cron, anacron or systemd/system to trigger daily update checks.
+# Use cron, anacron, at or systemd/system to trigger daily update checks.
 # /etc/systemd/system
 # See:
 # https://wiki.ubuntuusers.de/Cron/
 # https://linux.die.net/man/1/crontab
 # https://wiki.ubuntuusers.de/systemd/Timer_Units/
+# https://de.wikipedia.org/wiki/Anacron
+# https://de.wikipedia.org/wiki/At_(Unix)
 #
 # One time jobs could be defined as user with e.g.:
 #  >: systemd-run --user --on-calendar="2023-11-28 15:50:00" --unit="BashUtils" --description="BashUtils Updater" touch ~/tmp/calendarTouchMe
+#
+# cron for always running devices. 
+# anacron for sometimes running devices, e.g. notebooks. Must be configured by root.
+#
+#  >: echo "touch ~/tmp/atTouchMe" | at 22:52
+#  >: echo "touch ~/tmp/atTouchMe" | at now + 1 minutes
+#
+# at must be installed on ubuntu
 
 # #########################################
 #
