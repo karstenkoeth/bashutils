@@ -74,7 +74,7 @@ With a browser, put in the following line as URL to get data:
 
 `http://127.0.0.1:3007/data/C58A2027-094E-4FDE-A460-F9BBFB564257/`
 
-With SICK Dashboard Builder (https:/sd3.cloud.sick.com), set following lines in configuration - REST Binding:
+With [SICK Dashboard Builder](https://sd3.cloud.sick.com), set following lines in: Configuration - REST Binding:
 
 `URL: http://127.0.0.1:3007/data/C58A2027-094E-4FDE-A460-F9BBFB564257/`
 
