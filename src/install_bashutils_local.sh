@@ -94,10 +94,11 @@
 # 2024-07-13 0.69 kdk http included
 # 2024-07-15 0.70 kdk Bug removed "missing fi"
 # 2024-07-18 0.71 kdk Better adapted to MAC OS X
+# 2024-10-17 0.72 kdk More comments to caddy
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.71"
-PROG_DATE="2024-07-18"
+PROG_VERSION="0.72"
+PROG_DATE="2024-10-17"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -1462,6 +1463,7 @@ fi
 # See: 
 #    https://caddyserver.com/
 #    https://caddyserver.com/docs/quick-starts/api
+#    https://caddyserver.com/docs/getting-started
 caddyPresent=$(which caddy 2> /dev/zero)
 if [ -z "$caddyPresent" ] ; then
     # Download to tmp dir:
