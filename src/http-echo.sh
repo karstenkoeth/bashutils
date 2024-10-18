@@ -90,6 +90,7 @@ function getSharingDirectory()
         Uuid=$(uuidgen)
         TmpDir="$HOME/tmp/$product""_$Uuid"
     fi
+    echo "[$PROG_NAME:getSharingDirectory:TmpDir:DEBUG] '$TmpDir'"
     mkdir -p -v "$TmpDir"
     if [ ! -d "$TmpDir" ] ; then
         echo "[$PROG_NAME:ERROR] Can't create temporary directory. Exit."
@@ -116,10 +117,10 @@ function serverText()
         echo "[$PROG_NAME:ERROR] Server process script not found. Exit."
         exit
     fi
-    #echo "[$PROG_NAME:serverText:ServerScript:DEBUG] '$0'  '$ServerScript'"    
+    echo "[$PROG_NAME:serverText:ServerScript:DEBUG] '$0'  '$ServerScript'"    
 
     SharingDir=$(getSharingDirectory)
-    #echo "[$PROG_NAME:serverText:SharingDir:DEBUG] '$SharingDir'"
+    echo "[$PROG_NAME:serverText:SharingDir:DEBUG] '$SharingDir'"
 
     socat TCP-L:$serverPort,fork EXEC:"$ServerScript $SharingDir"
     # socat -d -d TCP-L:$serverPort,fork EXEC:"$ServerScript $SharingDir"

@@ -1135,6 +1135,10 @@ fi
 # Examples: 
 # :> echo "{\"greeting\":\"Hallo Welt\"}" | jq -M
 # :> jq --version
+# 
+# More about JSON:
+# https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Objects/JSON
+#
 jqPresent=$(which jq 2> /dev/zero)
 if [ -z "$jqPresent" ] ; then
     if [ -x "$aptgetPresent" ] ; then
@@ -1464,6 +1468,20 @@ fi
 #    https://caddyserver.com/
 #    https://caddyserver.com/docs/quick-starts/api
 #    https://caddyserver.com/docs/getting-started
+#
+# :> caddy run    <-- Run caddy in foreground
+# :> caddy start  <-- Run caddy in background
+# :> caddy stop   <-- Stop caddy
+# :> curl -X POST localhost:2019/stop  <-- Stop caddy
+#
+# :> caddy file-server --browse --root ~/ --listen :2015   <-- Show file system under $HOME
+#
+# Get Config: :> curl localhost:2019/config/
+# Get Config: :> curl -s localhost:2019/config/ | jq
+# Get Config: :> curl --silent localhost:2019/config/ | jq
+# Set Config: :> curl localhost:2019/load -H "Content-Type: application/json" --data @caddy_learn.json
+# Set Config: :> curl --json @caddy_learn.json localhost:2019/load
+#
 caddyPresent=$(which caddy 2> /dev/zero)
 if [ -z "$caddyPresent" ] ; then
     # Download to tmp dir:

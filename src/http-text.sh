@@ -17,10 +17,11 @@
 # 2021-03-02 0.07 kdk Debugging ...
 # 2021-03-02 0.08 kdk Prepared for continuous run
 # 2022-11-30 0.09 kdk More general
+# 2024-10-18 0.10 kdk More logs
 
 PROG_NAME="http process text"
-PROG_VERSION="0.09"
-PROG_DATE="2022-11-30"
+PROG_VERSION="0.10"
+PROG_DATE="2024-10-18"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="http-text.sh"
 
@@ -35,7 +36,7 @@ PROG_SCRIPTNAME="http-text.sh"
 #
 # MIT license (MIT)
 #
-# Copyright 2022 - 2020 Karsten Köth
+# Copyright 2024 - 2020 Karsten Köth
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -93,6 +94,7 @@ contentLength=""
 #   1: Text to log
 function log()
 {
+    actDateTime=$(date "+%Y-%m-%d +%H:%M:%S")
     echo "[$PROG_SCRIPTNAME:$$:$actDateTime] $1" >> "$logFile"
 }
 
@@ -304,10 +306,10 @@ logFile="$ServerDir/$product.log"
 log "Init..."
 
 if [ $# -ge 1 ] ; then
-    # log "Searching Process Directory '$1'"
+    log "Searching Process Directory '$1'"
     if [ -d "$1" ] ; then
         ProcessDir="$1"
-        # log "Process Directory found."
+        log "Process Directory found."
     else
         log "Directory not accessible."
     fi
