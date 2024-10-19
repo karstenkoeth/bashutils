@@ -18,10 +18,11 @@
 # 2021-03-02 0.08 kdk Prepared for continuous run
 # 2021-11-09 0.09 kdk Demo mode
 # 2022-11-30 0.10 kdk More general
+# 2024-10-19 0.11 kdk Log() included
 
 PROG_NAME="HTTP Echo"
-PROG_VERSION="0.10"
-PROG_DATE="2022-11-30"
+PROG_VERSION="0.11"
+PROG_DATE="2024-10-19"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="http-echo.sh"
 
@@ -29,7 +30,7 @@ PROG_SCRIPTNAME="http-echo.sh"
 #
 # MIT license (MIT)
 #
-# Copyright 2022 - 2020 Karsten Köth
+# Copyright 2024 - 2020 Karsten Köth
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -67,11 +68,24 @@ MQTT="0"
 DEMO="0"
 SERVER="http-text.sh"
 
+ServerDir="$HOME/tmp"
+logFile=""
+
+
 # #########################################
 #
 # Functions
 #
 
+# #########################################
+# log()
+# Parameter
+#   1: Text to log
+function log()
+{
+    actDateTime=$(date "+%Y-%m-%d +%H:%M:%S")
+    echo "[$PROG_SCRIPTNAME:$$:$actDateTime] $1" >> "$logFile"
+}
 
 # #########################################
 # getSharingDirectory()
@@ -90,12 +104,14 @@ function getSharingDirectory()
         Uuid=$(uuidgen)
         TmpDir="$HOME/tmp/$product""_$Uuid"
     fi
-    echo "[$PROG_NAME:getSharingDirectory:TmpDir:DEBUG] '$TmpDir'"
-    mkdir -p -v "$TmpDir"
+    log "[$PROG_NAME:getSharingDirectory:TmpDir:DEBUG] '$TmpDir' defined."
+    mkdir -p "$TmpDir"
     if [ ! -d "$TmpDir" ] ; then
-        echo "[$PROG_NAME:ERROR] Can't create temporary directory. Exit."
+        echo "[$PROG_NAME:getSharingDirectory:ERROR] Can't create temporary directory. Exit."
+        log  "[$PROG_NAME:getSharingDirectory:ERROR] Can't create temporary directory. Exit."
         exit
     fi   
+    log "[$PROG_NAME:getSharingDirectory:TmpDir:DEBUG] '$TmpDir' created."
     echo "$TmpDir"
 }
 
@@ -114,13 +130,14 @@ function serverText()
     BinaryDir=$(dirname "$0")
     ServerScript="$BinaryDir/$serverProcess"
     if [ ! -f "$ServerScript" ] ; then
-        echo "[$PROG_NAME:ERROR] Server process script not found. Exit."
+        echo "[$PROG_NAME:serverText:ERROR] Server process script not found. Exit."
+        log  "[$PROG_NAME:serverText:ERROR] Server process script not found. Exit."
         exit
     fi
-    echo "[$PROG_NAME:serverText:ServerScript:DEBUG] '$0'  '$ServerScript'"    
+    log "[$PROG_NAME:serverText:ServerScript:DEBUG] '$0'  '$ServerScript'"    
 
     SharingDir=$(getSharingDirectory)
-    echo "[$PROG_NAME:serverText:SharingDir:DEBUG] '$SharingDir'"
+    log "[$PROG_NAME:serverText:SharingDir:DEBUG] '$SharingDir'"
 
     socat TCP-L:$serverPort,fork EXEC:"$ServerScript $SharingDir"
     # socat -d -d TCP-L:$serverPort,fork EXEC:"$ServerScript $SharingDir"
@@ -162,7 +179,8 @@ function killProcesses()
             runProc=$(ps -o pid=,command= $killProc)
             if [ -n "$runProc" ] ; then
                 kill $killProc
-                echo "[$PROG_NAME:STATUS] '$killProc' killed."
+                echo "[$PROG_NAME:killProcesses:STATUS] '$killProc' killed."
+                log  "[$PROG_NAME:killProcesses:STATUS] '$killProc' killed."
             fi
         fi
     done
@@ -251,6 +269,13 @@ function showVersion()
 
 echo "[$PROG_NAME:STATUS] Starting ..."
 
+# Log file:
+mkdir -p "$ServerDir"
+logFile="$ServerDir/$product.log"
+
+log "Init..."
+
+
 # Check for program parameters:
 if [ $# -ge 1 ] ; then
     if [ "$1" = "-p" ] ; then
@@ -259,6 +284,7 @@ if [ $# -ge 1 ] ; then
             if [ $? -eq 0 ] ; then
                 PORT="$2"
                 echo "[$PROG_NAME:STATUS] Port set to '$PORT'."
+                log  "[$PROG_NAME:Main:STATUS] Port set to '$PORT'."
             fi
         fi
     elif [ "$1" = "-k" ] ; then
@@ -280,4 +306,5 @@ fi
 
 serverText $PORT
 
+log "Done."
 echo "[$PROG_NAME:STATUS] Done."
