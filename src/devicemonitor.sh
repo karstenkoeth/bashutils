@@ -106,10 +106,11 @@
 # 2024-08-12 0.50 kdk Comments added
 # 2024-09-19 0.51 kdk createJSON() bug removed
 # 2024-09-30 0.52 kdk Ubuntu 22.04.5 LTS added
+# 2024-10-25 0.53 kdk ip for 23 and higher adapted in getIpAddress() and getMacAddress()
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.52"
-PROG_DATE="2024-09-30"
+PROG_VERSION="0.53"
+PROG_DATE="2024-10-25"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -179,6 +180,7 @@ SYSTEM="unknown"
     # - SUSE
 SYSTEMDescription="" # Will be filled if possible
 SYSTEMTested="0" # If we detect a system, the script was tested on, we switch to "1"
+SYSTEMMAJOR="0"
 KERNEL="" # With this value we could detect e.g. the latest update on Ubuntu
 MACADDRESS="00:00:00:00:00:00"
 IP4ADDRESS="0.0.0.0"
@@ -492,6 +494,8 @@ function getSystem()
                     SYSTEMTested="1"
                 fi
                 # ... Add more known and tested systems.
+                # Get Major Number - needed for ip version detection:
+                SYSTEMMAJOR=$(echo $SYSTEMDescription | cut -d "." -f 1)
             fi
             # Be paranoid: If nothing found, be sure the string is clean:
             if [ "$SYSTEMTested" = "0" ] ; then
@@ -848,7 +852,15 @@ function getMacAddress()
                 MACADDRESS=$(ip addr show | grep -i ether | sed "s/ether /;/g" | cut -d ";" -f 2 | sed "s/ /;/g" | cut -d ";" -f 1 | tr "[:lower:]" "[:upper:]" | tail -n 1)
             fi
         elif [ "$SYSTEM" = "MACOSX" ] ; then
-            MACADDRESS=$(ip -4 addr show | grep -i ether | sed "s/ether /;/g" | cut -d ";" -f 2 | tr "[:lower:]" "[:upper:]" | tail -n 1)
+            if [ "$SYSTEMMAJOR" -ge "23" ] ; then
+                # Works on 23 and newer:
+                local MACETHDEVICE=""
+                MACETHDEVICE=$(ip route | grep -i default | cut -d " " -f 5)
+                MACADDRESS=$(ip -4 addr show dev "$MACETHDEVICE" | grep -i ether | sed -e "s/ether /;/g" -e "s/ brd /;/g" | cut -d ";" -f 2 | tr "[:lower:]" "[:upper:]" | tail -n 1)
+            else
+                # Works on 22 and older:
+                MACADDRESS=$(ip -4 addr show | grep -i ether | sed "s/ether /;/g" | cut -d ";" -f 2 | tr "[:lower:]" "[:upper:]" | tail -n 1)
+            fi
         else
             echo "[$PROG_NAME:getMacAddress:WARNING] System type unknown. Can't get own MAC address."
         fi
@@ -874,7 +886,13 @@ function getIpAddress()
         if [ "$SYSTEM" = "LINUX" ] ;  then
             IP4ADDRESS=$(ip -o -4 addr show | grep -i global | head -n 1 | sed "s/  */;/g" | cut -f 4 -d ";" | cut -f 1 -d "/")
         elif [ "$SYSTEM" = "MACOSX" ] ; then
-            IP4ADDRESS=$(ip -4 addr show | grep -i brd | tail -n 1 | sed "s/  */;/g" | cut -f 2 -d ";" | cut -f 1 -d "/")
+            if [ "$SYSTEMMAJOR" -ge "23" ] ; then
+                local MACETHDEVICE=""
+                MACETHDEVICE=$(ip route | grep -i default | cut -d " " -f 5)
+                IP4ADDRESS=$(ip -4 addr show dev "$MACETHDEVICE" | grep -i inet | tail -n 1 | sed -e "s/  */;/g" -e "s/ brd /;/g" | cut -f 3 -d ";" | cut -f 1 -d "/")
+            else
+                IP4ADDRESS=$(ip -4 addr show | grep -i brd | tail -n 1 | sed "s/  */;/g" | cut -f 2 -d ";" | cut -f 1 -d "/")
+            fi
         else
             echo "[$PROG_NAME:getIpAddress:WARNING] System type unknown. Can't get own IP address."
         fi
