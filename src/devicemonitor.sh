@@ -107,10 +107,11 @@
 # 2024-09-19 0.51 kdk createJSON() bug removed
 # 2024-09-30 0.52 kdk Ubuntu 22.04.5 LTS added
 # 2024-10-25 0.53 kdk ip for 23 and higher adapted in getIpAddress() and getMacAddress()
+# 2024-11-01 0.54 kdk MAC OS X 24.1.0
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.53"
-PROG_DATE="2024-10-25"
+PROG_VERSION="0.54"
+PROG_DATE="2024-11-01"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -453,6 +454,7 @@ function getSystem()
             #                     e.g. "23.2.0" = MAC OS X Sonoma 14.2.1
             #                     e.g. "23.5.0" = MAC OS X Sonoma 14.5
             #                     e.g. "23.6.0" = MAC OS X Sonoma 14.6.1
+            #                     e.g. "24.1.0" = MAC OS X Sonoma 15.1
             #                     e.g. "4.20.69-ish" = iPhone SE 14.5.1 with ish-App
             #                     e.g. "4.20.69-ish" = iPad Air 2 14.7.1 with ish-App
             # https://de.wikipedia.org/wiki/Darwin_(Betriebssystem)
@@ -487,6 +489,9 @@ function getSystem()
                     SYSTEMTested="1"
                 fi
                 if [ "$SYSTEMDescription" = "23.6.0" ] ; then
+                    SYSTEMTested="1"
+                fi
+                if [ "$SYSTEMDescription" = "24.1.0" ] ; then
                     SYSTEMTested="1"
                 fi
                 # Normally, it is found under Linux, but maybe ... try it:

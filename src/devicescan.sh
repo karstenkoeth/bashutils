@@ -81,10 +81,12 @@
 # 2024-04-22 0.36 kdk Temp dir changed from TmpDir="$HOME/tmp/" to TmpDir="$HOME/tmp/$product/"
 # 2024-05-07 0.37 kdk drawDeviceStatus year automated
 # 2024-05-21 0.38 kdk Comments added
+# 2024-11-01 0.39 kdk Adapted to MAC OS X 24.1.0
+# 2024-11-02 0.40 kdk Not yet fully adapted
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.38"
-PROG_DATE="2024-05-21"
+PROG_VERSION="0.40"
+PROG_DATE="2024-11-02"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -176,6 +178,8 @@ ECHOWARNING="1"
 ECHOERROR="1"
 
 SYSTEM="unknown"
+SYSTEMDescription=""
+SYSTEMMAJOR="0"
 
 MACADDRESS="00:00:00:00:00:00"
 IP4ADDRESS="0.0.0.0"
@@ -363,6 +367,9 @@ function checkEnvironment()
             # Detect System:
             if [ "$sSYSTEM" = "Darwin" ] ; then
                 SYSTEM="MACOSX"
+                SYSTEMDescription=$(uname -r)
+                # Get Major Number - needed for ip version detection:
+                SYSTEMMAJOR=$(echo $SYSTEMDescription | cut -d "." -f 1)
             elif [ "$sSYSTEM" = "Linux" ] ; then
                 SYSTEM="LINUX"
             else
@@ -563,18 +570,29 @@ function listMacAddresses()
         if [ "$SYSTEM" = "LINUX" ] ;  then
             ip -4 neigh | grep ":" | tr "[:lower:]" "[:upper:]" | sed "s/ /;/g"> "$TmpDir$MacFile.ip"
         elif [ "$SYSTEM" = "MACOSX" ] ;  then
-            # Adaption under MACOSX:
-            # Output e.g.: '192.168.0.164;DEV;EN4;LLADDR;60:3:8:C0:F6:C1;REACHABLE'
-            # Need to enhance MAC addresses to have always 2 digits in every section: '60:3:... --> 60:03:...'
-            # Same problem as below in 'arp' session.
-            ip -4 neigh | grep ":" | tr "[:lower:]" "[:upper:]" | sed "s/ /;/g"> "$TmpDir$MacFile.mac"
-            # Line starts not with MAC address. Therefore '^' is not before MAC, instead ';' is before MAC
-            # Bug: Is missing: sed "s/:\(.\);/:0\1;/" | 
-            # Line ends not with MAC address. Therefore '$' is not after MAC, instead ';' is after MAC 
-            # Four times possible inside ':' and ':'
-            cat "$TmpDir$MacFile.mac" | sed "s/;\(.\):/;0\1:/g" | sed "s/:\(.\);/:0\1;/g" |\
-            sed "s/:\(.\):/:0\1:/g" | sed "s/:\(.\):/:0\1:/g" | sed "s/:\(.\):/:0\1:/g" | sed "s/:\(.\):/:0\1:/g" |\
-            mac_converter.sh -L > "$TmpDir$MacFile.ip"
+            if [ "$SYSTEMMAJOR" -ge "23" ] ; then
+                # MAC OS shows no more a MAC address with: Bash:> ip -4 neigh 
+                # Go back to 'arp'. See comment below in this function().
+                echo "[$PROG_NAME:listMacAddresses:STATUS] Searching by 'arp' ..."
+                arp -a > "$TmpDir$MacFile.arp"
+                cat "$TmpDir$MacFile.arp" | cut -f 4 -d " " | grep ":" > "$TmpDir$MacFile.mac"
+                # TODO go on here
+                echo "ERROR 325 - OS not yet supported"
+                exit  
+            else
+                # Adaption under MACOSX:
+                # Output e.g.: '192.168.0.164;DEV;EN4;LLADDR;60:3:8:C0:F6:C1;REACHABLE'
+                # Need to enhance MAC addresses to have always 2 digits in every section: '60:3:... --> 60:03:...'
+                # Same problem as below in 'arp' session.
+                ip -4 neigh | grep ":" | tr "[:lower:]" "[:upper:]" | sed "s/ /;/g"> "$TmpDir$MacFile.mac"
+                # Line starts not with MAC address. Therefore '^' is not before MAC, instead ';' is before MAC
+                # Bug: Is missing: sed "s/:\(.\);/:0\1;/" | 
+                # Line ends not with MAC address. Therefore '$' is not after MAC, instead ';' is after MAC 
+                # Four times possible inside ':' and ':'
+                cat "$TmpDir$MacFile.mac" | sed "s/;\(.\):/;0\1:/g" | sed "s/:\(.\);/:0\1;/g" |\
+                sed "s/:\(.\):/:0\1:/g" | sed "s/:\(.\):/:0\1:/g" | sed "s/:\(.\):/:0\1:/g" | sed "s/:\(.\):/:0\1:/g" |\
+                mac_converter.sh -L > "$TmpDir$MacFile.ip"
+            fi
         fi
         # TODO - OpenSuSE is no more supported.
         # Under WSL openSuSE the function "neigh" is not supported by ip
@@ -758,13 +776,20 @@ function getOwnMacAddress()
                 # See: https://developer-old.gnome.org/NetworkManager/stable/nmcli.html
             fi
         elif [ "$SYSTEM" = "MACOSX" ] ; then
-            MACADDRESS=$(ip -4 addr show | grep -i ether | sed "s/ether /;/g" | cut -d ";" -f 2 | tr "[:lower:]" "[:upper:]" | tail -n 1)
-            # E.g. output on 23.2.0 from :
-            # lo0: flags=8049<UP,LOOPBACK,RUNNING,MULTICAST> mtu 16384
-            #	inet 127.0.0.1/8 lo0
-            # en0: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500
-	        #   ether 3c:22:fb:2c:cb:3f
-	        #   inet 172.18.186.246/16 brd 172.18.255.255 en0
+            if [ "$SYSTEMMAJOR" -ge "23" ] ; then
+                # Works on 23 and newer:
+                local MACETHDEVICE=""
+                MACETHDEVICE=$(ip route | grep -i default | cut -d " " -f 5)
+                MACADDRESS=$(ip -4 addr show dev "$MACETHDEVICE" | grep -i ether | sed -e "s/ether /;/g" -e "s/ brd /;/g" | cut -d ";" -f 2 | tr "[:lower:]" "[:upper:]" | tail -n 1)
+            else
+                MACADDRESS=$(ip -4 addr show | grep -i ether | sed "s/ether /;/g" | cut -d ";" -f 2 | tr "[:lower:]" "[:upper:]" | tail -n 1)
+                # E.g. output on 23.2.0 from :
+                # lo0: flags=8049<UP,LOOPBACK,RUNNING,MULTICAST> mtu 16384
+                #	inet 127.0.0.1/8 lo0
+                # en0: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500
+                #   ether 3c:22:fb:2c:cb:3f
+                #   inet 172.18.186.246/16 brd 172.18.255.255 en0
+            fi
         fi
         echo "[$PROG_NAME:getOwnMacAddress:STATUS] '$MACADDRESS'"
     fi
@@ -836,8 +861,14 @@ function getOwnIpAddress()
             #tmpadr=$(echo "$tmpadr" | cut -f 1 -d "/")
             #echo "[$PROG_NAME:getOwnIpAddress:DEBUG] '$tmpadr'"
         elif [ "$SYSTEM" = "MACOSX" ] ; then
-            # Under MACOSX "17.7.0": Parameter -o is not implemented
-            IP4ADDRESS=$(ip -4 addr show | grep -i brd | tail -n 1 | sed "s/  */;/g" | cut -f 2 -d ";" | cut -f 1 -d "/")
+            if [ "$SYSTEMMAJOR" -ge "23" ] ; then
+                local MACETHDEVICE=""
+                MACETHDEVICE=$(ip route | grep -i default | cut -d " " -f 5)
+                IP4ADDRESS=$(ip -4 addr show dev "$MACETHDEVICE" | grep -i inet | tail -n 1 | sed -e "s/  */;/g" -e "s/ brd /;/g" | cut -f 3 -d ";" | cut -f 1 -d "/")
+            else
+                # Under MACOSX "17.7.0": Parameter -o is not implemented
+                IP4ADDRESS=$(ip -4 addr show | grep -i brd | tail -n 1 | sed "s/  */;/g" | cut -f 2 -d ";" | cut -f 1 -d "/")
+            fi
         fi
         # BUG TODO
         # It is possible to have more than one networks interfaces. "tail" is a work around. 
@@ -1100,6 +1131,9 @@ function prepareConfig()
     if [ -f "$UserDatabaseFile" ] ; then
         cat "$UserDatabaseFile" | grep ";" > "$DevicesFile"
         #echo "[$PROG_NAME:prepareConfig:DEBUG] Devices file filled."
+    elif [ -f "/Volumes/G/Documents/Infrastruktur/Netzwerk.txt" ] ; then
+        UserDatabaseFile="/Volumes/G/Documents/Infrastruktur/Netzwerk.txt"
+        cat "$UserDatabaseFile" | grep ";" > "$DevicesFile"
     fi
 
     # Distribute the 'Devices File' to all clients:
@@ -1212,7 +1246,9 @@ getOwnIpAddress
 getOwnIpSubnet "$IP4ADDRESS"
 scanNetwork "$IP4SUBNET" # This function creates 2 tmp files. These files are not used by listMacAddresses()
     # TODO: combine scanNetwork() and listMacAddresses()
+    # scan...() generates: "$TmpDir$TmpFile"    --> devicescan_nmap_2024-....txt
     # scan...() generates: "$TmpDir$ScanFile"   --> devicescan_devices_2024-...txt
+    # 
     # list...() generates: "$TmpDir$MacFile.ip" --> devicescan_mac_2024-....txt.ip
     #
     # list...() output file has not own ip inside
