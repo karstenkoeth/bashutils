@@ -83,10 +83,11 @@
 # 2024-05-21 0.38 kdk Comments added
 # 2024-11-01 0.39 kdk Adapted to MAC OS X 24.1.0
 # 2024-11-02 0.40 kdk Not yet fully adapted
+# 2024-11-14 0.41 kdk Step forward on MAC
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.40"
-PROG_DATE="2024-11-02"
+PROG_VERSION="0.41"
+PROG_DATE="2024-11-14"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -568,29 +569,35 @@ function listMacAddresses()
         # The new way with "ip", works under MACOSX and LINUX
         #echo "[$PROG_NAME:listMacAddresses:STATUS] Searching by 'ip' ..."
         if [ "$SYSTEM" = "LINUX" ] ;  then
-            ip -4 neigh | grep ":" | tr "[:lower:]" "[:upper:]" | sed "s/ /;/g"> "$TmpDir$MacFile.ip"
+            ip -4 neigh | grep ":" | tr "[:lower:]" "[:upper:]" | sed "s/ /;/g" | cut -d ";" -f 1 -f 5 > "$TmpDir$MacFile.ip"
         elif [ "$SYSTEM" = "MACOSX" ] ;  then
             if [ "$SYSTEMMAJOR" -ge "23" ] ; then
                 # MAC OS shows no more a MAC address with: Bash:> ip -4 neigh 
                 # Go back to 'arp'. See comment below in this function().
                 echo "[$PROG_NAME:listMacAddresses:STATUS] Searching by 'arp' ..."
-                arp -a > "$TmpDir$MacFile.arp"
-                cat "$TmpDir$MacFile.arp" | cut -f 4 -d " " | grep ":" > "$TmpDir$MacFile.mac"
-                # TODO go on here
-                echo "ERROR 325 - OS not yet supported"
-                exit  
+                # arp finds something like:
+                # ? (192.168.0.176) at 68:5b:35:be:43:49 on en1 ifscope [ethernet]
+                # ? (192.168.0.255) at ff:ff:ff:ff:ff:ff on en1 ifscope [ethernet]
+                # mdns.mcast.net (224.0.0.251) at 1:0:5e:0:0:fb on en1 ifscope permanent [ethernet]
+                # ? (239.255.255.250) at 1:0:5e:7f:ff:fa on en1 ifscope permanent [ethernet]
+                # Replace space by semicolon
+                # Remove round brackets
+                ##arp -a > "$TmpDir$MacFile.arp"
+                arp -a | grep ":" | sed -e "s/ /;/g" -e "s/;(/;/g" -e "s/);/;/g" | cut -d ";" -f 2 -f 4 | tr "[:lower:]" "[:upper:]" > "$TmpDir$MacFile.mac"
+                cat "$TmpDir$MacFile.mac" | sed -e "s/;\(.\):/;0\1:/g" -e "s/:\(.\)$/:0\1/g" -e "s/:\(.\):/:0\1:/g" -e "s/:\(.\):/:0\1:/g" \
+                   -e "s/:\(.\):/:0\1:/g" -e "s/:\(.\):/:0\1:/g" > "$TmpDir$MacFile.ip"
             else
                 # Adaption under MACOSX:
                 # Output e.g.: '192.168.0.164;DEV;EN4;LLADDR;60:3:8:C0:F6:C1;REACHABLE'
                 # Need to enhance MAC addresses to have always 2 digits in every section: '60:3:... --> 60:03:...'
                 # Same problem as below in 'arp' session.
-                ip -4 neigh | grep ":" | tr "[:lower:]" "[:upper:]" | sed "s/ /;/g"> "$TmpDir$MacFile.mac"
+                ip -4 neigh | grep ":" | tr "[:lower:]" "[:upper:]" | sed "s/ /;/g" | cut -d ";" -f 1 -f 5 > "$TmpDir$MacFile.mac"
                 # Line starts not with MAC address. Therefore '^' is not before MAC, instead ';' is before MAC
                 # Bug: Is missing: sed "s/:\(.\);/:0\1;/" | 
                 # Line ends not with MAC address. Therefore '$' is not after MAC, instead ';' is after MAC 
                 # Four times possible inside ':' and ':'
-                cat "$TmpDir$MacFile.mac" | sed "s/;\(.\):/;0\1:/g" | sed "s/:\(.\);/:0\1;/g" |\
-                sed "s/:\(.\):/:0\1:/g" | sed "s/:\(.\):/:0\1:/g" | sed "s/:\(.\):/:0\1:/g" | sed "s/:\(.\):/:0\1:/g" |\
+                cat "$TmpDir$MacFile.mac" | sed -e "s/;\(.\):/;0\1:/g" -e "s/:\(.\)$/:0\1;/g" \
+                    -e "s/:\(.\):/:0\1:/g" -e "s/:\(.\):/:0\1:/g" -e "s/:\(.\):/:0\1:/g" -e "s/:\(.\):/:0\1:/g" |\
                 mac_converter.sh -L > "$TmpDir$MacFile.ip"
             fi
         fi
@@ -603,7 +610,7 @@ function listMacAddresses()
         do
             # You get this list also with: 'ip neighbour'
             #echo "'$line'"
-            newLineMAC=$(echo "$line" | cut -d ";" -f 5)
+            newLineMAC=$(echo "$line" | cut -d ";" -f 2)
             newLineIP=$(echo "$line" | cut -d ";" -f 1)
             newLineName=$(getHostname "$newLineMAC")
             newLine="$newLineMAC;$newLineIP;$newLineName;"
