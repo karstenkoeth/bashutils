@@ -108,10 +108,11 @@
 # 2024-09-30 0.52 kdk Ubuntu 22.04.5 LTS added
 # 2024-10-25 0.53 kdk ip for 23 and higher adapted in getIpAddress() and getMacAddress()
 # 2024-11-01 0.54 kdk MAC OS X 24.1.0
+# 2024-11-22 0.55 kdk Ubuntu 24.04.1 LTS
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.54"
-PROG_DATE="2024-11-01"
+PROG_VERSION="0.55"
+PROG_DATE="2024-11-22"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -450,10 +451,12 @@ function getSystem()
             #                     e.g. "22.1.0" = MAC OS X Ventura 13.0.1
             #                     e.g. "22.3.0" = MAC OS X Ventura 13.2
             #                     e.g. "22.4.0" = MAC OS X Ventura 13.3.1
+            #                     e.g. "22.6.0" = MAC OS X Venture 13.7
             #                     e.g. "23.1.0" = MAC OS X Sonoma 14.1.1
             #                     e.g. "23.2.0" = MAC OS X Sonoma 14.2.1
             #                     e.g. "23.5.0" = MAC OS X Sonoma 14.5
             #                     e.g. "23.6.0" = MAC OS X Sonoma 14.6.1
+            #                     e.g. "24.0.0" = MAC OS X Sequoia 15.0.1 
             #                     e.g. "24.1.0" = MAC OS X Sonoma 15.1
             #                     e.g. "4.20.69-ish" = iPhone SE 14.5.1 with ish-App
             #                     e.g. "4.20.69-ish" = iPad Air 2 14.7.1 with ish-App
@@ -526,11 +529,13 @@ function getSystem()
                 SYSTEMDescription=$(lsb_release -d)
                 SYSTEMTested="0"
                 if [ ! -z "$SYSTEMDescription" ] ; then
+                    # ###################### SUSE #########
                     if [ "$SYSTEMDescription" = "Description:	SUSE Linux Enterprise Server 15 SP1" ] ; then 
                         # The Script collection was tested on this system:
                         SYSTEMDescription="SUSE Linux Enterprise Server 15 SP1"
                         SYSTEMTested="1"
                     fi
+                    # ###################### Ubuntu #######
                     if [ "$SYSTEMDescription" = "Description:	Ubuntu 18.04.6 LTS" ] ; then
                         SYSTEMDescription="Ubuntu 18.04.6 LTS"
                         SYSTEMTested="1"
@@ -567,12 +572,14 @@ function getSystem()
                         SYSTEMDescription="Ubuntu 22.04.5 LTS"
                         SYSTEMTested="1"
                     fi
+                    # ###################### Debian #######
                     if [ "$SYSTEMDescription" = "Description:    Debian GNU/Linux 10 (buster)" ] ; then
                         # Chromebook
                         # Tested at 2022-04-08
                         SYSTEMDescription="Debian GNU/Linux 10 (buster)"
                         SYSTEMTested="1"
                     fi
+                    # ###################### Raspbian #####
                     if [ "$SYSTEMDescription" = "Description:	Raspbian GNU/Linux 9.13 (stretch)" ] ; then
                         # Tested at 2022-05-13
                         SYSTEMDescription="Raspbian GNU/Linux 9.13 (stretch)"
@@ -584,11 +591,13 @@ function getSystem()
                     SYSTEMDescription=$(echo "$SYSTEMDescription" | sed "s/Description://g" | sed "s/^[[:blank:]]*//g")
 
                     # And now test also the systems above:
+                    # ###################### SUSE #########
                     if [ "$SYSTEMDescription" = "SUSE Linux Enterprise Server 15 SP1" ] ; then 
                         # The Script collection was tested on this system:
                         SYSTEMDescription="SUSE Linux Enterprise Server 15 SP1"
                         SYSTEMTested="1"
                     fi
+                    # ###################### Ubuntu #######
                     if [ "$SYSTEMDescription" = "Ubuntu 18.04.6 LTS" ] ; then
                         SYSTEMDescription="Ubuntu 18.04.6 LTS"
                         SYSTEMTested="1"
@@ -629,6 +638,13 @@ function getSystem()
                         SYSTEMDescription="Ubuntu 22.04.5 LTS"
                         SYSTEMTested="1"
                     fi
+                    SYSTEMtestme="Ubuntu 24.04.1 LTS"
+                    if [ "$SYSTEMDescription" = "$SYSTEMtestme" ] ; then
+                        # Tested at 2024-11-21 on NUC
+                        SYSTEMDescription="$SYSTEMtestme"
+                        SYSTEMTested="1"
+                    fi
+                    # ###################### Debian #######
                     if [ "$SYSTEMDescription" = "Debian GNU/Linux 10 (buster)" ] ; then
                         # Chromebook
                         # Tested at 2022-04-08
@@ -641,6 +657,7 @@ function getSystem()
                         SYSTEMDescription="Debian GNU/Linux 11 (bullseye)"
                         SYSTEMTested="1"
                     fi
+                    # ###################### Raspbian #####
                     if [ "$SYSTEMDescription" = "Raspbian GNU/Linux 9.13 (stretch)" ] ; then
                         # Tested at 2022-05-13
                         SYSTEMDescription="Raspbian GNU/Linux 9.13 (stretch)"

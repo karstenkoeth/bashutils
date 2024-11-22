@@ -84,10 +84,11 @@
 # 2024-11-01 0.39 kdk Adapted to MAC OS X 24.1.0
 # 2024-11-02 0.40 kdk Not yet fully adapted
 # 2024-11-14 0.41 kdk Step forward on MAC
+# 2024-11-22 0.42 kdk Adaption to Ubuntu cut
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.41"
-PROG_DATE="2024-11-14"
+PROG_VERSION="0.42"
+PROG_DATE="2024-11-22"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -568,8 +569,9 @@ function listMacAddresses()
     if [ "$GetMacApp" = "ip" ] ; then
         # The new way with "ip", works under MACOSX and LINUX
         #echo "[$PROG_NAME:listMacAddresses:STATUS] Searching by 'ip' ..."
+        # cut under ubuntu dislike "-f 1 -f 5"
         if [ "$SYSTEM" = "LINUX" ] ;  then
-            ip -4 neigh | grep ":" | tr "[:lower:]" "[:upper:]" | sed "s/ /;/g" | cut -d ";" -f 1 -f 5 > "$TmpDir$MacFile.ip"
+            ip -4 neigh | grep ":" | tr "[:lower:]" "[:upper:]" | sed "s/ /;/g" | cut -d ";" -f 1,5 > "$TmpDir$MacFile.ip"
         elif [ "$SYSTEM" = "MACOSX" ] ;  then
             if [ "$SYSTEMMAJOR" -ge "23" ] ; then
                 # MAC OS shows no more a MAC address with: Bash:> ip -4 neigh 
