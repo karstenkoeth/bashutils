@@ -584,9 +584,20 @@ function copyFiles()
                     if [ ! -z "$scriptisrunning" ] ; then
                         # We should terminate the script ...
                         echo "[$PROG_NAME:copyFiles:STATUS] Script '$pureLine' is running at the moment and will not be updated."
-                        # At the moment (0.74) we have no scripts running in a never ending loop.
+                        # At the moment (0.74) we have no scripts running in a never ending loop aside the executer.sh. 
                         # Therefore we have to wait until the script is finished and we have to take care, that executer is not restating the script directly:
                         # TODO go on here
+                        # Is this running script under control of executer.sh? If yes: remove temporarely from restart:
+                        executerFolder="$HOME/executer/_Execute/"
+                        executerRemoved="0"
+                        if [ -d "$executerFolder" ] ; then
+                            if [ -f "$executerFolder$pureLine" ] ; then
+                                #mv "$executerFolder$pureLine" "$executerFolder$pureLine.bak"
+                                executerRemoved="1"
+                            fi
+                        fi
+                        # Wait for stop of program
+                        #if TODO
                     else
                         # Script is not running. Therefore no problem to copy file:
                         cp "$line" "$DestDir"
