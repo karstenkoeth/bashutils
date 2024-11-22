@@ -22,6 +22,7 @@
 #    We check this with "which program".
 #    If a process terminates but the program is listed inside this folder, the process will
 #    be started again.
+#    Be careful: At the momen (0.11) the program will be immediatly (1 s) restarted.
 #
 # ########### Installer ###################
 #
@@ -53,10 +54,11 @@
 # 2022-07-27 0.08 kdk -P changed from ProgramFolder to ProgramName
 # 2023-02-03 0.09 kdk Some " 2> /dev/zero" added
 # 2023-02-07 0.10 kdk Format corrected
+# 2024-11-22 0.11 kdk Tested on MAC OS X, Ubuntu 20, Raspi
 
 PROG_NAME="Executer"
-PROG_VERSION="0.10"
-PROG_DATE="2023-02-07"
+PROG_VERSION="0.11"
+PROG_DATE="2024-11-22"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="executer.sh"
 
@@ -88,7 +90,7 @@ PROG_SCRIPTNAME="executer.sh"
 #
 # MIT license (MIT)
 #
-# Copyright 2023 - 2021 Karsten Köth
+# Copyright 2024 - 2021 Karsten Köth
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal

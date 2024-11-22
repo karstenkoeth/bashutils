@@ -96,9 +96,10 @@
 # 2024-07-18 0.71 kdk Better adapted to MAC OS X
 # 2024-10-17 0.72 kdk More comments to caddy
 # 2024-11-22 0.73 kdk More comments
+# 2024-11-22 0.74 kdk Started to support executer.sh in copyFiles()
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.73"
+PROG_VERSION="0.74"
 PROG_DATE="2024-11-22"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
@@ -570,13 +571,32 @@ function copyFiles()
         pureLine=$(basename "$line")
         case $pureLine in 
             "install_bashutils_local.sh"|"bash-script-template.sh")
-                echo "[$PROG_NAME:STATUS] Exclude of copy '$pureLine' "
+                echo "[$PROG_NAME:copyFiles:STATUS] Exclude of copy '$pureLine' "
             ;;
             *)
                 #echo "[$PROG_NAME:STATUS] Line:        Copy '$line' "
                 # TODO Think about "Copy": It's ok to overwrite all files?
-                cp "$line" "$DestDir"
-                chmod u+x "$DestDir$pureLine"    
+                # It is NOT ok to copy over an existing file if this file is a script and at the moment executed.
+                # Exists the file?
+                if [ -f "$DestDir$pureLine" ] ; then
+                    # Is the file a script and at the moment running?
+                    scriptisrunning=$(ps xo command | grep "$pureLine" | sed '/^grep/d')
+                    if [ ! -z "$scriptisrunning" ] ; then
+                        # We should terminate the script ...
+                        echo "[$PROG_NAME:copyFiles:STATUS] Script '$pureLine' is running at the moment and will not be updated."
+                        # At the moment (0.74) we have no scripts running in a never ending loop.
+                        # Therefore we have to wait until the script is finished and we have to take care, that executer is not restating the script directly:
+                        # TODO go on here
+                    else
+                        # Script is not running. Therefore no problem to copy file:
+                        cp "$line" "$DestDir"
+                        chmod u+x "$DestDir$pureLine"
+                    fi
+                else
+                    # File didn't exists. Therefore no problem to copy file:
+                    cp "$line" "$DestDir"
+                    chmod u+x "$DestDir$pureLine"    
+                fi
             ;;
         esac
     done

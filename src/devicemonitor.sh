@@ -23,7 +23,7 @@
 # - Actual Date and Time absolute   <-- TODO
 # - NTP Status   <-- TODO
 #
-# The values could be:
+# The values are:
 # - printed on stdout
 # - written to the file '$ConfInfoFile' which is by default '$HOME/devicemonitor/_Process/devicestatus.json'
 #           Every time a new set of values is created, the old content of the file will be overwritten to
@@ -40,7 +40,7 @@
 # - SerialNumber = Store the serial number of the system
 # - DiskEncryption = Store the status of the disk encryption
 # 
-# On the server, a devicemonitor.sh must be run before sending data to.
+# On the server, a devicemonitor.sh must be run first before sending data to.
 # The data is transfered with secure copy (scp). Therefore, the $HOME/.ssh/config file must be prepared.
 #
 # Example for ~/.ssh/config :
