@@ -1204,6 +1204,14 @@ function showHelp()
     echo "    -V     : Show Program Version"
     echo "    -h     : Show this help"
     echo "Copyright $PROG_DATE by Karsten Köth"
+    echo ""
+    echo "A normal run of $PROG_SCRIPTNAME will create the following files in $TmpDir:"
+    echo "  devicescan_devices_*       Lists ip addresses of found devices (text file)"
+    echo "  devicescan_knowndevices_*  Lists text files containing device name (text file)"
+    echo "  devicescan_mac_*.txt.ip    Lists ip address, MAC address and depending at program version more variables as in output of 'ip' (csv file)"
+    echo "  devicescan_mac_*.txt.mac   Only on MAC OS X: Lists ip address, MAC address and depending at program version more variables as in output of 'ip' or 'arp' (csv file)"
+    echo "  devicescan_lines_*         Lists MAC address, ip address, device name (csv file)"
+    echo "  devicescan_nmap_*          Output from 'nmap' inclusive header anf footer line"
 }
 
 # #########################################

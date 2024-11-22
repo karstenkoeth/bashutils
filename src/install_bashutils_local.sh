@@ -95,10 +95,11 @@
 # 2024-07-15 0.70 kdk Bug removed "missing fi"
 # 2024-07-18 0.71 kdk Better adapted to MAC OS X
 # 2024-10-17 0.72 kdk More comments to caddy
+# 2024-11-22 0.73 kdk More comments
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.72"
-PROG_DATE="2024-10-17"
+PROG_VERSION="0.73"
+PROG_DATE="2024-11-22"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -1063,6 +1064,17 @@ fi
 # oidc-agent is useful to connect to web services from bash scripts.
 # https://indigo-dc.gitbook.io/oidc-agent/
 # https://github.com/indigo-dc/oidc-agent
+# Install advice from brew:
+# oidc-agent
+# To start oidc-agent as a background service now and restart at login:
+#   brew services start oidc-agent
+# If you don't need a background service, you can run the following instead:
+#   oidc-agent -a ~/Library/Caches/oidc-agent/oidc-agent.sock -d
+#
+# To start indigo-dc/oidc-agent/oidc-agent now and restart at login:
+#   brew services start indigo-dc/oidc-agent/oidc-agent
+# Or, if you don't want/need a background service you can just run:
+#   /usr/local/opt/oidc-agent/bin/oidc-agent -a /Users/koeth/Library/Caches/oidc-agent/oidc-agent.sock -d
 oidcPresent=$(which oidc-agent 2> /dev/zero)
 if [ -z "$oidcPresent" ] ; then
     # TODO: aptgetPresent

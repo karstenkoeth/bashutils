@@ -482,6 +482,9 @@ function getSystem()
                 if [ "$SYSTEMDescription" = "22.4.0" ] ; then
                     SYSTEMTested="1"
                 fi
+                if [ "$SYSTEMDescription" = "22.6.0" ] ; then
+                    SYSTEMTested="1"
+                fi
                 if [ "$SYSTEMDescription" = "23.1.0" ] ; then
                     SYSTEMTested="1"
                 fi
@@ -492,6 +495,9 @@ function getSystem()
                     SYSTEMTested="1"
                 fi
                 if [ "$SYSTEMDescription" = "23.6.0" ] ; then
+                    SYSTEMTested="1"
+                fi
+                if [ "$SYSTEMDescription" = "24.0.0" ] ; then
                     SYSTEMTested="1"
                 fi
                 if [ "$SYSTEMDescription" = "24.1.0" ] ; then
@@ -1157,9 +1163,19 @@ function createJSON()
     if [ ! "$ARCHITECTURE" = "unknown" ] ; then
         jstr="$jstr""\"Architecture\":\"$ARCHITECTURE\","
     fi
+    if [ "$RASPI" = "1" ] ; then
+        jstr="$jstr""\"Hardware\":\"Raspberry CPU\","
+    fi
+    if [ "$SYSTEM" = "MACOSX" ] ; then
+        jstr="$jstr""\"Hardware\":\"Apple Hardware\","
+    fi
     if [ "$CPUTEMP" != "-0" ] ; then
         jstr="$jstr""\"Temperature\":\"$CPUTEMP\","
         jstr="$jstr""\"Temperature Unit\":\"°C\","
+    fi
+    if [ ! "$MEMORY" = "0" ] ; then
+        jstr="$jstr""\"Memory\":\"$MEMORY\","
+        jstr="$jstr""\"Memory Unit\":\"MByte\","
     fi
     if [ ! "$MACADDRESS" = "00:00:00:00:00:00" ] ; then
         jstr="$jstr""\"MAC Address\":\"$MACADDRESS\","
