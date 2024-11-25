@@ -97,10 +97,11 @@
 # 2024-10-17 0.72 kdk More comments to caddy
 # 2024-11-22 0.73 kdk More comments
 # 2024-11-22 0.74 kdk Started to support executer.sh in copyFiles()
+# 2024-11-25 0.75 kdk Go on with copyFiles()
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.74"
-PROG_DATE="2024-11-22"
+PROG_VERSION="0.75"
+PROG_DATE="2024-11-25"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -553,6 +554,18 @@ function checkOrCreateFolder()
 }
 
 # #########################################
+# delFile()
+# Parameter
+#   1: File name
+# Deletes a file, if it exists.
+function delFile()
+{
+    if [ -f "$1" ] ; then
+        rm "$1"
+    fi
+}
+
+# #########################################
 # copyFiles()
 # Parameter
 #    -
@@ -585,19 +598,41 @@ function copyFiles()
                         # We should terminate the script ...
                         echo "[$PROG_NAME:copyFiles:STATUS] Script '$pureLine' is running at the moment and will not be updated."
                         # At the moment (0.74) we have no scripts running in a never ending loop aside the executer.sh. 
-                        # Therefore we have to wait until the script is finished and we have to take care, that executer is not restating the script directly:
-                        # TODO go on here
+                        # Therefore we have to wait until the script is finished and we have to take care, that executer is not restarting the script directly:
                         # Is this running script under control of executer.sh? If yes: remove temporarely from restart:
                         executerFolder="$HOME/executer/_Execute/"
                         executerRemoved="0"
                         if [ -d "$executerFolder" ] ; then
                             if [ -f "$executerFolder$pureLine" ] ; then
-                                #mv "$executerFolder$pureLine" "$executerFolder$pureLine.bak"
+                                mv "$executerFolder$pureLine" "$executerFolder$pureLine.bak"
                                 executerRemoved="1"
                             fi
                         fi
                         # Wait for stop of program
-                        #if TODO
+                        programStopped="0"
+                        # If the program runs in a loop, e.g. executer, give stop command:
+                        if [ "$pureLine" = "executer.sh" ] ; then
+                            testFolder="$HOME/executer/_Control/"
+                            if [ -d "$testFolder" ] ; then
+                                delFile "$testFolder""RUNNING"
+                                programStopped="1"
+                            else
+                                echo "[$PROG_NAME:copyFiles:WARNING] Script '$pureLine' have no control folder. Skipping"
+                            fi
+                        fi
+                        # TODO Go on with http-echo, http-text, ...
+                        # TODO Wait until the program is down.
+                        if [ "$programStopped" = "1" ] ; then
+                            # Program stopped. Now we could copy:
+                            cp "$line" "$DestDir"
+                            chmod u+x "$DestDir$pureLine"
+                        fi
+                        # Undo the temporal removement:
+                        if [ "$executerRemoved" = "1" ] ; then
+                            mv "$executerFolder$pureLine.bak" "$executerFolder$pureLine"
+                            #executerRemoved="0" # not necessary
+                        fi
+                        # Now, executer will restart the program...
                     else
                         # Script is not running. Therefore no problem to copy file:
                         cp "$line" "$DestDir"
