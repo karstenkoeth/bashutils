@@ -1075,6 +1075,7 @@ function drawDevicesStatus()
                   <script src=\"https://cdn.plot.ly/plotly-latest.min.js\"></script>
                   <body>
                   <div id=\"myPlot\" style=\"width:100%\"></div>
+                  <div id=\"myPlod\" style=\"width:100%\"></div>
                   <script>" >> "$storeFile"
             # Write data points for one device into file:
             xArray=""
@@ -1113,8 +1114,14 @@ function drawDevicesStatus()
                   yaxis: {range: [0, 1], title: \"Status\"},  
                   title: \"$deviceName\"
                   };" >> "$storeFile"
+            echo "const layoud = {
+                  xaxis: {range: [\"2020-01-01\", \""$actYear"-12-31\"], title: \"Date\"},
+                  yaxis: {range: [0, 1], title: \"Status\"},  
+                  title: \"$deviceName\"
+                  };" >> "$storeFile"
             # Write html foot:
             echo "Plotly.newPlot("myPlot", data, layout);
+                  Plotly.newPlot("myPlod", data, layoud);
                   </script>
                   </body>
                   </html>" >> "$storeFile"
