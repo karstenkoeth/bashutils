@@ -4,12 +4,19 @@
 #
 # Overview
 #
-# This script scans ip addresses in the local network
+# This script scans ip addresses in the local network.
 #
 #
-# Config File
+# ## Config File 
 #
 # The location and name of the config file is: $HOME/.devicescan.ini
+#
+# [General] Section
+# The source to generate with '-c' a devices file is given in:
+# DeviceNameFile = FullPathToFile
+#
+# E.g.:
+# DeviceNameFile = /Documents/Infrastructure/Network.txt
 #
 # [Clients] Section 
 # Distribute the 'Devices File' to all clients:
@@ -28,7 +35,7 @@
 # Client = raspi
 #
 #
-# Devices File
+# ## Devices File
 #
 # The location and name of the devices file is: $HOME/.devicescan.csv
 #
@@ -85,10 +92,11 @@
 # 2024-11-02 0.40 kdk Not yet fully adapted
 # 2024-11-14 0.41 kdk Step forward on MAC
 # 2024-11-22 0.42 kdk Adaption to Ubuntu cut
+# 2025-01-02 0.43 kdk Config File with DeviceNames
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.42"
-PROG_DATE="2024-11-22"
+PROG_VERSION="0.43"
+PROG_DATE="2025-01-02"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -208,7 +216,7 @@ KnownDevicesFile="" # We test with '-s'. Therefore the useless string should be 
 DevicesFile="_"
 ConfigFile="_"
 
-UserDatabaseFile="$HOME/Documents/Infrastruktur/Netzwerk.txt"
+UserDatabaseFile=""
 
 GetMacApp="-"
 PrepConf="0"
@@ -1129,6 +1137,11 @@ function drawDevicesStatus()
 # Prepare configuration file
 function prepareConfig()
 {
+    if [ ! -f "$ConfigFile" ] ; then
+        echo "[$PROG_NAME:prepareConfig:ERROR] Config file '$ConfigFile' not found."
+        return
+    fi
+
     # TODO
     # Find over UDP Broadcast a server distributing configurations
 
@@ -1136,13 +1149,20 @@ function prepareConfig()
     # Find over UDP Broadcast a client accepting configuration files
 
     # Try to find user based database file
+    lines=$(cat "$ConfigFile" | grep -i "DeviceNameFile" | tail -n 1)
+    variableFound=$(echo "$lines" | grep "=")
+    if [ ! -z "$variableFound" ] ; then            
+        # Similar to getConfig() in devicemonitor.sh:
+        UserDatabaseFile=$(echo "$lines" | cut -d "=" -f 2 | sed "s/^ *//g" | sed "s/$ *//g")
+    fi
+    # Constants from older versions:
+    # DeviceNameFile = $HOME/Documents/Infrastruktur/Netzwerk.txt
+    # DeviceNameFile = /Volumes/G/Documents/Infrastruktur/Netzwerk.txt
     # cat ~/Documents/Infrastruktur/Netzwerk.txt | grep ";" | grep "$1" | cut -d ";" -f 2
+    # Maybe we have an entry in our config file:
     if [ -f "$UserDatabaseFile" ] ; then
         cat "$UserDatabaseFile" | grep ";" > "$DevicesFile"
         #echo "[$PROG_NAME:prepareConfig:DEBUG] Devices file filled."
-    elif [ -f "/Volumes/G/Documents/Infrastruktur/Netzwerk.txt" ] ; then
-        UserDatabaseFile="/Volumes/G/Documents/Infrastruktur/Netzwerk.txt"
-        cat "$UserDatabaseFile" | grep ";" > "$DevicesFile"
     fi
 
     # Distribute the 'Devices File' to all clients:
@@ -1179,7 +1199,7 @@ function prepareConfig()
             else
                 echo "[$PROG_NAME:prepareConfig:STATUS] Copy configuration to client '$target' ..."
                 # Not sure, if its a good idea to copy the config file ...
-                scp "$ConfigFile" "$target":
+                #scp "$ConfigFile" "$target":
                 # This file contains the link between hostname and MAC address:
                 scp "$DevicesFile" "$target":
             fi
