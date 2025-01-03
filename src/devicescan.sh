@@ -93,10 +93,11 @@
 # 2024-11-14 0.41 kdk Step forward on MAC
 # 2024-11-22 0.42 kdk Adaption to Ubuntu cut
 # 2025-01-02 0.43 kdk Config File with DeviceNames
+# 2025-01-03 0.44 kdk Plotly enhanced with time
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.43"
-PROG_DATE="2025-01-02"
+PROG_VERSION="0.44"
+PROG_DATE="2025-01-03"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -1069,13 +1070,14 @@ function drawDevicesStatus()
             #echo "[$PROG_NAME:drawDevicesStatus:DEBUG] MAC address: '$line' '$searchMAC' '$searchFile' '$storeFile' '$deviceName'"
             # Plot the file with plotly
             # https://www.w3schools.com/ai/tryit.asp?filename=tryai_plotly_scatter
+            # https://plotly.com/javascript/
+            # Plotly date format is 'yyyy-mm-dd HH:MM:SS.ssssss'
             # Write html head:
             echo "<!DOCTYPE html>" > "$storeFile"
             echo "<html>
                   <script src=\"https://cdn.plot.ly/plotly-latest.min.js\"></script>
                   <body>
                   <div id=\"myPlot\" style=\"width:100%\"></div>
-                  <div id=\"myPlod\" style=\"width:100%\"></div>
                   <script>" >> "$storeFile"
             # Write data points for one device into file:
             xArray=""
@@ -1088,6 +1090,7 @@ function drawDevicesStatus()
             do
                 dataDate=$(echo "$dataLine" | cut -d "," -f 1)
                 dataTime=$(echo "$dataLine" | cut -d "," -f 2)
+                dataDateTime=$dataDate" "$dataTime
                 dataStatus=$(echo "$dataLine" | cut -d "," -f 3)
                 if [ "$elementFirst" = "1" ] ; then
                     elementFirst="0"
@@ -1095,7 +1098,7 @@ function drawDevicesStatus()
                     xArray="$xArray"","
                     yArray="$yArray"","
                 fi
-                xArray="$xArray""\"$dataDate\""
+                xArray="$xArray""\"$dataDateTime\""
                 yArray="$yArray""\"$dataStatus\""
             done
             #echo "[$PROG_NAME:drawDevicesStatus:DEBUG] xArray: '$xArray'"
@@ -1114,14 +1117,13 @@ function drawDevicesStatus()
                   yaxis: {range: [0, 1], title: \"Status\"},  
                   title: \"$deviceName\"
                   };" >> "$storeFile"
-            echo "const layoud = {
-                  xaxis: {range: [\"2020-01-01\", \""$actYear"-12-31\"], title: \"Date\"},
-                  yaxis: {range: [0, 1], title: \"Status\"},  
-                  title: \"$deviceName\"
-                  };" >> "$storeFile"
+            # Write config into file:
+            echo "const config = {
+                  scrollZoom: true,
+                  displaylogo: false
+                  };" >> "$storeFile" 
             # Write html foot:
-            echo "Plotly.newPlot("myPlot", data, layout);
-                  Plotly.newPlot("myPlod", data, layoud);
+            echo "Plotly.newPlot("myPlot", data, layout, config);
                   </script>
                   </body>
                   </html>" >> "$storeFile"
