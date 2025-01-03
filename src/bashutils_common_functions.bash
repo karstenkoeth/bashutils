@@ -39,12 +39,13 @@
 # 2022-12-11 0.28 kdk With deleteLeadingAndTrailingSpaces()
 # 2023-11-30 0.29 kdk Comments added how to use this file
 # 2024-07-18 0.30 kdk deleteLeadingAndTrailingSpaces() optimized a little bit
+# 2025-01-03 0.31 kdk Global Variables Section added to reduce warnings
 
 # #########################################
 #
 # MIT license (MIT)
 #
-# Copyright 2024 - 2021 Karsten Köth
+# Copyright 2025 - 2021 Karsten Köth
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -63,6 +64,17 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
+
+# #########################################
+#
+# Global Variables
+#
+
+LogFile=""
+RunFile=""
+
+MainLoopSleepFactor=10
+MainLoopResponseTime="1s"
 
 # #########################################
 #

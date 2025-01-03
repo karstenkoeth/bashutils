@@ -94,9 +94,10 @@
 # 2024-11-22 0.42 kdk Adaption to Ubuntu cut
 # 2025-01-02 0.43 kdk Config File with DeviceNames
 # 2025-01-03 0.44 kdk Plotly enhanced with time
+# 2025-01-03 0.45 kdk Running time calculated
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.44"
+PROG_VERSION="0.45"
 PROG_DATE="2025-01-03"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
@@ -141,7 +142,7 @@ PROG_SCRIPTNAME="devicescan.sh"
 #
 # MIT license (MIT)
 #
-# Copyright 2024 - 2021 Karsten Köth
+# Copyright 2025 - 2021 Karsten Köth
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -174,6 +175,8 @@ product="devicescan"
 # Variables
 #
 
+# We want to count how long the script is running:
+atcTicks=$(date "+%s")
 # Typically, we need in a lot of scripts the start date and time of the script:
 actDateTime=$(date "+%Y-%m-%d_%H:%M:%S")
 actDate=$(date "+%Y-%m-%d") # Corresponds to format inside gnuplot script
@@ -1312,4 +1315,7 @@ drawDevicesStatus  # <-- TODO - not yet finished.
 # delFile "$TmpFile"          # Created in scanNetwork()
 # delFile "$TmpDir$ScanFile"  # Created in scanNetwork()
 
-echo "[$PROG_NAME:STATUS] Done."
+# Calculate the program running time:
+endTicks=$(date "+%s")
+duration=$(expr $endTicks - $atcTicks)
+echo "[$PROG_NAME:STATUS] Done ($duration s)."
