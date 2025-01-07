@@ -39,6 +39,19 @@
 # _Done
 #    If an installer was executed, it will be moved into this folder and 
 #    the filename will be enhanced with Date and Time
+#
+# ########### Configuration ###############
+# 
+# The location and name of the configuration file is: $HOME/.executer.ini
+#
+# Per executed program only one line inside the configuration is allowed. 
+# The line has to start with the same text as placed in the _Execute folder.
+# The text is followed by an equal sign ("=") and this followed by a time value.
+# The time value defines the waiting time between to executions of this specific program.
+# If only a number is given, the time value is interpreted as seconds.
+#
+# If the configuration is changed, the script must be informed about the changes to reread the configuration.
+
 
 # #########################################
 #
@@ -55,10 +68,12 @@
 # 2023-02-03 0.09 kdk Some " 2> /dev/zero" added
 # 2023-02-07 0.10 kdk Format corrected
 # 2024-11-22 0.11 kdk Tested on MAC OS X, Ubuntu 20, Raspi
+# 2025-01-03 0.12 kdk With configuration file - NOT YET READY
+# 2025-01-07 0.13 kdk Bad hack for devicescan - NOT YET TESTED
 
 PROG_NAME="Executer"
-PROG_VERSION="0.11"
-PROG_DATE="2024-11-22"
+PROG_VERSION="0.13"
+PROG_DATE="2025-01-07"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="executer.sh"
 
@@ -90,7 +105,7 @@ PROG_SCRIPTNAME="executer.sh"
 #
 # MIT license (MIT)
 #
-# Copyright 2024 - 2021 Karsten Köth
+# Copyright 2025 - 2021 Karsten Köth
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -150,6 +165,14 @@ ExecuteFolder="_"
 RunFile="_"
 LogFile="_"
 
+ConfigFile=""
+
+declare -a DelayTimesConfig
+declare -a DelayTimesActual
+
+# dirtyHack
+QnDTimeActual=0
+
 # #########################################
 #
 # Functions
@@ -169,6 +192,80 @@ function adjustVariables()
         LogFile="$ControlFolder""LOG"
 
     ExecuteFolder="$MainFolder""_Execute/"
+
+    ConfigFile="$HOME/.$product.ini"
+}
+
+# #########################################
+# Parameter
+# Sets the global arrays
+function adjustArrays()
+{
+    local lines=$(ls -1 $ExecuteFolder*.sh)
+    local linenumbers=$(echo "$lines" | wc -l)
+    DelayTimesConfig[$linenumbers]=0
+    DelayTimesActual[$linenumbers]=0
+
+    for line in $lines
+    do
+        pureLine=$(basename "$line")
+        echo "[$PROG_NAME:adjustArrays:TODO] linenumbers: '$linenumbers'  line: '$line'  pureLine: '$pureLine' "
+        
+    done
+
+}
+
+# #########################################
+# isNumber()
+# Parameter
+#   1: String to check
+# Return Value
+#   1: 0 = Is number
+#      1 = Is not number
+# Check, if the string contains only digits.
+function isNumber()
+{
+case $1 in
+    ''|*[!0-9]*) return 1 ;;
+    *) return 0 ;;
+esac
+}
+
+# #########################################
+# getConfigPauseTime()
+# Parameter
+#   1: program name
+# Return
+#   1: pause time in seconds = pause between to following runs of program
+# In cause of an error '0' is returned to switch of pause feature.
+function getConfigPauseTime()
+{
+    if [ ! -f "$ConfigFile" ] ; then
+        # In cause of an error '0' is returned to switch of pause feature.
+        echo "[$PROG_NAME:getConfigPauseTime:DEBUG] Configuration file '$ConfigFile' not found."
+        echo 0
+    fi
+    local pauseTime=""
+    local pauseTimeLine=$(cat "$ConfigFile" | grep -i "$1" | tail -n 1)
+    local variableFound=$(echo "$pauseTimeLine" | grep "=")
+    if [ ! -z "$variableFound" ] ; then            
+        # Similar to getConfig() in devicemonitor.sh:
+        pauseTime=$(echo "$pauseTimeLine" | cut -d "=" -f 2 | sed "s/^ *//g" | sed "s/$ *//g")
+    else
+        # In cause of an error '0' is returned to switch of pause feature.
+        echo "[$PROG_NAME:getConfigPauseTime:DEBUG] No configuration for '$1' found in configuration file."
+        echo 0
+    fi
+    echo "[$PROG_NAME:getConfigPauseTime:DEBUG] Wait '$pauseTime' seconds between runs of '$1'."
+    # Do we have a clean number?
+    isNumber "$pauseTime"
+    if [ $? -eq 1 ] ; then
+        echo "$pauseTime"
+    else
+        # In cause of an error '0' is returned to switch of pause feature.
+        echo "[$PROG_NAME:getConfigPauseTime:DEBUG] Configuration found ('$pauseTime') is not a number."
+        echo 0
+    fi
 }
 
 # #########################################
@@ -287,8 +384,18 @@ function checkForExecution()
                     # find in ps ...
                     checkForRunning "$pureLine"
                     if [ $? -gt 0 ] ; then 
-                        #echo "[$PROG_NAME:DEBUG] Try to restart program '$pureLine' ..."
-                        "$pureLine" & 
+                        # Program should run, but is not running. Maybe program should only runsometimes and sleep most time:
+                        # This is the time we should pause:
+                        local pauseTime=$(getConfigPauseTime "$pureLine")
+                        # This is the time we have waited:
+                        QnDTimeActual=$(expr $QnDTimeActual + 1)
+                        if [ "$pauseTime" -lt "$QnDTimeActual" ] ; then
+                            #echo "[$PROG_NAME:DEBUG] Try to restart program '$pureLine' ..."
+                            QnDTimeActual=0
+                            "$pureLine" & 
+                        else
+                            echo "[$PROG_NAME:checkForExecution:DEBUG] Program '$pureLine' is pausing ('$QnDTimeActual'/'$pauseTime')."
+                        fi
                     fi
                 fi
 
@@ -431,6 +538,8 @@ fi
 updateRun
 
 echo "[$PROG_NAME:STATUS] Enter main loop. Monitor script with ':> ls --full-time $LogFile'. Stop script by deleting '$RunFile'."
+
+adjustArrays
 
 # Start main loop
 

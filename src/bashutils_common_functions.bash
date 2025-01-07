@@ -21,6 +21,12 @@
 #    source "$FunctionLibrary"
 #    echod "Main" "Function Library found."
 #fi
+#
+#
+# Links
+#
+# https://www.gnu.org/software/bash/manual/html_node/index.html  - Abstract descriptions
+
 
 # #########################################
 #
