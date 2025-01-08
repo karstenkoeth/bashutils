@@ -71,9 +71,10 @@
 # 2025-01-03 0.12 kdk With configuration file - NOT YET READY
 # 2025-01-07 0.13 kdk Bad hack for devicescan - NOT YET TESTED
 # 2025-01-08 0.14 kdk Testing
+# 2025-01-08 0.15 kdk Testing
 
 PROG_NAME="Executer"
-PROG_VERSION="0.14"
+PROG_VERSION="0.15"
 PROG_DATE="2025-01-08"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="executer.sh"
@@ -245,8 +246,9 @@ function getConfigPauseTime()
 {
     if [ ! -f "$ConfigFile" ] ; then
         # In cause of an error '0' is returned to switch of pause feature.
-        echo "[$PROG_NAME:getConfigPauseTime:DEBUG] Configuration file '$ConfigFile' not found."
-        echo 0
+        #echo "[$PROG_NAME:getConfigPauseTime:DEBUG] Configuration file '$ConfigFile' not found."
+        echo "0"
+        return
     fi
     local pauseTime=""
     local pauseTimeLine=$(cat "$ConfigFile" | grep -i "$1" | tail -n 1)
@@ -256,18 +258,20 @@ function getConfigPauseTime()
         pauseTime=$(echo "$pauseTimeLine" | cut -d "=" -f 2 | sed "s/^ *//g" | sed "s/$ *//g")
     else
         # In cause of an error '0' is returned to switch of pause feature.
-        echo "[$PROG_NAME:getConfigPauseTime:DEBUG] No configuration for '$1' found in configuration file."
-        echo 0
+        #echo "[$PROG_NAME:getConfigPauseTime:DEBUG] No configuration for '$1' found in configuration file."
+        echo "0"
+        return
     fi
-    echo "[$PROG_NAME:getConfigPauseTime:DEBUG] Wait '$pauseTime' seconds between runs of '$1'."
+    #echo "[$PROG_NAME:getConfigPauseTime:DEBUG] Wait '$pauseTime' seconds between runs of '$1'."
     # Do we have a clean number?
     isNumber "$pauseTime"
-    if [ $? -eq 1 ] ; then
+    if [ $? -eq 0 ] ; then
         echo "$pauseTime"
     else
         # In cause of an error '0' is returned to switch of pause feature.
-        echo "[$PROG_NAME:getConfigPauseTime:DEBUG] Configuration found ('$pauseTime') is not a number."
-        echo 0
+        #echo "[$PROG_NAME:getConfigPauseTime:DEBUG] Configuration found ('$pauseTime') is not a number."
+        echo "0"
+        return
     fi
 }
 
@@ -389,11 +393,13 @@ function checkForExecution()
                     if [ $? -gt 0 ] ; then 
                         # Program should run, but is not running. Maybe program should only runsometimes and sleep most time:
                         # This is the time we should pause:
-                        local pauseTime=$(getConfigPauseTime "$pureLine")
+                        local pauseTime
+                        pauseTime=$(getConfigPauseTime "$pureLine")
+                        echo "[$PROG_NAME:checkForExecution:DEBUG] Wait '$pauseTime' for '$pureLine'"
                         # This is the time we have waited:
                         QnDTimeActual=$(expr $QnDTimeActual + 1)
                         if [ "$pauseTime" -lt "$QnDTimeActual" ] ; then
-                            #echo "[$PROG_NAME:DEBUG] Try to restart program '$pureLine' ..."
+                            echo "[$PROG_NAME:checkForExecution:DEBUG] Try to restart program '$pureLine' ..."
                             QnDTimeActual=0
                             "$pureLine" & 
                         else
