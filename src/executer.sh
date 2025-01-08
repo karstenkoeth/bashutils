@@ -70,10 +70,11 @@
 # 2024-11-22 0.11 kdk Tested on MAC OS X, Ubuntu 20, Raspi
 # 2025-01-03 0.12 kdk With configuration file - NOT YET READY
 # 2025-01-07 0.13 kdk Bad hack for devicescan - NOT YET TESTED
+# 2025-01-08 0.14 kdk Testing
 
 PROG_NAME="Executer"
-PROG_VERSION="0.13"
-PROG_DATE="2025-01-07"
+PROG_VERSION="0.14"
+PROG_DATE="2025-01-08"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="executer.sh"
 
@@ -209,8 +210,10 @@ function adjustArrays()
     for line in $lines
     do
         pureLine=$(basename "$line")
-        echo "[$PROG_NAME:adjustArrays:TODO] linenumbers: '$linenumbers'  line: '$line'  pureLine: '$pureLine' "
-        
+        #echo "[$PROG_NAME:adjustArrays:TODO] linenumbers: '$linenumbers'  line: '$line'  pureLine: '$pureLine' "
+        # Result:
+        # [Executer:adjustArrays:TODO] linenumbers: '       3'  line: '/Users/koeth/executer/_Execute/devicemonitor.sh'  pureLine: 'devicemonitor.sh' 
+
     done
 
 }
