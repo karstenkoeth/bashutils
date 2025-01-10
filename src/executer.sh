@@ -72,10 +72,12 @@
 # 2025-01-07 0.13 kdk Bad hack for devicescan - NOT YET TESTED
 # 2025-01-08 0.14 kdk Testing
 # 2025-01-08 0.15 kdk Testing
+# 2025-01-09 0.16 kdk Improve with array and getArrayValue(), setArrayValue()
+# 2025-01-10 0.17 kdk Improving ongoing
 
 PROG_NAME="Executer"
-PROG_VERSION="0.15"
-PROG_DATE="2025-01-08"
+PROG_VERSION="0.17"
+PROG_DATE="2025-01-10"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="executer.sh"
 
@@ -169,8 +171,9 @@ LogFile="_"
 
 ConfigFile=""
 
-declare -a DelayTimesConfig
+declare -a DelayTimesNames
 declare -a DelayTimesActual
+DelayTimesMax=0 
 
 # dirtyHack
 QnDTimeActual=0
@@ -183,6 +186,9 @@ QnDTimeActual=0
 # #########################################
 # adjustVariables()
 # Parameter
+#   -
+# Return Value
+#   -
 # Sets the global variables 
 function adjustVariables()
 {
@@ -199,24 +205,98 @@ function adjustVariables()
 }
 
 # #########################################
+# adjustArrays()
 # Parameter
+#   -
+# Return Value
+#   -
 # Sets the global arrays
 function adjustArrays()
 {
-    local lines=$(ls -1 $ExecuteFolder*.sh)
-    local linenumbers=$(echo "$lines" | wc -l)
-    DelayTimesConfig[$linenumbers]=0
+    local lines
+    lines=$(ls -1 $ExecuteFolder*.sh)
+    local linenumbers
+    linenumbers=$(echo "$lines" | wc -l)
+    DelayTimesNames[$linenumbers]=0
     DelayTimesActual[$linenumbers]=0
-
+    local iFor
+    iFor=0
     for line in $lines
     do
         pureLine=$(basename "$line")
-        #echo "[$PROG_NAME:adjustArrays:TODO] linenumbers: '$linenumbers'  line: '$line'  pureLine: '$pureLine' "
-        # Result:
-        # [Executer:adjustArrays:TODO] linenumbers: '       3'  line: '/Users/koeth/executer/_Execute/devicemonitor.sh'  pureLine: 'devicemonitor.sh' 
-
+        DelayTimesNames[$iFor]="$pureLine"
+        DelayTimesActual[$iFor]="0"
+        #echo "[$PROG_NAME:adjustArrays:DEBUG] linenumbers: '$linenumbers'  line: '$line'  pureLine: '$pureLine'  Name:  '${DelayTimesNames[$iFor]}'  Value: '${DelayTimesActual[$iFor]}'"
+        iFor=$(expr $iFor + 1)
+        DelayTimesMax=$iFor
     done
 
+}
+
+# #########################################
+# getArrayValue()
+# Parameter
+#   1: String of name of array value
+# Return Value
+#   1: Content of array value with name
+# Return the value of variable "name"
+function getArrayValue()
+{
+    local line
+    line=0
+    while [ $line -lt $DelayTimesMax ]  
+    do
+        if [ "${DelayTimesNames[$line]}" = "$1" ] ; then
+            echo "${DelayTimesActual[$line]}"
+            return
+        fi
+        line=$(expr $line + 1)
+    done
+    echo ""
+}
+
+# #########################################
+# setArrayValue()
+# Parameter
+#   1: String of name of array value
+#   2: Value to set
+# Return Value
+#   -
+# Set the value of variable "name". If this variable doesn't exists: Create it.
+function setArrayValue()
+{
+    local line
+    line=0
+    while [ $line -lt $DelayTimesMax ]
+    do
+        if [ "${DelayTimesNames[$line]}" = "$1" ] ; then
+            DelayTimesActual[$line]="$2"
+            return
+        fi
+        line=$(expr $line + 1)
+    done
+    # Not found, create new element:
+    DelayTimesMax=$(expr $DelayTimesMax + 1)
+    DelayTimesNames[$line]="$1"
+    DelayTimesActual[$line]="$2"
+}
+
+# #########################################
+# getArray()
+# Parameter
+#   -
+# Return Value
+#   -
+# Print the complete array
+function getArray()
+{
+    local line
+    line=0
+    while [ $line -lt $DelayTimesMax ]
+    do
+        echo "[$PROG_NAME:getArray] i:     '$line'/'$DelayTimesMax'   Name:  '${DelayTimesNames[$line]}'   Value: '${DelayTimesActual[$line]}'"
+        line=$(expr $line + 1)
+    done
 }
 
 # #########################################
@@ -397,6 +477,9 @@ function checkForExecution()
                         pauseTime=$(getConfigPauseTime "$pureLine")
                         echo "[$PROG_NAME:checkForExecution:DEBUG] Wait '$pauseTime' for '$pureLine'"
                         # This is the time we have waited:
+                        getArrayValue
+                        setArrayValue
+                        TODO
                         QnDTimeActual=$(expr $QnDTimeActual + 1)
                         if [ "$pauseTime" -lt "$QnDTimeActual" ] ; then
                             echo "[$PROG_NAME:checkForExecution:DEBUG] Try to restart program '$pureLine' ..."
@@ -549,6 +632,12 @@ updateRun
 echo "[$PROG_NAME:STATUS] Enter main loop. Monitor script with ':> ls --full-time $LogFile'. Stop script by deleting '$RunFile'."
 
 adjustArrays
+
+#setArrayValue "Blub" 15
+#setArrayValue "bla" "13"
+#sDeb=$(getArrayValue "executer.sh"); echo "Value of 'executer.sh': '$sDeb'"
+#sDeb=$(getArrayValue "Blub"); echo "Value of 'Blub': '$sDeb'"
+#getArray
 
 # Start main loop
 
