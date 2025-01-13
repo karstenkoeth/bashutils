@@ -74,10 +74,11 @@
 # 2025-01-08 0.15 kdk Testing
 # 2025-01-09 0.16 kdk Improve with array and getArrayValue(), setArrayValue()
 # 2025-01-10 0.17 kdk Improving ongoing
+# 2025-01-13 0.18 kdk Use array in executer
 
 PROG_NAME="Executer"
-PROG_VERSION="0.17"
-PROG_DATE="2025-01-10"
+PROG_VERSION="0.18"
+PROG_DATE="2025-01-13"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="executer.sh"
 
@@ -175,8 +176,6 @@ declare -a DelayTimesNames
 declare -a DelayTimesActual
 DelayTimesMax=0 
 
-# dirtyHack
-QnDTimeActual=0
 
 # #########################################
 #
@@ -331,8 +330,10 @@ function getConfigPauseTime()
         return
     fi
     local pauseTime=""
-    local pauseTimeLine=$(cat "$ConfigFile" | grep -i "$1" | tail -n 1)
-    local variableFound=$(echo "$pauseTimeLine" | grep "=")
+    local pauseTimeLine
+    pauseTimeLine=$(cat "$ConfigFile" | grep -i "$1" | tail -n 1)
+    local variableFound
+    variableFound=$(echo "$pauseTimeLine" | grep "=")
     if [ ! -z "$variableFound" ] ; then            
         # Similar to getConfig() in devicemonitor.sh:
         pauseTime=$(echo "$pauseTimeLine" | cut -d "=" -f 2 | sed "s/^ *//g" | sed "s/$ *//g")
@@ -468,29 +469,30 @@ function checkForExecution()
                 #echo "[$PROG_NAME:DEBUG] Program     '$pureLine'"
                 checkForPresence "$pureLine"
                 if [ $? -eq 0 ] ; then 
-                    # find in ps ...
+                    # Find in ps ...
                     checkForRunning "$pureLine"
                     if [ $? -gt 0 ] ; then 
-                        # Program should run, but is not running. Maybe program should only runsometimes and sleep most time:
+                        # Program should run, but is not running. Maybe program should only run sometimes and sleep most time:
                         # This is the time we should pause:
-                        local pauseTime
-                        pauseTime=$(getConfigPauseTime "$pureLine")
-                        echo "[$PROG_NAME:checkForExecution:DEBUG] Wait '$pauseTime' for '$pureLine'"
-                        # This is the time we have waited:
-                        getArrayValue
-                        setArrayValue
-                        TODO
-                        QnDTimeActual=$(expr $QnDTimeActual + 1)
-                        if [ "$pauseTime" -lt "$QnDTimeActual" ] ; then
-                            echo "[$PROG_NAME:checkForExecution:DEBUG] Try to restart program '$pureLine' ..."
-                            QnDTimeActual=0
-                            "$pureLine" & 
-                        else
-                            echo "[$PROG_NAME:checkForExecution:DEBUG] Program '$pureLine' is pausing ('$QnDTimeActual'/'$pauseTime')."
+                        local pauseTimeConfig
+                        local pauseTimeAct
+                        pauseTimeConfig=$(getConfigPauseTime "$pureLine")
+                        pauseTimeAct=$(getArrayValue "$pureLine")
+                        if [ -z "$pauseTimeAct" ] ; then
+                            pauseTimeAct="0"
                         fi
+                        #echo "[$PROG_NAME:checkForExecution:DEBUG] Wait '$pauseTimeAct/$pauseTimeConfig' for '$pureLine'"
+                        pauseTimeAct=$(expr $pauseTimeAct + 1)
+                        if [ "$pauseTimeConfig" -lt "$pauseTimeAct" ] ; then
+                            #echo "[$PROG_NAME:checkForExecution:DEBUG] Try to restart program '$pureLine' ..."
+                            pauseTimeAct=0
+                            "$pureLine" & 
+                        #else
+                        #    #echo "[$PROG_NAME:checkForExecution:DEBUG] Program '$pureLine' is pausing ('$pauseTimeAct'/'$pauseTimeConfig')."
+                        fi
+                        setArrayValue "$pureLine" "$pauseTimeAct"
                     fi
                 fi
-
             ;;
         esac
     done
