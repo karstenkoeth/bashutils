@@ -18,10 +18,11 @@
 # 2021-03-02 0.08 kdk Prepared for continuous run
 # 2022-11-30 0.09 kdk More general
 # 2024-10-18 0.10 kdk More logs
+# 2025-01-27 0.11 kdk Preparation for Time Series Server
 
 PROG_NAME="http process text"
-PROG_VERSION="0.10"
-PROG_DATE="2024-10-18"
+PROG_VERSION="0.11"
+PROG_DATE="2025-01-27"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="http-text.sh"
 
@@ -31,12 +32,29 @@ PROG_SCRIPTNAME="http-text.sh"
 #
 # PUT is for "Update Element". POST is for "Create Element".
 # Therefore, the code should be changed.
+#
+#
+# Time Series
+#
+# Create an uuid for the specific time serie (e.g. for time serie "Temperature IT Room")
+#
+# POST value as data to the path /timeseries/$UUID/
+# Data could be one number or a complexe string
+# E.g.:
+# data = "1"
+# data = "1234"
+# data = "123,456"
+# Data is only be allowed to be a number. The data value should be showable in a diagram as value point.
+# Time Series:
+# The server itself adds the data and time of the timestamp receiving the value to this value.
+#
+# GET value as data from path /timeseries/$UUID/
 
 # #########################################
 #
 # MIT license (MIT)
 #
-# Copyright 2024 - 2020 Karsten Köth
+# Copyright 2025 - 2020 Karsten Köth
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -179,9 +197,26 @@ function handleApi()
         fi
         if [ -f "$doubleHeadDir/value.txt" ] ; then
             log "handleApi - addDoubleHead: Exchange point created."
-            sendString "{ \"DoubleHead\": \"$Uuid\" }"
+            sendString "{\"DoubleHead\":\"$Uuid\"}"
         else
-            log "handleApi - addDoubleHead: Error creating file. ($doubleHeadDir)"
+            log "handleApi - addDoubleHead: Error creating file. ($doubleHeadDir/value.txt)"
+            sendString "Error creating file."
+        fi
+    elif [ "$apiCommand" = "addTimeSeries" ] ; then
+        tsUuid=$(uuidgen)
+        timeSeriesDir="$ProcessDir/$tsUuid"
+        mkdir -p "$timeSeriesDir"
+        if [ -d "$timeSeriesDir" ] ; then
+            touch "$timeSeriesDir/values.csv"
+        else
+            log "handleApi - addTimeSeries: Error creating directory. ($timeSeriesDir)"
+            sendString "Error creating directory."
+        fi
+        if [ -f "$timeSeriesDir/values.csv" ] ; then
+            log "handleApi - addTimeSeries: Exchange point created."
+            sendString "{\"TimeSeries\":\"$tsUuid\"}"
+        else
+            log "handleApi - addTimeSeries: Error creating file. ($timeSeriesDir/values.csv)"
             sendString "Error creating file."
         fi
     else
@@ -238,6 +273,54 @@ function handleData()
 }
 
 # #########################################
+# handleTimeSeries()
+function handleTimeSeries()
+{
+    # Second level in data: We check, if the uuid is known:
+    timeSeries=$(echo "$documentPath" | cut -d "/" -f 3 -)
+    # TODO: For GET, POST and PUT we must care about a non evil content of "timeSeries". 
+    # Only allowed are numbers, letters and '-'.
+
+    # In documentPath, we have the correct path. E.g.:
+    # '/data/818c4143-11a0-4254-b22b-b0f2b9ddba55/prototype/' # With or without trailing slash!
+    # First Element is "timeseries" and is checked in code before here.
+    # Second Element is UUID and is checked in code before here.
+    tsSubFolder=${documentPath/\/timeseries\/$timeSeries}
+    # Do not accept "." as folder or topic content. 
+    local testChar
+    testChar=$(echo "$documentPath" | grep "\.")
+    if [ -n "$testChar" ] ; then
+        # Topic contains minimum one point. Set to standard:
+        tsSubFolder=""
+    fi
+    # Do not accept "\" as folder or topic content. 
+    testChar=$(echo "$documentPath" | grep "\\\\")
+    if [ -n "$testChar" ] ; then
+        # Topic contains minimum one backslash. Set to standard:
+        tsSubFolder=""
+    fi                
+    #log "handleData - subFolder: '$subFolder'"
+    # Go on beyond security checks.
+    valueFile="$ProcessDir/$timeSeries/$tsSubFolder/values.csv"
+    if [ -f "$valueFile" ] ; then
+        if   [ "$connectionType" = "GET" ] ; then
+            value=$(cat $valueFile)
+            sendString "\"$value\""
+            log "S->C: '$valueFile' : '$value' "
+        elif [ "$connectionType" = "POST" ] ; then
+            variable=""
+            if [ $contentLength -gt 0 ] ; then
+                read -r -t 2 -n $contentLength variable 
+            fi
+            # Remove newline, ...:
+            variable=${variable%%$'\r'}
+            echo "$variable" > "$valueFile"
+            log "C->S: '$variable' -> '$valueFile'"
+        fi
+    fi
+}
+
+# #########################################
 # handleDoc()
 function handleDoc()
 {
@@ -275,7 +358,7 @@ function handleGET()
 function handlePUT()
 {
     # Look for the first level:
-    # The first field is empty - we search for "/api/"
+    # The first field is empty - we search for "/data/"
     firstLevel=$(echo "$documentPath" | cut -d "/" -f 2 -)
     #log "handlePut - firstLevel: '$firstLevel'"
 
@@ -288,8 +371,14 @@ function handlePUT()
 # handlePOST()
 function handlePOST()
 {
-    # Look for the first level.
-    log "handlePOST: Not yet supported."                            # TODO
+    # Look for the first level:
+    # The first field is empty - we search for "/timeseries/"
+    firstLevel=$(echo "$documentPath" | cut -d "/" -f 2 -)
+    #log "handlePut - firstLevel: '$firstLevel'"
+
+    if [ "$firstLevel" = "timeseries" ] ; then
+        handleTimeSeries
+    fi
 }
 
 # #########################################

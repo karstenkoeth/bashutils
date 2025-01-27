@@ -42,7 +42,7 @@ Connect to the server e.g. with curl:
 
 The server will answer with a JSON structure, e.g.:
 
-`{ "DoubleHead": "C58A2027-094E-4FDE-A460-F9BBFB564257" }`
+`{"DoubleHead":"C58A2027-094E-4FDE-A460-F9BBFB564257"}`
 
 With this secret, data could be send to the server or received from the server.
 

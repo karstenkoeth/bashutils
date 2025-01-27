@@ -19,10 +19,11 @@
 # 2021-11-09 0.09 kdk Demo mode
 # 2022-11-30 0.10 kdk More general
 # 2024-10-19 0.11 kdk Log() included
+# 2025-01-27 0.12 kdk Preparation for Time Series Server
 
 PROG_NAME="HTTP Echo"
-PROG_VERSION="0.11"
-PROG_DATE="2024-10-19"
+PROG_VERSION="0.12"
+PROG_DATE="2025-01-27"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="http-echo.sh"
 
@@ -30,7 +31,7 @@ PROG_SCRIPTNAME="http-echo.sh"
 #
 # MIT license (MIT)
 #
-# Copyright 2024 - 2020 Karsten Köth
+# Copyright 2025 - 2020 Karsten Köth
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -294,6 +295,8 @@ if [ $# -ge 1 ] ; then
     elif [ "$1" = "-d" ] ; then
         DEMO="1"
         PORT="$DEMOPORT"
+    elif [ "$1" = "-P" ] ; then
+        echo "ProgramName=$product" ; exit;
     elif [ "$1" = "-V" ] ; then
         showVersion ; exit;
     elif [ "$1" = "-h" ] ; then
