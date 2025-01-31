@@ -301,21 +301,28 @@ function handleTimeSeries()
     fi                
     #log "handleData - subFolder: '$subFolder'"
     # Go on beyond security checks.
-    valueFile="$ProcessDir/$timeSeries/$tsSubFolder/values.csv"
-    if [ -f "$valueFile" ] ; then
+    local tsValueFile
+    
+    
+    tsValueFile="$ProcessDir/$timeSeries/$tsSubFolder/values.csv"
+    if [ -f "$tsValueFile" ] ; then
         if   [ "$connectionType" = "GET" ] ; then
-            value=$(cat $valueFile)
-            sendString "\"$value\""
-            log "S->C: '$valueFile' : '$value' "
+            local tsValue
+            tsValue=$(cat $tsValueFile)
+            sendString "\"$tsValue\""
+            log "S->C: '$tsValueFile' : '$tsValue' "
         elif [ "$connectionType" = "POST" ] ; then
-            variable=""
+            local tsVariable
+            tsVariable=""
             if [ $contentLength -gt 0 ] ; then
-                read -r -t 2 -n $contentLength variable 
+                read -r -t 2 -n $contentLength tsVariable 
             fi
             # Remove newline, ...:
-            variable=${variable%%$'\r'}
-            echo "$variable" > "$valueFile"
-            log "C->S: '$variable' -> '$valueFile'"
+            tsVariable=${tsVariable%%$'\r'}
+            local tsActDate
+            local tsActTime
+            echo "$tsActDate,$tsActTime,$tsVariable" >> "$tsValueFile"
+            log "C->S: '$tsVariable' -> '$tsValueFile'"
         fi
     fi
 }
