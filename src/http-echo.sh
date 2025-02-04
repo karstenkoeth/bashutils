@@ -20,10 +20,11 @@
 # 2022-11-30 0.10 kdk More general
 # 2024-10-19 0.11 kdk Log() included
 # 2025-01-27 0.12 kdk Preparation for Time Series Server
+# 2025-02-04 0.13 kdk Log outputs adapted
 
 PROG_NAME="HTTP Echo"
-PROG_VERSION="0.12"
-PROG_DATE="2025-01-27"
+PROG_VERSION="0.13"
+PROG_DATE="2025-02-04"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="http-echo.sh"
 
@@ -68,6 +69,7 @@ DEMOPORT="8089"
 MQTT="0"
 DEMO="0"
 SERVER="http-text.sh"
+INSTANCE=""
 
 ServerDir="$HOME/tmp"
 logFile=""
@@ -104,18 +106,39 @@ function getSharingDirectory()
     else
         Uuid=$(uuidgen)
         TmpDir="$HOME/tmp/$product""_$Uuid"
+        log "[getSharingDirectory:STATUS] Instance set to '$Uuid'."
     fi
-    log "[$PROG_NAME:getSharingDirectory:TmpDir:DEBUG] '$TmpDir' defined."
+    log "[getSharingDirectory:TmpDir:DEBUG] '$TmpDir' defined."
     mkdir -p "$TmpDir"
     if [ ! -d "$TmpDir" ] ; then
         echo "[$PROG_NAME:getSharingDirectory:ERROR] Can't create temporary directory. Exit."
-        log  "[$PROG_NAME:getSharingDirectory:ERROR] Can't create temporary directory. Exit."
+        log             "[getSharingDirectory:ERROR] Can't create temporary directory. Exit."
         exit
     fi   
-    log "[$PROG_NAME:getSharingDirectory:TmpDir:DEBUG] '$TmpDir' created."
+    log "[getSharingDirectory:TmpDir:DEBUG] '$TmpDir' created."
     echo "$TmpDir"
 }
 
+# #########################################
+# setSharingDirectory()
+# Parameter
+#   1: Instance UUID
+# Return
+#   1 : Existing sharing directory
+# Get directory for sharing.
+function setSharingDirectory()
+{
+    TmpDir="$HOME/tmp/$product""_$1"
+    
+    log "[setSharingDirectory:TmpDir:DEBUG] '$TmpDir' defined."
+    if [ ! -d "$TmpDir" ] ; then
+        echo "[$PROG_NAME:setSharingDirectory:ERROR] Can't use temporary directory. Exit."
+        log             "[setSharingDirectory:ERROR] Can't use temporary directory. Exit."
+        exit
+    fi   
+    log "[setSharingDirectory:TmpDir:DEBUG] '$TmpDir' checked."
+    echo "$TmpDir"
+}
 
 # #########################################
 # serverText()
@@ -132,13 +155,17 @@ function serverText()
     ServerScript="$BinaryDir/$serverProcess"
     if [ ! -f "$ServerScript" ] ; then
         echo "[$PROG_NAME:serverText:ERROR] Server process script not found. Exit."
-        log  "[$PROG_NAME:serverText:ERROR] Server process script not found. Exit."
+        log             "[serverText:ERROR] Server process script not found. Exit."
         exit
     fi
-    log "[$PROG_NAME:serverText:ServerScript:DEBUG] '$0'  '$ServerScript'"    
+    log "[serverText:ServerScript:DEBUG] '$0'  '$ServerScript'"    
 
-    SharingDir=$(getSharingDirectory)
-    log "[$PROG_NAME:serverText:SharingDir:DEBUG] '$SharingDir'"
+    if [ -z "$INSTANCE" ] ; then
+        SharingDir=$(getSharingDirectory)
+    else
+        SharingDir=$(setSharingDirectory "$INSTANCE")
+    fi
+    log "[serverText:SharingDir:DEBUG] '$SharingDir'"
 
     socat TCP-L:$serverPort,fork EXEC:"$ServerScript $SharingDir"
     # socat -d -d TCP-L:$serverPort,fork EXEC:"$ServerScript $SharingDir"
@@ -181,7 +208,7 @@ function killProcesses()
             if [ -n "$runProc" ] ; then
                 kill $killProc
                 echo "[$PROG_NAME:killProcesses:STATUS] '$killProc' killed."
-                log  "[$PROG_NAME:killProcesses:STATUS] '$killProc' killed."
+                log             "[killProcesses:STATUS] '$killProc' killed."
             fi
         fi
     done
@@ -241,12 +268,13 @@ esac
 function showHelp()
 {
     echo "[$PROG_NAME:STATUS] Program Parameter:"
-    echo "    -V     : Show Program Version"
-    echo "    -h     : Show this help"
-    echo "    -k     : Kill all '$PROG_SCRIPTNAME' processes"
-    echo "    -d     : Support demo mode with fixed starting directory and port $DEMOPORT"
-    echo "    -m     : Support mqtt2rest program with fixed starting directory and port $PORT"
-    echo "    -p 80  : Define the port listen at. (e.g. port 80)."
+    echo "    -V      : Show Program Version"
+    echo "    -h      : Show this help"
+    echo "    -k      : Kill all '$PROG_SCRIPTNAME' processes"
+    echo "    -d      : Support demo mode with fixed starting directory and port $DEMOPORT"
+    echo "    -m      : Support mqtt2rest program with fixed starting directory and port $PORT"
+    echo "    -p 80   : Define the port listen at. (e.g. port 80)."
+    echo "    -i uuid : Define the existing instance which should be used."
     echo "Copyright $PROG_DATE by Karsten Köth"
 }
 
@@ -280,12 +308,37 @@ log "Init..."
 # Check for program parameters:
 if [ $# -ge 1 ] ; then
     if [ "$1" = "-p" ] ; then
-        if [ $# -eq 2 ] ; then
+        if [ $# -ge 2 ] ; then
             isNumber "$2"
             if [ $? -eq 0 ] ; then
                 PORT="$2"
-                echo "[$PROG_NAME:STATUS] Port set to '$PORT'."
-                log  "[$PROG_NAME:Main:STATUS] Port set to '$PORT'."
+                echo "[$PROG_NAME:Main:STATUS] Port set to '$PORT'."
+                log             "[Main:STATUS] Port set to '$PORT'."
+            fi
+            # Port checked, maybe instance is also given...
+            if [ $# -ge 4 ] ; then
+                if [ "$3" = "-i" ] ; then
+                    INSTANCE="$4"
+                    echo "[$PROG_NAME:Main:STATUS] Instance set to '$INSTANCE'."
+                    log             "[Main:STATUS] Instance set to '$INSTANCE'."
+                fi
+            fi
+        fi
+    elif [ "$1" = "-i" ] ; then
+        if [ $# -ge 2 ] ; then
+            INSTANCE="$2"
+            echo "[$PROG_NAME:Main:STATUS] Instance set to '$INSTANCE'."
+            log             "[Main:STATUS] Instance set to '$INSTANCE'."
+            # Instance checked, maybe port is also given...
+            if [ $# -ge 4 ] ; then
+                if [ "$3" = "-p" ] ; then
+                    isNumber "$4"
+                    if [ $? -eq 0 ] ; then
+                        PORT="$4"
+                        echo "[$PROG_NAME:Main:STATUS] Port set to '$PORT'."
+                        log             "[Main:STATUS] Port set to '$PORT'."
+                    fi
+                fi
             fi
         fi
     elif [ "$1" = "-k" ] ; then

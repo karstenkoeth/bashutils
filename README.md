@@ -35,6 +35,18 @@ The server could be started with http-echo.sh:
 `http-echo.sh -p 3007 &`
 
 In this example, the server listens on tcp port 3007. For every connection to this port, a new process of http-text.sh will be started.
+
+## Re-Run
+
+If a server was started and stopped, a newly started server will create a new environment and work in this new environment.   
+If a server should use an existing environment, the specific instance number for this environment could be given as parameter, e.g.:
+
+`http-echo.sh -p 3007 -i E1B1AE3D-D614-48BC-95BC-41C2202C30F3 &`
+
+The instance number could be found in the log file and as folder name in tmp folder.
+
+### Init Clipboard
+
 The server is something like a cloud clipboard. With the command "addDoubleHead", a new clibboard instance will be created.
 Connect to the server e.g. with curl:
 
@@ -87,6 +99,39 @@ With [SICK Dashboard Builder](https://sd3.cloud.sick.com), set following lines i
 Play a little bit around with the Interval setting to reach the optimum for your system.
 
 There is no other shield to protect the data. All persons knowing the unique uuid can access the data.
+
+### Stop
+
+`http-echo.sh -k`
+
+### Init Time Series
+
+The server is something like a time series data base. With the command "addTimeSeries", a new time series instance will be created.
+Connect to the server e.g. with curl:
+
+`curl http://127.0.0.1:3007/api/addTimeSeries`
+
+The server will answer with a JSON structure, e.g.:
+
+`{"TimeSeries":"C58A2027-094E-4FDE-A460-F9BBFB564257"}`
+
+With this secret, data could be send to the server or received from the server.
+
+There is no limit for the number of different time series data bases used at the same time.
+
+There is no limit regarding the number of users using the time series at the same time.
+
+### Send Data
+
+Add a single number to a time serie:
+
+`curl -X PUT -H "Content-Type: application/text" http://127.0.0.1:3007/timeseries/C58A2027-094E-4FDE-A460-F9BBFB564257/ -d "123"`
+
+### Get Data
+
+Get all numbers from a time serie:
+
+`curl -X GET -H "Content-Type: application/text" http://127.0.0.1:3007/timeseries/C58A2027-094E-4FDE-A460-F9BBFB564257/`
 
 ## Prototype
 
