@@ -98,10 +98,11 @@
 # 2024-11-22 0.73 kdk More comments
 # 2024-11-22 0.74 kdk Started to support executer.sh in copyFiles()
 # 2024-11-25 0.75 kdk Go on with copyFiles()
+# 2025-02-13 0.76 kdk With poppler
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.75"
-PROG_DATE="2024-11-25"
+PROG_VERSION="0.76"
+PROG_DATE="2025-02-13"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -146,7 +147,7 @@ PROG_LIBRARYNAME="bashutils_common_functions.bash"
 # See:
 # https://phoenixnap.com/kb/bash-printf
 #
-# Store string in a variable "$bla": >: printf -v bla "hallo"
+# Store string in a variable "$bla": bash>: printf -v bla "hallo"
 #
 # Localisation
 #
@@ -231,7 +232,7 @@ PROG_LIBRARYNAME="bashutils_common_functions.bash"
 #
 # MIT license (MIT)
 #
-# Copyright 2024 - 2020 Karsten Köth
+# Copyright 2025 - 2020 Karsten Köth
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -1295,6 +1296,34 @@ fi
 # qpdf --qdf --object-streams=disable orig.pdf expanded.pdf
 # Ubuntu: install qpdf
 # MAC OS X: brew install qpdf
+#
+# pdftotext to analyse pdf files at command line
+# poppler library
+# https://formulae.brew.sh/formula/poppler#default
+# https://poppler.freedesktop.org/
+#
+# Used e.g. in smartdat-extract in cli-utils
+#
+pdfPresent=$(which pdftotext)
+if [ -z "$pdfPresent" ] ; then
+    # TODO: aptgetPresent - not yet tested.
+    if [ -x "$aptgetPresent" ] ;  then
+        $appSudo apt-get -y install poppler-utils
+    fi
+    # TODO: zypperPresent
+#    if [ -x "$zypperPresent" ] ; then
+#        $appSudo zypper --non-interactive install TODOFillInPackageName
+#    fi
+    # TODO: brewPresent - not yet tested.
+    if [ -x "$brewPresent" ] ; then
+        $appSudo brew install poppler
+    fi
+    # TODO: apkPresent
+#    if [ -x "$apkPresent" ] ; then
+#        $appSudo apk add TODOFillInPackageName
+#    fi
+fi
+
 
 # ################# Care about the Environment
 
