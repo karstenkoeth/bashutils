@@ -99,10 +99,12 @@
 # 2024-11-22 0.74 kdk Started to support executer.sh in copyFiles()
 # 2024-11-25 0.75 kdk Go on with copyFiles()
 # 2025-02-13 0.76 kdk With poppler
+# 2025-02-25 0.77 kdk With madness - only comments
+# 2025-02-27 0.78 kdk More madness commands
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.76"
-PROG_DATE="2025-02-13"
+PROG_VERSION="0.78"
+PROG_DATE="2025-02-27"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -1668,6 +1670,38 @@ if [ -z "$ffmpegPresent" ] ; then
 #    fi
 fi
 
+# ############# Document Management #############
+
+# Markdown Server
+# https://github.com/DannyBen/madness
+# Docs: https://madness.dannyb.co
+#
+# Two step installation:
+# brew install brew-gem
+# brew gem install madness
+#
+# Create config file template: bash:> madness config new
+# Place the created file in the root of the documentation folder.
+
+madnessPresent=$(which madness)
+if [ -z "$madnessPresent" ] ; then
+    # TODO: aptgetPresent
+#    if [ -x "$aptgetPresent" ] ;  then
+#        $appSudo apt-get -y install TODOFillInPackageName
+#    fi
+    # TODO: zypperPresent
+#    if [ -x "$zypperPresent" ] ; then
+#        $appSudo zypper --non-interactive install TODOFillInPackageName
+#    fi
+    if [ -x "$brewPresent" ] ; then
+        $appSudo brew install brew-gem
+        $appSudo brew gem install madness
+    fi
+    # TODO: apkPresent
+#    if [ -x "$apkPresent" ] ; then
+#        $appSudo apk add TODOFillInPackageName
+#    fi
+fi
 
 
 # TODO

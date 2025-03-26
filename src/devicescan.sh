@@ -95,10 +95,11 @@
 # 2025-01-02 0.43 kdk Config File with DeviceNames
 # 2025-01-03 0.44 kdk Plotly enhanced with time
 # 2025-01-03 0.45 kdk Running time calculated
+# 2025-03-26 0.46 kdk updateLog() placed according to executer
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.45"
-PROG_DATE="2025-01-03"
+PROG_VERSION="0.46"
+PROG_DATE="2025-03-26"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -106,7 +107,7 @@ PROG_SCRIPTNAME="devicescan.sh"
 #
 # TODOs
 #
-# Support RunFile and LogFile
+# Support RunFile 
 #
 # getOwnMacAddress() - support full multiple networks
 #
@@ -286,6 +287,18 @@ function checkOrCreateFile()
             return 1
         fi        
     fi        
+}
+
+# #########################################
+# updateLog()
+# Parameter
+#    -
+# Return Value
+#    -
+# Write time stamp into log file.
+function updateLog()
+{
+    touch "$LogFile"
 }
 
 # #########################################
@@ -1283,9 +1296,11 @@ fi
 echo "[$PROG_NAME:STATUS] Check folders ..."
 adjustVariables
 checkEnvironment
+updateLog
 
 if [ "$PrepConf" = "1" ] ; then
     prepareConfig 
+    updateLog
     echo "[$PROG_NAME:STATUS] Done."
     exit
 fi
@@ -1318,4 +1333,5 @@ drawDevicesStatus  # <-- TODO - not yet finished.
 # Calculate the program running time:
 endTicks=$(date "+%s")
 duration=$(expr $endTicks - $atcTicks)
+updateLog
 echo "[$PROG_NAME:STATUS] Done ($duration s)."

@@ -109,10 +109,11 @@
 # 2024-10-25 0.53 kdk ip for 23 and higher adapted in getIpAddress() and getMacAddress()
 # 2024-11-01 0.54 kdk MAC OS X 24.1.0
 # 2024-11-22 0.55 kdk Ubuntu 24.04.1 LTS
+# 2025-03-26 0.56 kdk updateLog() placed according to executer
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.55"
-PROG_DATE="2024-11-22"
+PROG_VERSION="0.56"
+PROG_DATE="2025-03-26"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -1319,6 +1320,7 @@ fi
 # Init
 adjustVariables
 checkEnvironment
+updateLog
 # Check, on which system we are running:
 getSystem
 getKernel
@@ -1343,6 +1345,7 @@ sendInfo
 
 if [ "$RUNONCE" = "1" ] ; then
     removeRun
+    updateLog
     echo "[$PROG_NAME:STATUS] Done."
     exit
 fi
@@ -1375,6 +1378,7 @@ done
 
 # Done - clean up ...
 removeRun
+updateLog
 
 # End:
 echo "[$PROG_NAME:STATUS] Done."
