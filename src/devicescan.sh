@@ -109,6 +109,8 @@ PROG_SCRIPTNAME="devicescan.sh"
 #
 # Support RunFile 
 #
+# Folder _Data + _Graphs should be possible to change in config file to place at USB-Drive
+#
 # getOwnMacAddress() - support full multiple networks
 #
 # Generated html file: src=\"https://cdn.plot.ly/plotly-latest.min.js\" will be loaded every time 
