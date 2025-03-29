@@ -101,10 +101,11 @@
 # 2025-02-13 0.76 kdk With poppler
 # 2025-02-25 0.77 kdk With madness - only comments
 # 2025-02-27 0.78 kdk More madness commands
+# 2025-03-29 0.79 kdk mosquitto
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.78"
-PROG_DATE="2025-02-27"
+PROG_VERSION="0.79"
+PROG_DATE="2025-03-29"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -1462,15 +1463,49 @@ if [ -z "$rsyncPresent" ] ; then
     fi
 fi
 
-# TODO
 # Maybe we want to use MQTT:
 # The Broker:
-#sudo apt-get -y install mosquitto
-# The Command Line Clients:
-#sudo apt-get -y install mosquitto-clients
+mosquittoPresent=$(which mosquitto)
+if [ -z "$mosquittoPresent" ] ; then
+    if [ -x "$aptgetPresent" ] ;  then
+        $appSudo apt-get -y install mosquitto
+    fi
+    # TODO: zypperPresent
+#    if [ -x "$zypperPresent" ] ; then
+#        $appSudo zypper --non-interactive install TODOFillInPackageName
+#    fi
+    if [ -x "$brewPresent" ] ; then
+        $appSudo brew install mosquitto
+    fi
+    # TODO: apkPresent
+#    if [ -x "$apkPresent" ] ; then
+#        $appSudo apk add TODOFillInPackageName
+#    fi
+fi
 #
-# Under openSUSE:
-#sudo zypper --non-interactive install mosquitto-clients
+# mosquitto has been installed with a default configuration file. You can make changes to the configuration by editing:
+#     $HOMEBREW_PREFIX/etc/mosquitto/mosquitto.conf
+#
+# The Command Line Clients:
+#
+# https://mosquitto.org/man/mosquitto_sub-1.html
+#
+mosquittosubPresent=$(which mosquitto_sub)
+if [ -z "$mosquittosubPresent" ] ; then
+    if [ -x "$aptgetPresent" ] ;  then
+        $appSudo apt-get -y install mosquitto-clients
+    fi
+    if [ -x "$zypperPresent" ] ; then
+        $appSudo zypper --non-interactive install mosquitto-clients
+    fi
+    if [ -x "$brewPresent" ] ; then
+        $appSudo brew install mosquitto
+    fi
+    # TODO: apkPresent
+#    if [ -x "$apkPresent" ] ; then
+#        $appSudo apk add TODOFillInPackageName
+#    fi
+fi
 #
 # Now, it would be cool to write a standard config file:
 # Only do it, if no one is present!
