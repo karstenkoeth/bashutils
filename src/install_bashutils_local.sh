@@ -102,10 +102,11 @@
 # 2025-02-25 0.77 kdk With madness - only comments
 # 2025-02-27 0.78 kdk More madness commands
 # 2025-03-29 0.79 kdk mosquitto
+# 2025-04-10 0.80 kdk zx
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.79"
-PROG_DATE="2025-03-29"
+PROG_VERSION="0.80"
+PROG_DATE="2025-04-10"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -970,6 +971,32 @@ if [ -z "$lsbreleasePresent" ] && [ -z "$brewPresent" ] ; then
     echo "[$PROG_NAME:WARNING] Can't find 'lsb-release' or 'brew'."
 fi
 
+# ################# Care about bash and things close to bash
+
+# Mix TypeScript and bash
+# https://google.github.io/zx/
+# https://github.com/google/zx
+#
+zxPresent=$(which zx)
+if [ -z "$zxPresent" ] ; then
+    # TODO: aptgetPresent
+#    if [ -x "$aptgetPresent" ] ;  then
+#        $appSudo apt-get -y install TODOFillInPackageName
+#    fi
+    # TODO: zypperPresent
+#    if [ -x "$zypperPresent" ] ; then
+#        $appSudo zypper --non-interactive install TODOFillInPackageName
+#    fi
+    if [ -x "$brewPresent" ] ; then
+        $appSudo brew install zx
+        # Installs also node
+    fi
+    # TODO: apkPresent
+#    if [ -x "$apkPresent" ] ; then
+#        $appSudo apk add TODOFillInPackageName
+#    fi
+fi
+
 # 'file' is not standard --> Install it:
 filePresent=$(which file 2> /dev/zero)
 if [ -z "$filePresent" ] ; then
@@ -1051,6 +1078,8 @@ if [ -z "$sedPresent" ] ; then
 #        $appSudo apk add TODOFillInPackageName
 #    fi
 fi
+
+# ################# More network related things
 
 # 'git' we need to update this program suite --> Install it:
 gitPresent=$(which git 2> /dev/zero)
@@ -1606,6 +1635,42 @@ fi
 # Cool Program to work with websockets: https://github.com/websockets/wscat
 # Install with: npm install -g wscat
 # At the moment we dont't care about node.js components.
+# We should also use nvm
+# https://github.com/nvm-sh/nvm
+
+nvmPresent=$(which nvm)
+if [ -z "$nvmPresent" ] ; then
+    # TODO: aptgetPresent
+#    if [ -x "$aptgetPresent" ] ;  then
+#        $appSudo apt-get -y install TODOFillInPackageName
+#    fi
+    # TODO: zypperPresent
+#    if [ -x "$zypperPresent" ] ; then
+#        $appSudo zypper --non-interactive install TODOFillInPackageName
+#    fi
+    # TODO: brewPresent make it more clean...
+    if [ -x "$brewPresent" ] ; then
+        $appSudo brew install nvm
+        # You should create NVM's working directory if it doesn't exist:
+        checkOrCreateFolder ~/.nvm
+        # Add the following to your shell profile e.g. ~/.profile or ~/.zshrc:
+        export NVM_DIR="$HOME/.nvm"
+        #[ -s "/usr/local/opt/nvm/nvm.sh" ] && \. "/usr/local/opt/nvm/nvm.sh"  # This loads nvm
+        #[ -s "/usr/local/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/usr/local/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
+        # You can set $NVM_DIR to any location, but leaving it unchanged from /usr/local/Cellar/nvm/0.40.2 
+        # will destroy any nvm-installed Node installations upon upgrade/reinstall.
+        # Test nvm:
+        # nvm --version
+        # Install node:
+        # nvm install node
+        # Test node:
+        # node --version
+    fi
+    # TODO: apkPresent
+#    if [ -x "$apkPresent" ] ; then
+#        $appSudo apk add TODOFillInPackageName
+#    fi
+fi
 
 # caddy is a open source web server and reverse proxy
 # See: 
