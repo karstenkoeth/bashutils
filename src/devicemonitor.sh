@@ -110,10 +110,11 @@
 # 2024-11-01 0.54 kdk MAC OS X 24.1.0
 # 2024-11-22 0.55 kdk Ubuntu 24.04.1 LTS
 # 2025-03-26 0.56 kdk updateLog() placed according to executer
+# 2025-07-28 0.57 kdk support unsupported systems :-) Only JSON file will show System Version
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.56"
-PROG_DATE="2025-03-26"
+PROG_VERSION="0.57"
+PROG_DATE="2025-07-28"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -442,6 +443,7 @@ function getSystem()
         echo "[$PROG_NAME:getSystem:ERROR] 'uname' not available. Exit"
         exit
     else
+        SYSTEMDescription=""
         sSYSTEM=$(uname -s) 
         # Detect System:
         #echo "$sSYSTEM" # ########################################### DEBUG
@@ -521,7 +523,7 @@ function getSystem()
             # Be paranoid: If nothing found, be sure the string is clean:
             if [ "$SYSTEMTested" = "0" ] ; then
                 echo "[$PROG_NAME:getSystem:Darwin:WARNING] Support for '$SYSTEMDescription' not yet implemented."
-                SYSTEMDescription=""
+                #SYSTEMDescription=""
             fi
         elif [ "$sSYSTEM" = "Linux" ] ; then
             SYSTEM="LINUX"
@@ -693,7 +695,7 @@ function getSystem()
                 # Be paranoid: If nothing found, be sure the string is clean:
                 if [ "$SYSTEMTested" = "0" ] ; then
                     echo "[$PROG_NAME:getSystem:Linux:WARNING] Support for '$SYSTEMDescription' not yet implemented."
-                    SYSTEMDescription=""
+                    #SYSTEMDescription=""
                 fi
             else
                 # No lsb_release:
@@ -711,7 +713,7 @@ function getSystem()
                 fi
                 if [ "$SYSTEMTested" = "0" ] ; then
                     echo "[$PROG_NAME:getSystem:Linux:uname:WARNING] Support for '$SYSTEMDescription' not yet implemented."
-                    SYSTEMDescription=""
+                    #SYSTEMDescription=""
                 fi
             fi
             #
