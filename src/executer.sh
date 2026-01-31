@@ -82,10 +82,11 @@
 # 2025-01-10 0.17 kdk Improving ongoing
 # 2025-01-13 0.18 kdk Use array in executer
 # 2026-01-31 0.19 kdk Control log and debug output
+# 2026-02-01 0.20 kdk Fix forgotten checkOrCreateFile function
 
 PROG_NAME="Executer"
-PROG_VERSION="0.19"
-PROG_DATE="2026-01-31"
+PROG_VERSION="0.20"
+PROG_DATE="2026-02-01"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="executer.sh"
 
@@ -389,6 +390,28 @@ function checkOrCreateFolder()
             echo "[$PROG_NAME:DEBUG] $2 folder created."
         else
             echo "[$PROG_NAME:ERROR] $2 folder could not be created."
+            return 1
+        fi        
+    fi        
+}
+
+# #########################################
+# checkOrCreateFile()
+# Parameter
+#   1: file name
+#   2: file description
+# Return
+#   1: 1 = An error occured
+# This function checks if a file exists. If not, it creates the file.
+# Check return value e.g. with: if [ $? -eq 1 ] ; then echo "There was an error"; fi
+function checkOrCreateFile()
+{
+    if [ ! -f "$1" ] ; then        
+        touch "$1"
+        if [ -f "$1" ] ; then
+            echo "[$PROG_NAME:STATUS] $2 file created."
+        else
+            echo "[$PROG_NAME:ERROR] $2 file could not be created."
             return 1
         fi        
     fi        
