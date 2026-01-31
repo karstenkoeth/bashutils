@@ -12,6 +12,12 @@
 #
 # _Control
 #    In this folder, some files show the status of the program and control the program
+#      RUNNING - This file is present, if the program should run. If this file is deleted,
+#                the program will terminate.
+#      LOG     - This file is touched every few seconds to show the program is alive.
+#                You can monitor this file with e.g. "ls --full-time LOG".
+#      DEBUG   - If this file is present, debug output in tmp folder will be activated.
+#                You can monitor this debug output e.g. with "tail -f debug.txt".
 #
 # _Execute
 #    Programs mentioned in this folder will be executed. Mentioned means:
@@ -75,10 +81,11 @@
 # 2025-01-09 0.16 kdk Improve with array and getArrayValue(), setArrayValue()
 # 2025-01-10 0.17 kdk Improving ongoing
 # 2025-01-13 0.18 kdk Use array in executer
+# 2026-01-31 0.19 kdk Control log and debug output
 
 PROG_NAME="Executer"
-PROG_VERSION="0.18"
-PROG_DATE="2025-01-13"
+PROG_VERSION="0.19"
+PROG_DATE="2026-01-31"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="executer.sh"
 
@@ -149,7 +156,7 @@ MainLoopSleepFactor="1"
 #
 
 # Typically, we need in a lot of scripts the start date and time of the script:
-actDateTime=$(date "+%Y-%m-%d +%H:%M:%S")
+actDateTime=$(date "+%Y-%m-%d_+%H:%M:%S")
 
 # Handle output of the different verbose levels - in combination with the 
 # "echo?" functions inside "bashutils_common_functions.bash":
@@ -169,6 +176,10 @@ ExecuteFolder="_"
 
 RunFile="_"
 LogFile="_"
+DebugOnFile="_"
+
+TmpDir="_"
+TmpFile="_"
 
 ConfigFile=""
 
@@ -197,10 +208,14 @@ function adjustVariables()
     ControlFolder="$MainFolder""_Control/"
         RunFile="$ControlFolder""RUNNING"
         LogFile="$ControlFolder""LOG"
+        DebugOnFile="$ControlFolder""DEBUG"
 
     ExecuteFolder="$MainFolder""_Execute/"
 
     ConfigFile="$HOME/.$product.ini"
+
+    TmpDir="$HOME/tmp/$product/"
+    TmpFile="$TmpDir""debug_$actDateTime.txt"
 }
 
 # #########################################
@@ -225,11 +240,12 @@ function adjustArrays()
         pureLine=$(basename "$line")
         DelayTimesNames[$iFor]="$pureLine"
         DelayTimesActual[$iFor]="0"
-        #echo "[$PROG_NAME:adjustArrays:DEBUG] linenumbers: '$linenumbers'  line: '$line'  pureLine: '$pureLine'  Name:  '${DelayTimesNames[$iFor]}'  Value: '${DelayTimesActual[$iFor]}'"
+        if [ $ECHODEBUG -eq 1 ] ; then
+            echo "[$PROG_NAME:adjustArrays] linenumbers: '$linenumbers'  line: '$line'  pureLine: '$pureLine'  Name:  '${DelayTimesNames[$iFor]}'  Value: '${DelayTimesActual[$iFor]}'" >> "$TmpFile"
+        fi
         iFor=$(expr $iFor + 1)
         DelayTimesMax=$iFor
     done
-
 }
 
 # #########################################
@@ -293,7 +309,7 @@ function getArray()
     line=0
     while [ $line -lt $DelayTimesMax ]
     do
-        echo "[$PROG_NAME:getArray] i:     '$line'/'$DelayTimesMax'   Name:  '${DelayTimesNames[$line]}'   Value: '${DelayTimesActual[$line]}'"
+        echo "[$PROG_NAME:getArray] i:     '$line'/'$DelayTimesMax'   Name:  '${DelayTimesNames[$line]}'   Value: '${DelayTimesActual[$line]}'" >> "$TmpFile"
         line=$(expr $line + 1)
     done
 }
@@ -385,6 +401,11 @@ function checkOrCreateFolder()
 # With this function, we do our install at the first start ;-)
 function checkFolders()
 {
+    checkOrCreateFolder "$TmpDir" "Temporary"
+        if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Temporary folder '$TmpDir' not usable. Exit"; exit; fi
+    checkOrCreateFile "$TmpFile" "Temporary"
+        if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Temporary file '$TmpFile' not usable. Exit"; exit; fi
+
     checkOrCreateFolder "$MainFolder" "Main Program"
         if [ $? -eq 1 ] ; then echo "[$PROG_NAME:ERROR] Can't create main folder. Exit"; exit; fi
     checkOrCreateFolder "$ControlFolder" "Control"
@@ -481,14 +502,20 @@ function checkForExecution()
                         if [ -z "$pauseTimeAct" ] ; then
                             pauseTimeAct="0"
                         fi
-                        #echo "[$PROG_NAME:checkForExecution:DEBUG] Wait '$pauseTimeAct/$pauseTimeConfig' for '$pureLine'"
+                        if [ $ECHODEBUG -eq 1 ] ; then
+                            echo "[$PROG_NAME:checkForExecution:DEBUG] Wait '$pauseTimeAct/$pauseTimeConfig' for '$pureLine'" >> "$TmpFile"
+                        fi
                         pauseTimeAct=$(expr $pauseTimeAct + 1)
                         if [ "$pauseTimeConfig" -lt "$pauseTimeAct" ] ; then
-                            #echo "[$PROG_NAME:checkForExecution:DEBUG] Try to restart program '$pureLine' ..."
+                            if [ $ECHODEBUG -eq 1 ] ; then
+                                echo "[$PROG_NAME:checkForExecution:DEBUG] Try to restart program '$pureLine' ..." >> "$TmpFile"
+                            fi
                             pauseTimeAct=0
                             "$pureLine" & 
-                        #else
-                        #    #echo "[$PROG_NAME:checkForExecution:DEBUG] Program '$pureLine' is pausing ('$pauseTimeAct'/'$pauseTimeConfig')."
+                        else
+                            if [ $ECHODEBUG -eq 1 ] ; then
+                                echo "[$PROG_NAME:checkForExecution:DEBUG] Program '$pureLine' is pausing ('$pauseTimeAct'/'$pauseTimeConfig')." >> "$TmpFile"
+                            fi
                         fi
                         setArrayValue "$pureLine" "$pauseTimeAct"
                     fi
@@ -514,6 +541,19 @@ function updateLog()
 function updateRun()
 {
     touch "$RunFile"
+}
+
+# #########################################
+# checkDebugOn()
+# Parameter
+# Checks if debug output should be activated.
+function checkDebugOn()
+{
+    if [ -f "$DebugOnFile" ] ; then
+        ECHODEBUG="1"
+    else
+        ECHODEBUG="0"
+    fi
 }
 
 # #########################################
@@ -635,18 +675,16 @@ echo "[$PROG_NAME:STATUS] Enter main loop. Monitor script with ':> ls --full-tim
 
 adjustArrays
 
-#setArrayValue "Blub" 15
-#setArrayValue "bla" "13"
-#sDeb=$(getArrayValue "executer.sh"); echo "Value of 'executer.sh': '$sDeb'"
-#sDeb=$(getArrayValue "Blub"); echo "Value of 'Blub': '$sDeb'"
-#getArray
-
 # Start main loop
 
 while [ -f "$RunFile" ]
 do
     updateLog
+    checkDebugOn
     checkForExecution
+    if [ $ECHODEBUG -eq 1 ] ; then
+        getArray
+    fi
     updateLog
     checkExit
 done
