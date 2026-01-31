@@ -103,10 +103,11 @@
 # 2025-02-27 0.78 kdk More madness commands
 # 2025-03-29 0.79 kdk mosquitto
 # 2025-04-10 0.80 kdk zx
+# 2026-01-31 0.81 kdk visidata added
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.80"
-PROG_DATE="2025-04-10"
+PROG_VERSION="0.81"
+PROG_DATE="2026-01-31"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -1803,6 +1804,20 @@ if [ -z "$madnessPresent" ] ; then
 #    fi
 fi
 
+# VisiData is an interactive multitool for tabular data. It combines the clarity of a spreadsheet, 
+# the efficiency of the terminal, and the power of Python, into a lightweight utility which can 
+# handle millions of rows with ease.
+# https://www.visidata.org/
+# https://www.visidata.org/install/
+visidataPresent=$(which vd)
+if [ -z "$visidataPresent" ] ; then
+    if [ -x "$aptgetPresent" ] ;  then
+        $appSudo apt-get -y install visidata
+    fi
+    if [ -x "$brewPresent" ] ; then
+        $appSudo brew install visidata
+    fi
+fi
 
 # TODO
 # Maybe we want to inform a server to have all necessary things installed?
