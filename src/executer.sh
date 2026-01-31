@@ -157,7 +157,7 @@ MainLoopSleepFactor="1"
 #
 
 # Typically, we need in a lot of scripts the start date and time of the script:
-actDateTime=$(date "+%Y-%m-%d_+%H:%M:%S")
+actDateTime=$(date "+%Y-%m-%d_%H:%M:%S")
 
 # Handle output of the different verbose levels - in combination with the 
 # "echo?" functions inside "bashutils_common_functions.bash":
