@@ -4,30 +4,24 @@
 #
 # Overview
 #
-# This template can be used for bash scripts.
-# See also the library with a lot of useful functions in: bashutils_common_functions.bash
+# This script writes to syslog during execution. It is normally called by 'executer.sh'.
 
 # #########################################
 #
 # Versions
 #
-# 2020-12-17 0.01 kdk First Version
-# 2020-12-20 0.02 kdk With actDateTime
-# 2021-01-29 0.03 kdk 2021 year ready, with PROG_DATE and Copyright in help, with showVersion()
-# 2021-02-08 0.04 kdk License text enhanced.
+# 2026-02-01 0.01 kdk First Version
 
-PROG_NAME="My Script"
-PROG_VERSION="0.04"
-PROG_DATE="2021-02-08"
-PROG_CLASS="My Class of Scripts"
-PROG_SCRIPTNAME="my-script.sh"
-PROG_LIBRARYNAME="bashutils_common_functions.bash"
+PROG_NAME="Logger for Executer"
+PROG_VERSION="0.01"
+PROG_DATE="2026-02-01"
+PROG_CLASS="bashutils"
+PROG_SCRIPTNAME="logger-executer.sh"
 
 # #########################################
 #
 # TODOs
 #
-# Give a good name and place it on git.
 
 # #########################################
 #
@@ -35,7 +29,7 @@ PROG_LIBRARYNAME="bashutils_common_functions.bash"
 #
 # MIT license (MIT)
 #
-# Copyright 2021 Karsten Köth
+# Copyright 2026 Karsten Köth
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -60,10 +54,6 @@ PROG_LIBRARYNAME="bashutils_common_functions.bash"
 #
 # Includes
 #
-# TODO: Given in this way, the include file must be in same directory the 
-#       script is called from. We have to auto-detect the path to the binary.
-# source bashutils_common_functions.bash
-
 
 
 # #########################################
@@ -106,6 +96,7 @@ function showHelp()
     echo "[$PROG_NAME:STATUS] Program Parameter:"
     echo "    -V     : Show Program Version"
     echo "    -h     : Show this help"
+    echo "This script writes to syslog during execution. It is normally called by 'executer.sh'."
     echo "Copyright $PROG_DATE by Karsten Köth"
 }
 
@@ -134,13 +125,11 @@ if [ $# -eq 1 ] ; then
         echo "[$PROG_NAME:STATUS] Input file exists."
     elif [ "$1" = "-V" ] ; then
         showVersion ; exit;
-    elif [ "$1" = "-h" ] ; then
+    else [ "$1" = "-h" ] ; then
         showHelp ; exit;
-    else
-        echo "[$PROG_NAME:ERROR] No input file. Exit." ; exit;
     fi
-else
-    echo "[$PROG_NAME:ERROR] Program needs one input file as parameter. Exit."; exit;
 fi
 
-echo "[$PROG_NAME] Done."
+logger "[$PROG_NAME:STATUS] $PROG_NAME is running at $actDateTime."
+
+echo "[$PROG_NAME:STATUS] Done."
