@@ -125,8 +125,10 @@ if [ $# -eq 1 ] ; then
         echo "[$PROG_NAME:STATUS] Input file exists."
     elif [ "$1" = "-V" ] ; then
         showVersion ; exit;
-    else [ "$1" = "-h" ] ; then
+    elif [ "$1" = "-h" ] ; then
         showHelp ; exit;
+    else
+        echo "[$PROG_NAME:ERROR] Unknown parameter $1" ; exit;
     fi
 fi
 
