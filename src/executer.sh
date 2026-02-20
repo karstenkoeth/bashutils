@@ -83,10 +83,11 @@
 # 2025-01-13 0.18 kdk Use array in executer
 # 2026-01-31 0.19 kdk Control log and debug output
 # 2026-02-01 0.20 kdk Fix forgotten checkOrCreateFile function
+# 2026-02-20 0.21 kdk Some comments added
 
 PROG_NAME="Executer"
-PROG_VERSION="0.20"
-PROG_DATE="2026-02-01"
+PROG_VERSION="0.21"
+PROG_DATE="2026-02-20"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="executer.sh"
 
@@ -98,6 +99,8 @@ PROG_SCRIPTNAME="executer.sh"
 #
 # With: (which basename --> $HOME/executer/_Execute/ (Gleich wie in Funktion unten)) -P | tail -n 1 | cut -d "=" -f 2
 # The folder with _Control contains RUNNING if the program should be running.
+#
+# Give hint in showHelp() that the manual is in the readme file.
 
 # #########################################
 #
