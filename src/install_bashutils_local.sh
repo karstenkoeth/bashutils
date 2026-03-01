@@ -104,10 +104,11 @@
 # 2025-03-29 0.79 kdk mosquitto
 # 2025-04-10 0.80 kdk zx
 # 2026-01-31 0.81 kdk visidata added
+# 2026-03-01 0.82 kdk Comments added
 
 PROG_NAME="Bash Utils Installer (local)"
-PROG_VERSION="0.81"
-PROG_DATE="2026-01-31"
+PROG_VERSION="0.82"
+PROG_DATE="2026-03-01"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="install_bashutils_local.sh"
 PROG_LIBRARYNAME="bashutils_common_functions.bash"
@@ -1803,6 +1804,24 @@ if [ -z "$madnessPresent" ] ; then
 #        $appSudo apk add TODOFillInPackageName
 #    fi
 fi
+
+# Markdown on Command Line
+# https://github.com/Inlyne-Project/inlyne. - Shows markdown files in own graphical window
+# brew install inlyne
+# Looks good on MAC OS X (24.6.0)
+inlynePresent=$(which inlyne)
+if [ -z "$inlynePresent" ] ; then
+    if [ -x "$brewPresent" ] ; then
+        $appSudo brew install inlyne
+        # I will forget the name of this tool, so I create an alias:
+        echo "alias mdview=\"inlyne\"" >> "$HOME/.bash_aliases"
+    fi
+fi
+
+# Markdown on Command Line
+# https://github.com/benjajaja/mdfried - Shows markdown files in terminal
+# brew install mdfried
+# Does not perform out of the box very well at MAC OS X 10.13.
 
 # VisiData is an interactive multitool for tabular data. It combines the clarity of a spreadsheet, 
 # the efficiency of the terminal, and the power of Python, into a lightweight utility which can 

@@ -111,10 +111,11 @@
 # 2024-11-22 0.55 kdk Ubuntu 24.04.1 LTS
 # 2025-03-26 0.56 kdk updateLog() placed according to executer
 # 2025-07-28 0.57 kdk support unsupported systems :-) Only JSON file will show System Version
+# 2026-03-01 0.58 kdk MAC OS X 24.6.0 added
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.57"
-PROG_DATE="2025-07-28"
+PROG_VERSION="0.58"
+PROG_DATE="2026-03-01"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -467,6 +468,7 @@ function getSystem()
             #                     e.g. "23.6.0" = MAC OS X Sonoma 14.6.1
             #                     e.g. "24.0.0" = MAC OS X Sequoia 15.0.1 
             #                     e.g. "24.1.0" = MAC OS X Sonoma 15.1
+            #                     e.g. "24.6.0" = MAC OS X Sequoia 15.7.4
             #                     e.g. "4.20.69-ish" = iPhone SE 14.5.1 with ish-App
             #                     e.g. "4.20.69-ish" = iPad Air 2 14.7.1 with ish-App
             # https://de.wikipedia.org/wiki/Darwin_(Betriebssystem)
@@ -510,6 +512,9 @@ function getSystem()
                     SYSTEMTested="1"
                 fi
                 if [ "$SYSTEMDescription" = "24.1.0" ] ; then
+                    SYSTEMTested="1"
+                fi
+                if [ "$SYSTEMDescription" = "24.6.0" ] ; then
                     SYSTEMTested="1"
                 fi
                 # Normally, it is found under Linux, but maybe ... try it:
