@@ -11,10 +11,11 @@
 # Versions
 #
 # 2026-02-01 0.01 kdk First Version
+# 2026-03-15 0.02 kdk Cleaned version
 
 PROG_NAME="Logger for Executer"
-PROG_VERSION="0.01"
-PROG_DATE="2026-02-01"
+PROG_VERSION="0.02"
+PROG_DATE="2026-03-15"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="logger-executer.sh"
 
@@ -69,14 +70,6 @@ PROG_SCRIPTNAME="logger-executer.sh"
 
 # Typically, we need in a lot of scripts the start date and time of the script:
 actDateTime=$(date "+%Y-%m-%d +%H:%M:%S")
-
-# Handle output of the different verbose levels - in combination with the 
-# "echo?" functions inside "bashutils_common_functions.bash":
-ECHODEBUG="0"
-ECHOVERBOSE="0"
-ECHONORMAL="1"
-ECHOWARNING="1"
-ECHOERROR="1"
 
 # #########################################
 #

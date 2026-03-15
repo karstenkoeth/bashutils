@@ -112,10 +112,11 @@
 # 2025-03-26 0.56 kdk updateLog() placed according to executer
 # 2025-07-28 0.57 kdk support unsupported systems :-) Only JSON file will show System Version
 # 2026-03-01 0.58 kdk MAC OS X 24.6.0 added
+# 2026-03-15 0.59 kdk Prepared for common log folder
 
 PROG_NAME="Device Monitor"
-PROG_VERSION="0.58"
-PROG_DATE="2026-03-01"
+PROG_VERSION="0.59"
+PROG_DATE="2026-03-15"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicemonitor.sh"
 
@@ -248,7 +249,7 @@ function adjustVariables()
 
     ControlFolder="$MainFolder""_Control/"
         RunFile="$ControlFolder""RUNNING"
-        LogFile="$ControlFolder""LOG"
+        LogFile="$ControlFolder""LOG_$PROG_SCRIPTNAME"
 
     ProcessFolder="$MainFolder""_Process/"
         ConfInfoFile="$ProcessFolder""devicestatus.json"

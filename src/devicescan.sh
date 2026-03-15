@@ -96,10 +96,11 @@
 # 2025-01-03 0.44 kdk Plotly enhanced with time
 # 2025-01-03 0.45 kdk Running time calculated
 # 2025-03-26 0.46 kdk updateLog() placed according to executer
+# 2026-03-15 0.47 kdk Prepared for common log folder
 
 PROG_NAME="Device Scan"
-PROG_VERSION="0.46"
-PROG_DATE="2025-03-26"
+PROG_VERSION="0.47"
+PROG_DATE="2026-03-15"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="devicescan.sh"
 
@@ -193,6 +194,8 @@ ECHOVERBOSE="0"
 ECHONORMAL="1"
 ECHOWARNING="1"
 ECHOERROR="1"
+
+DebugMode="0"
 
 SYSTEM="unknown"
 SYSTEMDescription=""
@@ -314,14 +317,14 @@ function adjustVariables()
 
     ControlFolder="$MainFolder""_Control/"
         RunFile="$ControlFolder""RUNNING"
-        LogFile="$ControlFolder""LOG"
+        LogFile="$ControlFolder""LOG_$PROG_SCRIPTNAME"
 
     SummaryFolder="$MainFolder""_Summary/"
     DataFolder="$MainFolder""_Data/"
     GraphFolder="$MainFolder""_Graphs/"
     ScriptFolder="$MainFolder""src/"
 
-    TmpDir="$HOME/tmp/$product/"
+    TmpDir="$MainFolder""tmp/"
     TmpFile="$TmpDir""devicescan_nmap_$actDateTime.txt"
     ScanFile="devicescan_devices_$actDateTime.txt"
     MacFile="devicescan_mac_$actDateTime.txt"
@@ -1247,12 +1250,13 @@ function showHelp()
 {
     echo "[$PROG_NAME:STATUS] Program Parameter:"
     echo "    -c     : Prepare configuration file and distribute it to all clients"
+    echo "    -d     : Debug mode. In this mode the program creates some tmp files for debugging purposes. These files are not deleted after the program run."
     echo "    -P     : Show Program Folder"
     echo "    -V     : Show Program Version"
     echo "    -h     : Show this help"
     echo "Copyright $PROG_DATE by Karsten Köth"
     echo ""
-    echo "A normal run of $PROG_SCRIPTNAME will create the following files in $TmpDir:"
+    echo "A debug run of $PROG_SCRIPTNAME will create the following files in $TmpDir:"
     echo "  devicescan_devices_*       Lists ip addresses of found devices (text file)"
     echo "  devicescan_knowndevices_*  Lists text files containing device name (text file)"
     echo "  devicescan_mac_*.txt.ip    Lists ip address, MAC address and depending at program version more variables as in output of 'ip' (csv file)"
@@ -1286,6 +1290,8 @@ if [ $# -eq 1 ] ; then
         echo "[$PROG_NAME:STATUS] Input file exists."
     elif [ "$1" = "-c" ] ; then
         PrepConf="1"
+    elif [ "$1" = "-d" ] ; then
+        DebugMode="1"
     elif [ "$1" = "-P" ] ; then
         echo "ProgramName=$product" ; exit;
     elif [ "$1" = "-V" ] ; then
@@ -1327,10 +1333,15 @@ setDevicesStatus
 echo "[$PROG_NAME:STATUS] Prepare html files ..."
 drawDevicesStatus  # <-- TODO - not yet finished.
 
-# Maybe TODO: Delete all created tmp files.
-# delFile "$KnownDevicesFile" # Created in listMacAddresses()
-# delFile "$TmpFile"          # Created in scanNetwork()
-# delFile "$TmpDir$ScanFile"  # Created in scanNetwork()
+# Maybe: Delete all created tmp files.
+if [ "$DebugMode" = "0" ] ; then
+    delFile "$KnownDevicesFile"   # Created in listMacAddresses()
+    delFile "$TmpFile"            # Created in checkEnvironment()
+    delFile "$TmpDir$ScanFile"    # Created in scanNetwork()
+    delFile "$TmpDir$MacFile.mac" # Created in listMacAddresses()
+    delFile "$TmpDir$MacFile.ip"  # Created in listMacAddresses()
+    delFile "$LinesFile"          # Created in listMacAddresses()
+fi
 
 # Calculate the program running time:
 endTicks=$(date "+%s")

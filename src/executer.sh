@@ -84,10 +84,11 @@
 # 2026-01-31 0.19 kdk Control log and debug output
 # 2026-02-01 0.20 kdk Fix forgotten checkOrCreateFile function
 # 2026-02-20 0.21 kdk Some comments added
+# 2026-03-15 0.22 kdk Prepared for common Control folder
 
 PROG_NAME="Executer"
-PROG_VERSION="0.21"
-PROG_DATE="2026-02-20"
+PROG_VERSION="0.22"
+PROG_DATE="2026-03-15"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="executer.sh"
 
@@ -211,7 +212,7 @@ function adjustVariables()
 
     ControlFolder="$MainFolder""_Control/"
         RunFile="$ControlFolder""RUNNING"
-        LogFile="$ControlFolder""LOG"
+        LogFile="$ControlFolder""LOG_$PROG_SCRIPTNAME"
         DebugOnFile="$ControlFolder""DEBUG"
 
     ExecuteFolder="$MainFolder""_Execute/"
