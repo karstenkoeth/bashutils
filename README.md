@@ -185,6 +185,53 @@ MQTT2REST works under mqtt topic *prototype* on port *1883*. The REST API is rea
 
 These scripts (ssh2*, scp2*, scpF*) are only useful in combination with the private keys. Therefore, as an alien user of this repository they are useless.
 
+# Device Monitor
+
+# Device Scan
+
+# Executer
+
+This bash script permanently looks for commands inside a special directory and executes these.
+This script could be started somewhere, but the main folder is always the same. Only one
+instance of the script is able to run at the same time.
+
+## Verbose and Debugging Output
+
+Under the `$HOME` folder of the user a program specific folder called `executer` is created. Inside this folder, the sub folder 
+`_Control` could be used to control and debug the scripts.
+
+In this folder, some files show the status of the program and control the program
+
+**RUNNING** - This file is present, if the program should run. If this file is deleted, the program will terminate.
+
+**LOG** - This file is touched every few seconds to show the program is alive. You can monitor this file with e.g. `ls --full-time LOG`.
+
+**DEBUG** - If this file is present, debug output in tmp folder will be activated. You can monitor this debug output e.g. with `tail -f debug*.txt`.
+
+Not all files are supported by all scripts.
+
+## Configuration
+
+Under the `$HOME` folder of the user a program specific folder called `executer` is created. Inside this folder, the sub folder 
+`_Execute` must be used to configure the scripts.
+
+Programs mentioned in this folder will be executed. Mentioned means:
+A file with same name as the programs executable file name but with file
+length zero is placed in this folder (e.g. `hello-world.sh`).
+At the moment (0.07) only shell scripts are supported, see function `checkForExecution()`.
+The program executable (or the script) is installed in the `$PATH`. 
+We check this with "which program".
+If a process terminates but the program is listed inside this folder, the process will be started again.
+Be careful: At the momen (0.11) the program will be immediatly (1 s) restarted.
+
+Another configuration step is done in the configuration file `.executer.ini` in the `$HOME` folder. For every program executable a minimum *sleep* time betwen to program starts could be defined, e.g.:
+
+`logger-executer.sh = 1000`
+
+This will wait a minimum 1000 seconds before restarting the `logger-executer.sh`.
+
+All time values of executer are not very exactly and are dependend to the total cpu usage, the cpu power and other factors. Very precisely addressed: The configured time value is the amongs of main cycles. Every main cycle has a 1 second sleep and more or less calculations. 
+
 # TODO
 
 Write little script similar to devicemonitor-getDiskSpace() with one program parameter "Mount Point" to get
