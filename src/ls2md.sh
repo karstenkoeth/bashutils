@@ -24,9 +24,10 @@
 #
 # 2026-11-06 0.01 kdk First Version from Claude
 # 2026-11-06 0.02 kdk Add program parameters -V and -h
+# 2026-11-07 0.03 kdk Add support for mp4 files (only a text link, no image link)
 
 PROG_NAME="ls2md"
-PROG_VERSION="0.02"
+PROG_VERSION="0.03"
 PROG_DATE="2026-11-07"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="ls2md.sh"
@@ -130,9 +131,18 @@ function writeLink()
     local fileName="$1"
     local linkText="${fileName#"$FILE_PREFIX"}"   # remove prefix
     linkText="${linkText%.*}"                     # remove extension
+    local extension="${fileName##*.}"
 
-    echo "![$linkText]($fileName)" >> "$OUTPUT_FILE"
-    countFiles=$((countFiles + 1))
+    if [ "$extension" = "jpg" ] || [ "$extension" = "png" ] || [ "$extension" = "jpeg" ] ; then
+        echo "![$linkText]($fileName)" >> "$OUTPUT_FILE"
+        countFiles=$((countFiles + 1))
+    elif [ "$extension" = "mp4" ] ; then
+        echo "[$linkText  -  $fileName -  Movie]: #" >> "$OUTPUT_FILE"
+        # From every Movie File we generate a correspondingpicture file.
+        #countFiles=$((countFiles + 1))
+    else
+        echo "[$PROG_NAME:WARNING] File '$fileName' isn't a supported image format '$extension'."
+    fi
 }
 
 # #########################################
