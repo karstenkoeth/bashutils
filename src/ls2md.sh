@@ -6,6 +6,7 @@
 #
 # Creates a markdown fragment with an image link for every file in the
 # current directory whose name starts with FILE_PREFIX, followed by a date.
+# FILE_PREFIX can be changed with the -p parameter.
 #
 # Example: Files "Bild_2026-11-05.jpg" and "Bild_2026-11-06.png" result in:
 #
@@ -25,10 +26,11 @@
 # 2026-11-06 0.01 kdk First Version from Claude
 # 2026-11-06 0.02 kdk Add program parameters -V and -h
 # 2026-11-07 0.03 kdk Add support for mp4 files (only a text link, no image link)
+# 2026-11-09 0.04 kdk Add program parameter -p to set the file prefix
 
 PROG_NAME="ls2md"
-PROG_VERSION="0.03"
-PROG_DATE="2026-11-07"
+PROG_VERSION="0.04"
+PROG_DATE="2026-11-09"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="ls2md.sh"
 
@@ -36,7 +38,7 @@ PROG_SCRIPTNAME="ls2md.sh"
 #
 # TODOs
 #
-# Maybe: Directory and file prefix as optional program parameters.
+# Maybe: Directory as an optional program parameter.
 
 # #########################################
 #
@@ -73,9 +75,6 @@ PROG_SCRIPTNAME="ls2md.sh"
 # Beginning of the file names to search for:
 FILE_PREFIX="PowerBank_Personen_"
 
-# Name of the markdown file to create (in the current directory):
-OUTPUT_FILE="${FILE_PREFIX%[_-]}.md"
-
 # #########################################
 #
 # Variables
@@ -100,10 +99,11 @@ countFiles=0
 function showHelp()
 {
     echo "[$PROG_NAME:STATUS] Program Parameter:"
+    echo "    -p PREFIX : Set the file prefix (default: '$FILE_PREFIX')"
     echo "    -V     : Show Program Version"
     echo "    -h     : Show this help"
-    echo "Without parameter: Search in the current directory for files"
-    echo "starting with '$FILE_PREFIX' and write image links to '$OUTPUT_FILE'."
+    echo "Search in the current directory for files"
+    echo "starting with '$FILE_PREFIX' and write image links to '${FILE_PREFIX%[_-]}.md'."
     echo "Copyright $PROG_DATE by Karsten Köth"
 }
 
@@ -151,17 +151,29 @@ function writeLink()
 #
 
 # Check for program parameters:
-if [ $# -eq 1 ] ; then
-    if [ "$1" = "-V" ] ; then
-        showVersion ; exit 0
-    elif [ "$1" = "-h" ] ; then
-        showHelp ; exit 0
-    else
-        echo "[$PROG_NAME:ERROR] Unknown parameter '$1'. Use -h for help. Exit." ; exit 1
-    fi
-elif [ $# -gt 1 ] ; then
-    echo "[$PROG_NAME:ERROR] Too many parameters. Use -h for help. Exit." ; exit 1
-fi
+while [ $# -gt 0 ] ; do
+    case "$1" in
+        -V)
+            showVersion ; exit 0
+            ;;
+        -h)
+            showHelp ; exit 0
+            ;;
+        -p)
+            if [ $# -lt 2 ] ; then
+                echo "[$PROG_NAME:ERROR] Missing prefix for -p. Use -h for help. Exit." ; exit 1
+            fi
+            FILE_PREFIX="$2"
+            shift 2
+            ;;
+        *)
+            echo "[$PROG_NAME:ERROR] Unknown parameter '$1'. Use -h for help. Exit." ; exit 1
+            ;;
+    esac
+done
+
+# Name of the markdown file to create (in the current directory):
+OUTPUT_FILE="${FILE_PREFIX%[_-]}.md"
 
 echo "[$PROG_NAME:STATUS] Starting ..."
 
