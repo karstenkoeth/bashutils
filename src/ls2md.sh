@@ -28,10 +28,11 @@
 # 2026-11-07 0.03 kdk Add support for mp4 files (only a text link, no image link)
 # 2026-11-09 0.04 kdk Add program parameter -p to set the file prefix
 # 2026-11-10 0.05 kdk Add program parameter -e to write html flexbox design
+# 2026-11-11 0.06 kdk Add Location
 
 PROG_NAME="ls2md"
-PROG_VERSION="0.05"
-PROG_DATE="2026-11-10"
+PROG_VERSION="0.06"
+PROG_DATE="2026-11-11"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="ls2md.sh"
 
@@ -201,6 +202,7 @@ function writeFooter()
     currentDate=$(date +%d.%m.%Y)
     echo "</div>
 
+</br></br>
 Insgesamt verteilte Geräte: $numberPowerStations </br></br></br>
 Datum: $currentDate       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;       Unterschriften: ____________________________________           
 <i style=\"color:white;\">Datum: $currentDate       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;       Unterschriften: </i>Sabine Köth · Karsten Köth · Power für Kiew
@@ -235,7 +237,7 @@ function writeLink()
             if [ -f "$textFile" ]; then
                 familyName=$(<"$textFile")
             fi
-            echo "<h4>$familyName</h4>" >> "$OUTPUT_FILE"
+            echo "<h4>$familyName - Kiew</h4>" >> "$OUTPUT_FILE"
             echo "" >> "$OUTPUT_FILE"
             echo "<img src=\"$fileName\" alt=\"$linkText\">" >> "$OUTPUT_FILE"
             echo "" >> "$OUTPUT_FILE"
