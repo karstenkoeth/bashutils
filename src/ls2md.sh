@@ -29,9 +29,10 @@
 # 2026-11-09 0.04 kdk Add program parameter -p to set the file prefix
 # 2026-11-10 0.05 kdk Add program parameter -e to write html flexbox design
 # 2026-11-11 0.06 kdk Add Location
+# 2026-11-11 0.07 kdk Page Break added.
 
 PROG_NAME="ls2md"
-PROG_VERSION="0.06"
+PROG_VERSION="0.07"
 PROG_DATE="2026-11-11"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="ls2md.sh"
@@ -202,7 +203,8 @@ function writeFooter()
     currentDate=$(date +%d.%m.%Y)
     echo "</div>
 
-</br></br>
+<div style=\"page-break-after: always;\"></div>
+
 Insgesamt verteilte Geräte: $numberPowerStations </br></br></br>
 Datum: $currentDate       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;       Unterschriften: ____________________________________           
 <i style=\"color:white;\">Datum: $currentDate       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;       Unterschriften: </i>Sabine Köth · Karsten Köth · Power für Kiew
