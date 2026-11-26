@@ -49,9 +49,10 @@
 #
 # 2026-11-26 0.01 kdk First Version from Claude
 # 2026-11-26 0.02 kdk Minimal changed parameter and testing done
+# 2026-11-26 0.03 kdk Minor bugs in help text changed.
 
 PROG_NAME="vcf-create"
-PROG_VERSION="0.02"
+PROG_VERSION="0.03"
 PROG_DATE="2026-11-26"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="vcf-create.sh"
@@ -140,7 +141,7 @@ function showHelp()
     echo "    -F FILE     : Output file (without -F: vCard to stdout)"
     echo "    -V          : Show Program Version"
     echo "    -h          : Show this help"
-    echo "At least -v, -n or -F is needed."
+    echo "At least -v, -n or -f is needed."
     echo "Example:"
     echo "    $PROG_SCRIPTNAME -v Max -n Mustermann -s \"Hauptstraße 1\" -p 76149 -o Karlsruhe -e max@example.de -F max.vcf"
     echo "Copyright $PROG_DATE by Karsten Köth"
@@ -273,7 +274,7 @@ while [ $# -gt 0 ] ; do
 done
 
 if [ -z "$vorname" ] && [ -z "$nachname" ] && [ -z "$firma" ] ; then
-    echoMessage "[$PROG_NAME:ERROR] At least -V, -N or -F is needed. Use -h for help. Exit." ; exit 1
+    echoMessage "[$PROG_NAME:ERROR] At least -v, -n or -f is needed. Use -h for help. Exit." ; exit 1
 fi
 
 echoMessage "[$PROG_NAME:STATUS] Starting ..."
