@@ -11,6 +11,7 @@
 #   -s Straße     : Street with house number
 #   -p PLZ        : Postal code
 #   -o Ort        : City
+#   -t Telefon    : Phone Number
 #   -e Email      : Email address
 #   -f Firma      : Company
 #   -F FILE       : Output file. Without -F, the vCard is written to stdout.
@@ -50,9 +51,10 @@
 # 2026-11-26 0.01 kdk First Version from Claude
 # 2026-11-26 0.02 kdk Minimal changed parameter and testing done
 # 2026-11-26 0.03 kdk Minor bugs in help text changed.
+# 2026-11-26 0.04 kdk Added -t parameter for phone number.
 
 PROG_NAME="vcf-create"
-PROG_VERSION="0.03"
+PROG_VERSION="0.04"
 PROG_DATE="2026-11-26"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="vcf-create.sh"
@@ -109,6 +111,7 @@ nachname=""
 strasse=""
 plz=""
 ort=""
+telefon=""
 email=""
 firma=""
 
@@ -137,6 +140,7 @@ function showHelp()
     echo "    -p PLZ      : Postal code"
     echo "    -o Ort      : City"
     echo "    -e Email    : Email address"
+    echo "    -t Telefon  : Phone Number"
     echo "    -f Firma    : Company"
     echo "    -F FILE     : Output file (without -F: vCard to stdout)"
     echo "    -V          : Show Program Version"
@@ -234,6 +238,9 @@ function writeVcard()
     if [ -n "$email" ] ; then
         printf '%s' "EMAIL;TYPE=INTERNET:$(escapeValue "$email")$CRLF"
     fi
+    if [ -n "$telefon" ] ; then
+        printf '%s' "TEL;TYPE=WORK,VOICE:$(escapeValue "$telefon")$CRLF"
+    fi
     printf '%s' "END:VCARD$CRLF"
 }
 
@@ -251,7 +258,7 @@ while [ $# -gt 0 ] ; do
         -h)
             showHelp ; exit 0
             ;;
-        -v|-n|-s|-p|-o|-e|-f|-F)
+        -v|-n|-s|-p|-o|-t|-e|-f|-F)
             if [ $# -lt 2 ] ; then
                 echo "[$PROG_NAME:ERROR] Missing value for $1. Use -h for help. Exit." >&2 ; exit 1
             fi
@@ -261,6 +268,7 @@ while [ $# -gt 0 ] ; do
                 -s) strasse="$2" ;;
                 -p) plz="$2" ;;
                 -o) ort="$2" ;;
+                -t) telefon="$2" ;;
                 -e) email="$2" ;;
                 -f) firma="$2" ;;
                 -F) OUTPUT_FILE="$2" ;;
