@@ -18,9 +18,10 @@
 # 2026-11-27 0.02 kdk Minor changes in help text and version information.
 # 2026-11-27 0.03 kdk Changed query from name to note.
 # 2026-11-27 0.04 kdk Added -s parameter for silent mode.
+# 2026-11-27 0.05 kdk Added -e for Email output
 
 PROG_NAME="vcf-query"
-PROG_VERSION="0.04"
+PROG_VERSION="0.05"
 PROG_DATE="2026-11-27"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="vcf-query.sh"
@@ -31,6 +32,8 @@ PROG_SCRIPTNAME="vcf-query.sh"
 #
 
 silent="0"
+email="0"
+address="1"
 
 searchstring="Max Mustermann"  # Default search string. Can be changed with -q parameter.
 
@@ -52,8 +55,9 @@ function showHelp()
     echo "[$PROG_NAME:STATUS] Program Parameter:"
     echo "    -q string   : With this string, the contacts are searched in the macOS Contacts application."
     echo "    -s          : Silent mode. No status messages are written to stdout."
+    echo "    -e          : Output email addresses instead of physical addresses"
     echo "    -V          : Show Program Version"
-    echo "    -h          : Show this help"
+    echo "    -h          : Show this help"    
     echo "Copyright $PROG_DATE by Karsten Köth"
 }
 
@@ -87,6 +91,75 @@ function echoMessage()
     fi
 }
 
+# #########################################
+# printAddress()
+# Parameter
+#    -
+# Return Value
+#    -
+# Print the addresses of contacts whose note contains the search string.
+function printAddress()
+{
+    # Different Queries:
+    #  people whose name contains suchbegriff
+    #  people whose note contains suchbegriff
+
+osascript - "$searchstring" <<'EOF'
+on run argv
+    set suchbegriff to item 1 of argv
+    tell application "Contacts"
+        set ausgabe to ""
+        repeat with p in (people whose note contains suchbegriff)
+            set n to name of p
+            repeat with a in addresses of p
+                set s to street of a
+                set z to zip of a
+                set o to city of a
+                set c to country of a
+                if s is missing value then set s to ""
+                if z is missing value then set z to ""
+                if o is missing value then set o to ""
+                if c is missing value then set c to ""
+                set ausgabe to ausgabe & n & ";" & s & ";" & z & ";" & o & ";" & c & ";" & linefeed
+            end repeat
+        end repeat
+        return ausgabe
+    end tell
+end run
+EOF
+
+}
+
+# #########################################
+# printEmail()
+# Parameter
+#    -
+# Return Value
+#    -
+# Print the email addresses of contacts whose note contains the search string.
+function printEmail()
+{
+osascript - "$searchstring" <<'EOF'
+on run argv
+    set suchbegriff to item 1 of argv
+    tell application "Contacts"
+        set ausgabe to ""
+        repeat with p in (people whose note contains suchbegriff)
+            set n to name of p
+            repeat with m in emails of p
+                set e to value of m
+                set l to label of m
+                if e is missing value then set e to ""
+                if l is missing value then set l to ""
+                set ausgabe to ausgabe & n & ";" & e & ";" & linefeed
+            end repeat
+        end repeat
+        return ausgabe
+    end tell
+end run
+EOF
+
+}
 
 # #########################################
 #
@@ -116,6 +189,11 @@ while [ $# -gt 0 ] ; do
             silent="1"
             shift 1
             ;;
+        -e)
+            email="1"
+            address="0"
+            shift 1
+            ;;
         *)
             echoMessage "[$PROG_NAME:ERROR] Unknown parameter '$1'. Use -h for help. Exit."
             exit 1
@@ -125,32 +203,11 @@ done
 
 echoMessage "[$PROG_NAME:STATUS] Querying contacts with note containing '$searchstring'..."
 
-# Different Queries:
-#  people whose name contains suchbegriff
-#  people whose note contains suchbegriff
-
-osascript - "$searchstring" <<'EOF'
-on run argv
-    set suchbegriff to item 1 of argv
-    tell application "Contacts"
-        set ausgabe to ""
-        repeat with p in (people whose note contains suchbegriff)
-            set n to name of p
-            repeat with a in addresses of p
-                set s to street of a
-                set z to zip of a
-                set o to city of a
-                set c to country of a
-                if s is missing value then set s to ""
-                if z is missing value then set z to ""
-                if o is missing value then set o to ""
-                if c is missing value then set c to ""
-                set ausgabe to ausgabe & n & ";" & s & ";" & z & ";" & o & ";" & c & ";" & linefeed
-            end repeat
-        end repeat
-        return ausgabe
-    end tell
-end run
-EOF
+if [ "$address" = "1" ] ; then
+    printAddress
+fi
+if [ "$email" = "1" ] ; then
+    printEmail
+fi
 
 echoMessage "[$PROG_NAME:STATUS] Done."
