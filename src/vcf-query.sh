@@ -12,9 +12,11 @@
 # Versions
 #
 # 2026-11-27 0.01 kdk First Version from Claude with code from kdk
+# 2026-11-27 0.02 kdk Minor changes in help text and version information.
+# 2026-11-27 0.03 kdk Changed query from name to note.
 
 PROG_NAME="vcf-query"
-PROG_VERSION="0.01"
+PROG_VERSION="0.03"
 PROG_DATE="2026-11-27"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="vcf-query.sh"
@@ -89,14 +91,18 @@ while [ $# -gt 0 ] ; do
     esac
 done
 
-echo "[$PROG_NAME:STATUS] Querying contacts with name containing '$searchstring'..."
+echo "[$PROG_NAME:STATUS] Querying contacts with note containing '$searchstring'..."
+
+# Different Queries:
+#  people whose name contains suchbegriff
+#  people whose note contains suchbegriff
 
 osascript - "$searchstring" <<'EOF'
 on run argv
     set suchbegriff to item 1 of argv
     tell application "Contacts"
         set ausgabe to ""
-        repeat with p in (people whose name contains suchbegriff)
+        repeat with p in (people whose note contains suchbegriff)
             set n to name of p
             repeat with a in addresses of p
                 set s to street of a
