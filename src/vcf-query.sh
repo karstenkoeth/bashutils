@@ -6,6 +6,9 @@
 #
 # Queries contacts from macOS Contacts application using AppleScript.
 # The query in my contacts is very time consuming, over a minute.
+#
+# Use pipe to generate a csv output file:
+#    vcf-query.sh -q "PowerStation" -s > test.csv
 
 # #########################################
 #
@@ -14,9 +17,10 @@
 # 2026-11-27 0.01 kdk First Version from Claude with code from kdk
 # 2026-11-27 0.02 kdk Minor changes in help text and version information.
 # 2026-11-27 0.03 kdk Changed query from name to note.
+# 2026-11-27 0.04 kdk Added -s parameter for silent mode.
 
 PROG_NAME="vcf-query"
-PROG_VERSION="0.03"
+PROG_VERSION="0.04"
 PROG_DATE="2026-11-27"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="vcf-query.sh"
@@ -25,6 +29,8 @@ PROG_SCRIPTNAME="vcf-query.sh"
 #
 # Variables
 #
+
+silent="0"
 
 searchstring="Max Mustermann"  # Default search string. Can be changed with -q parameter.
 
@@ -45,6 +51,7 @@ function showHelp()
 {
     echo "[$PROG_NAME:STATUS] Program Parameter:"
     echo "    -q string   : With this string, the contacts are searched in the macOS Contacts application."
+    echo "    -s          : Silent mode. No status messages are written to stdout."
     echo "    -V          : Show Program Version"
     echo "    -h          : Show this help"
     echo "Copyright $PROG_DATE by Karsten Köth"
@@ -63,11 +70,30 @@ function showVersion()
 }
 
 # #########################################
+# echoMessage()
+# Parameter
+#    1: message text
+# Return Value
+#    -
+# Write a status, warning or error message.
+# Without output file the message goes to stderr, because stdout is
+# reserved for the vCard.
+function echoMessage()
+{
+    if [ "$silent" = "1" ] ; then
+        echo "$1" >&2
+    else
+        echo "$1"
+    fi
+}
+
+
+# #########################################
 #
 # Main
 #
 
-echo "[$PROG_NAME:STATUS] Starting ..."
+# echo "[$PROG_NAME:STATUS] Starting ..."
 
 # Check for program parameters:
 while [ $# -gt 0 ] ; do
@@ -80,18 +106,24 @@ while [ $# -gt 0 ] ; do
             ;;
         -q)
             if [ $# -lt 2 ] ; then
-                echo "[$PROG_NAME:ERROR] Missing value for $1. Use -h for help. Exit." >&2 ; exit 1
+                echoMessage "[$PROG_NAME:ERROR] Missing value for $1. Use -h for help. Exit."
+                exit 1
             fi
             searchstring="$2"
             shift 2
             ;;
+        -s)
+            silent="1"
+            shift 1
+            ;;
         *)
-            echo "[$PROG_NAME:ERROR] Unknown parameter '$1'. Use -h for help. Exit." >&2 ; exit 1
+            echoMessage "[$PROG_NAME:ERROR] Unknown parameter '$1'. Use -h for help. Exit."
+            exit 1
             ;;
     esac
 done
 
-echo "[$PROG_NAME:STATUS] Querying contacts with note containing '$searchstring'..."
+echoMessage "[$PROG_NAME:STATUS] Querying contacts with note containing '$searchstring'..."
 
 # Different Queries:
 #  people whose name contains suchbegriff
@@ -121,4 +153,4 @@ on run argv
 end run
 EOF
 
-echo "[$PROG_NAME:STATUS] Done."
+echoMessage "[$PROG_NAME:STATUS] Done."
