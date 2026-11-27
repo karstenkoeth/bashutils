@@ -19,9 +19,10 @@
 # 2026-11-27 0.03 kdk Changed query from name to note.
 # 2026-11-27 0.04 kdk Added -s parameter for silent mode.
 # 2026-11-27 0.05 kdk Added -e for Email output
+# 2026-11-27 0.06 kdk Comment corrected
 
 PROG_NAME="vcf-query"
-PROG_VERSION="0.05"
+PROG_VERSION="0.06"
 PROG_DATE="2026-11-27"
 PROG_CLASS="bashutils"
 PROG_SCRIPTNAME="vcf-query.sh"
@@ -80,8 +81,7 @@ function showVersion()
 # Return Value
 #    -
 # Write a status, warning or error message.
-# Without output file the message goes to stderr, because stdout is
-# reserved for the vCard.
+# With silent, the output is prepared to be used in a pipe.
 function echoMessage()
 {
     if [ "$silent" = "1" ] ; then
